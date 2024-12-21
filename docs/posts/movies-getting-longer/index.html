@@ -211,10 +211,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <hr>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<div id="b5bb02cb" class="cell" data-execution_count="1">
+<div id="3a8319c9" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display">
 
-            <div id="Oy0LNA"></div>
+            <div id="EceOV6"></div>
             <script type="text/javascript" data-lets-plot-script="library">
                 if(!window.letsPlotCallQueue) {
                     window.letsPlotCallQueue = [];
@@ -238,16 +238,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                         var div = document.createElement("div");
                         div.style.color = 'darkred';
                         div.textContent = 'Error loading Lets-Plot JS';
-                        document.getElementById("Oy0LNA").appendChild(div);
+                        document.getElementById("EceOV6").appendChild(div);
                     };
-                    var e = document.getElementById("Oy0LNA");
+                    var e = document.getElementById("EceOV6");
                     e.appendChild(script);
                 })()
             </script>
             
 </div>
 </div>
-<div id="828a8d2c" class="cell" data-execution_count="2">
+<div id="b38d5875" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the dataset</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>sql <span class="op">=</span> <span class="kw">lambda</span> q: duckdb.sql(q).df()</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>query_read_and_format_data <span class="op">=</span> <span class="st">"""</span></span>
@@ -256,7 +256,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="st">"""</span></span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>df_yearly_top_movies <span class="op">=</span> sql(query_read_and_format_data)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>df_yearly_top_movies.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="75">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div>
 
 
@@ -306,7 +306,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="6edca621" class="cell" data-execution_count="4">
+<div id="6ed49e51" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot 1: Scatterplot of runtimes over years</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>p1 <span class="op">=</span> (</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    gg.ggplot(df_yearly_top_movies, gg.aes(x<span class="op">=</span><span class="st">'release_year'</span>, y<span class="op">=</span><span class="st">'runtime_mins'</span>)) <span class="op">+</span></span>
@@ -317,7 +317,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>p1.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-   <div id="HsP1rq"></div>
+   <div id="7Q4Azc"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -374,7 +374,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("HsP1rq");
+           var plotContainer = document.getElementById("7Q4Azc");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -386,7 +386,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="analysis" class="level2">
 <h2 class="anchored" data-anchor-id="analysis">Analysis</h2>
 <p>To simplify the analysis we can consider more recent releases (2022) and compare them to releases from much older timeframe (1990-2000). <br> The runtime distributions for movies in these 2 categories is different although not significantly.</p>
-<div id="4af23510" class="cell" data-execution_count="5">
+<div id="5dc1e9fc" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>base_window <span class="op">=</span> <span class="dv">1990</span>, <span class="dv">2001</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>test_year <span class="op">=</span> <span class="dv">2022</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -411,7 +411,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>p2.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-display">
-   <div id="tzntYX"></div>
+   <div id="exT9rI"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -442,7 +442,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("tzntYX");
+           var plotContainer = document.getElementById("exT9rI");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});
@@ -451,7 +451,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <p>Now we can compare runtimes between two periods. It would have been a straightforward exercise in testing the hypothesis of difference of means using a <em>t-test</em> had the distributions of runtimes been more normally distributed. <br> Since this is not the case, we resort to using bootstrap to compare the difference of means. <br></p>
-<div id="7a1c935b" class="cell" data-execution_count="6">
+<div id="7558fc77" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>variable <span class="op">=</span> <span class="st">"runtime_mins"</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>alpha <span class="op">=</span> <span class="fl">0.05</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -472,9 +472,9 @@ Proportion &gt; 0: 0.97</code></pre>
 </div>
 <p>If we bootstrap the mean of movie times and take the difference between means of release year 2022 from release years 1990-2000, there is evidence that blockbuster movies are getting longer in recent years, and the difference can be up to 20 min. <br></p>
 <p>So on your next visit to the theatre make sure to get some extra popcorn.</p>
-<div id="1c2e974c" class="cell" data-execution_count="7">
+<div id="86398298" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
-   <div id="2ByXE6"></div>
+   <div id="AryID4"></div>
    <script type="text/javascript" data-lets-plot-script="plot">
        (function() {
            var plotSpec={
@@ -517,7 +517,7 @@ Proportion &gt; 0: 0.97</code></pre>
 "data":{
 "x":[15.0,30.0,20.0],
 "y":[0.02,0.04,0.001],
-"label":["proportion of \n samples > 0: 1.0","Null hypothesis rejected: True","mean: 36.72"]
+"label":["proportion of \n samples > 0: 0.97","Null hypothesis rejected: True","mean: 20.0"]
 },
 "mapping":{
 "x":"x",
@@ -529,7 +529,7 @@ Proportion &gt; 0: 0.97</code></pre>
 }],
 "metainfo_list":[]
 };
-           var plotContainer = document.getElementById("2ByXE6");
+           var plotContainer = document.getElementById("AryID4");
            window.letsPlotCall(function() {{
                LetsPlot.buildPlotFromProcessedSpecs(plotSpec, -1, -1, plotContainer);
            }});

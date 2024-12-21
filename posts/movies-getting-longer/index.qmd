@@ -195,6 +195,7 @@ If we bootstrap the mean of movie times and take the difference between means of
 there is evidence that blockbuster movies are getting longer in recent years, and the difference can be up to 20 min. <br/>
 
 So on your next visit to the theatre make sure to get some extra popcorn.
+
 ```{python}
 #| echo: false
 data = {"x": res.bootstrap_distribution}
@@ -206,10 +207,10 @@ vlines = [
 
 labels = [
 {"x": 15, "y": 0.02,
-    "label": f"proportion of \n samples > 0: {round(np.mean(res.bootstrap_distribution[0] > 0), 2)}"},
+    "label": f"proportion of \n samples > 0: {round(np.mean(res.bootstrap_distribution > 0), 2)}"},
 {"x": 30, "y": 0.04,
-    "label": f"Null hypothesis rejected: {(1 - np.mean(res.bootstrap_distribution[0] > 0)) <= alpha}"},
-{"x": 20, "y": 0.001, "label": f"mean: {round(np.mean(res.bootstrap_distribution[0]), 2)}"},
+    "label": f"Null hypothesis rejected: {(1 - np.mean(res.bootstrap_distribution > 0)) <= alpha}"},
+{"x": 20, "y": 0.001, "label": f"mean: {round(np.mean(res.bootstrap_distribution), 0)}"},
 ]
 
 df1 = pd.DataFrame(vlines)
