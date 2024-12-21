@@ -4,3 +4,5 @@ MASS
 faraway
 httpgd
 HistData
+reticulate
+lmtest
