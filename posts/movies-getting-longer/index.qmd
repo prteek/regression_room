@@ -18,8 +18,10 @@ Fueled by the buzz around Christopher Nolan’s *Oppenheimer* being his longest 
 As an exercise in inference this question can be answered with some analysis.
 I fetched top grossing movies in each year from *boxoffice mojo* and movie details from *imdb* and combined them to create the following dataset.
 
-[data](https://raw.githubusercontent.com/prteek/regression_room/posts/movies-getting-longer/movies_dataset.csv)
+[data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/movies-getting-longer/movies_dataset.csv)
 
+
+The code to download data is also in this very same .qmd [file](https://github.com/prteek/regression_room/blob/main/posts/movies-getting-longer/index.qmd)
 ---
 
 ## Data
@@ -29,16 +31,11 @@ I fetched top grossing movies in each year from *boxoffice mojo* and movie detai
 import numpy as np
 import pandas as pd
 from scipy import stats
-import duckdb
 import requests
 from bs4 import BeautifulSoup as BS
 import imdb
 import tqdm
 from joblib import Parallel, delayed
-import lets_plot as gg
-from lets_plot import LetsPlot
-
-LetsPlot.setup_html()
 
 # Function Definitions
 ia = imdb.Cinemagoer()
@@ -93,137 +90,170 @@ def download_data():
 
 # Uncomment below to download data (requires internet access)
 # df_movies = download_data()
-```
-
-
-```{python}
-# Load the dataset
-sql = lambda q: duckdb.sql(q).df()
-query_read_and_format_data = """
-SELECT * FROM read_csv_auto('movies_dataset.csv')
-WHERE runtime_mins IS NOT NULL
-"""
-df_yearly_top_movies = sql(query_read_and_format_data)
-df_yearly_top_movies.head()
+# df_movies.to_csv('movies_dataset.csv', index=False)
 
 ```
 
-```{python}
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(tidyverse))
+setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/movies-getting-longer")
+
+```
+```{r}
+yearly_top_movies = read_delim('movies_dataset.csv',
+ show_col_types = FALSE)
+head(yearly_top_movies)
+
+```
+
+```{r}
 #| echo: false
 # Verify data integrity
-assert df_yearly_top_movies["runtime_mins"].isna().sum() == 0, "Error in runtime parsing"
+stopifnot("Error in runtime parsing" = !(any(is.na(yearly_top_movies))))
 
 # Annotate specific movies for visualization
-annotate = [
-    {"release_year": 2022, "runtime_mins": 192, "title": "Avatar: The Way of Water"},
-    {"release_year": 2019, "runtime_mins": 181, "title": "Avengers: Endgame"},
-]
-df_annotations = pd.DataFrame(annotate)
+annotations <- data.frame(
+  release_year = c(2019, 2019),
+  runtime_mins = c(192, 181),
+  title = c("Avatar: The Way of Water", "Avengers: Endgame")
+)
 
 # Calculate yearly mean runtimes
-mean_df = df_yearly_top_movies.groupby('release_year')['runtime_mins'].mean().reset_index()
+mean_df <- yearly_top_movies %>%
+  group_by(release_year) %>%
+  summarise(runtime_mins = mean(runtime_mins))
 
 ```
 
-
-```{python}
-# Plot 1: Scatterplot of runtimes over years
-p1 = (
-    gg.ggplot(df_yearly_top_movies, gg.aes(x='release_year', y='runtime_mins')) +
-    gg.geom_point(size=5) +
-    gg.geom_text(gg.aes(label='title'), data=df_annotations, color="red", nudge_y=5) +
-    gg.geom_line(gg.aes(y='runtime_mins'), data=mean_df, color="black") +
-    gg.ggtitle('Top Grossing Movies per Year')
-)
-p1.show()
+```{r}
+# Scatterplot of movie runtime over time
+ggplot(yearly_top_movies, aes(x = release_year, y = runtime_mins)) +
+  geom_point() + # Scatter points for movie runtimes
+  geom_text(data = annotations, aes(label = title), color = "red", nudge_y = 5) + # Annotate specific movies
+  geom_line(data = mean_df, aes(y = runtime_mins), color = "brown") + # Line for yearly mean runtimes
+  ggtitle("Top Grossing Movies per Year") +
+  xlab("Release Year") +
+  ylab("Runtime (mins)")
 
 ```
+
 
 ## Analysis
 
-To simplify the analysis we can consider more recent releases (2022) and compare them to releases from much older timeframe (1990-2000). <br/>
-The runtime distributions for movies in these 2 categories is different although not significantly.
+### Comparing recent vs old movies
 
-```{python}
-base_window = 1990, 2001
-test_year = 2022
+To simplify the analysis we can consider more recent releases (2013-2023) and compare them to releases from much older timeframe (1990-2000). <br/>
+The runtime distributions for movies in these 2 categories is different although not significantly (visually).
 
-# We shall create a tidy dataset for further exploration
-query_test = f"""
-select runtime_mins
-, case when release_year={test_year} then '{test_year}'
-else '{base_window[0]}-{base_window[1]-1}'
-end as release_year
-from df_yearly_top_movies
-where (release_year >= {base_window[0]} and release_year < {base_window[1]}) or (release_year={test_year})
-"""
+```{r}
+testset <- yearly_top_movies %>%
+    mutate(
+    label = case_when(
+      release_year >= 2013 ~ "recent",
+      release_year <= 2000 ~ "old",
+      TRUE ~ "other"
+    )) %>% filter(label != "other")
 
-df_test = sql(query_test)
+ggplot(testset, aes(x=runtime_mins, fill=label)) + geom_density(alpha=0.3)
 
-p2 = gg.ggplot(df_test) + \
-    gg.geom_density(
-        gg.aes(x='runtime_mins', fill='release_year'),
-        alpha=0.5,
-        size=0.5
-    )
-
-p2.show()
 ```
 
 Now we can compare runtimes between two periods. It would have been a straightforward exercise in testing the hypothesis of difference of means using a *t-test* had the distributions of runtimes been more normally distributed. <br/>
-Since this is not the case, we resort to using bootstrap to compare the difference of means. <br/>
 
-```{python}
-variable = "runtime_mins"
-alpha = 0.05
+Additionally, the cutoff chosen for *old* (<= 2000) and *recent* (>=2013) are arbitrary. We would ideally want a more comprehensive statement about movie runtimes increasing over the years. <br/>
 
-g1 = sql(f"SELECT {variable} FROM df_yearly_top_movies WHERE release_year < 2001")
-g2 = sql(f"SELECT {variable} FROM df_yearly_top_movies WHERE release_year == 2022")
+Neverthless, as a preliminary (and simple) analysis we can use bootstrap to compare means of runtimes in the above groups.
 
-def difference_of_mean(sample1, sample2):
-    return np.mean(sample2) - np.mean(sample1)
+```{r}
 
-res = stats.bootstrap((g1[variable], g2[variable]), statistic=difference_of_mean, random_state=42)
+library(boot)
 
-print(f"Mean difference of means: {round(np.mean(res.bootstrap_distribution),0)}")
-print(f"Proportion > 0: {round(np.mean(res.bootstrap_distribution > 0),2)}")
+# Define a function to calculate the difference of means
+diff_mean <- function(data, indices) {
+  # Resample the data
+  resampled_data <- data[indices, ]
+
+  # Calculate means for each group
+  mean_group1 <- mean(resampled_data$runtime_mins[resampled_data$label == "old"])
+  mean_group2 <- mean(resampled_data$runtime_mins[resampled_data$label == "recent"])
+
+  # Return the difference of means
+  return(mean_group2 - mean_group1)
+}
+
+set.seed(123)
+bootstrap_results <- boot(data = testset, statistic = diff_mean, R = 1000)
+
+# Print bootstrap results
+print(bootstrap_results)
+
+# Plot bootstrap distribution
+plot(bootstrap_results)
+
+# Calculate confidence interval for the difference of means
+ci <- boot.ci(bootstrap_results, type = "perc")
+print(ci)
 
 ```
 
 
-If we bootstrap the mean of movie times and take the difference between means of release year 2022 from release years 1990-2000,
-there is evidence that blockbuster movies are getting longer in recent years, and the difference can be up to 20 min. <br/>
+If we bootstrap the mean of movie times and take the difference between means of recent release years from old,
+there is evidence that blockbuster movies are getting longer in recent years, and the difference can be up to 10 min on average and can be expected to be between 4 min and 16 min. <br/>
 
-So on your next visit to the theatre make sure to get some extra popcorn.
+So on your next visit to the theatre make sure to get some extra popcorn !!!
 
-```{python}
+### Estimating effect of time
+In the want of better precision in identifying the effect of time on movie runtimes, we can formulate a regression problem and estimate the effect of year.
+
+```{r}
 #| echo: false
-data = {"x": res.bootstrap_distribution}
-df = pd.DataFrame(data)
-
-vlines = [
-{"x_intercept": 0},
-]
-
-labels = [
-{"x": 15, "y": 0.02,
-    "label": f"proportion of \n samples > 0: {round(np.mean(res.bootstrap_distribution > 0), 2)}"},
-{"x": 30, "y": 0.04,
-    "label": f"Null hypothesis rejected: {(1 - np.mean(res.bootstrap_distribution > 0)) <= alpha}"},
-{"x": 20, "y": 0.001, "label": f"mean: {round(np.mean(res.bootstrap_distribution), 0)}"},
-]
-
-df1 = pd.DataFrame(vlines)
-df2 = pd.DataFrame(labels)
-
-p3 = gg.ggplot(df, gg.aes(x='x')) + \
-gg.geom_density() + \
-gg.geom_vline(gg.aes(xintercept='x_intercept'), data=df1, color='black') + \
-gg.geom_text(mapping=gg.aes(x='x', y='y', label='label'), data=df2) + \
-gg.labs(x='Bootstrap difference of means')
-
-p3.show()
+ggplot(yearly_top_movies, aes(x=release_year, y=runtime_mins)) + geom_point() + geom_smooth(method='lm')
 
 ```
+The plot above partly confirms our intuition about the increasing trend of runtime.
+
+```{r}
+lmod <- lm(runtime_mins ~ release_year, yearly_top_movies)
+summary(lmod)
+
+```
+
+The regression above supports the hypothesis that *release_year* has positively contributed to movie runtimes at approximately 0.38 min/year. <br/>
+Considering our previous finding on average between 1995 and 2018 the runtime increased by approx. 10 min. From the regression estimate the increase is 0.3791 * (2018-1995) = 8.7 min. <br/>
+
+We can certainly run some diagnostics to be sure of our model.
+
+```{r}
+#| echo: false
+par(mfrow=c(2,2))
+plot(lmod)
+par(mfrow=c(1,1))
+
+```
+
+The *residuals* appear to have no pattern with fitted values and also have fairly constant variance. There are no significantly high leverage points or outliers. <br/>
+However, the errors are not quite normally distributed. <br/>
+This is however, ignored by relying on large sample size and the fact that other diagnostics are fine. <br/>
+But, there may be some degree of autocorrelation among residuals due to the fact that we're working with timeseries data.
+We can test for this autocorrelation and handle it if necessary.
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(lmtest))
+
+res <- residuals(lmod)
+print(c("Auto-correlation among residuals: ", round(cor(res[-1], res[-length(res)]), 2)))
+
+dwtest(runtime_mins ~ release_year, data=yearly_top_movies)
+
+```
+
+There doesn't appear to be significant autocorrelation and other model diagnotics appear to be fine.
+
+## Conclusion
+There has been a rather steady increase of 0.38 min/year (on average) in movie runtimes as per the dataset we have used.
+In effect expect to be seated for about 10 more minutes in your favourite blockbuster compared to when you went to movies as a kid.
 
 ---
