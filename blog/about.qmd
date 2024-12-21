@@ -1,0 +1,13 @@
+---
+title: "Prateek"
+image: profile.jpg
+about:
+  template: jolla
+  links:
+    - icon: github
+      text: Github
+      href: https://github.com/prteek/
+
+---
+
+I am a Lead Data Scientist at Bricklane Technologies. When not dabbling in data analysis, I enjoy spending time reading or running.

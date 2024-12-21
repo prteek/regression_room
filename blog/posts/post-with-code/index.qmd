@@ -1,0 +1,14 @@
+---
+title: "Post With Code"
+author: "Prateek"
+date: "2024-12-21"
+categories: [news, code, analysis]
+image: "image.jpg"
+---
+
+This is a post with executable code.
+
+```{r}
+plot(density(rnorm(100)))
+
+```

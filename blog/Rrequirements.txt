@@ -1,0 +1,6 @@
+tidyverse
+renv
+MASS
+faraway
+httpgd
+HistData
