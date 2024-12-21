@@ -1,10 +1,10 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Regression Room",
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "Prateek",
     "section": "",
-    "text": "Post With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nDec 21, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nDec 18, 2024\n\n\nPrateek\n\n\n\n\n\n\nNo matching items"
+    "text": "I am a Lead Data Scientist at Bricklane Technologies. When not dabbling in data analysis, I enjoy spending time reading or running."
   },
   {
     "objectID": "posts/welcome/index.html",
@@ -21,10 +21,10 @@
     "text": "This is a post with executable code.\n\nplot(density(rnorm(100)))"
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "Prateek",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Regression Room",
     "section": "",
-    "text": "I am a Lead Data Scientist at Bricklane Technologies. When not dabbling in data analysis, I enjoy spending time reading or running."
+    "text": "Post With Code\n\n\n\n\n\n\nnews\n\n\ncode\n\n\nanalysis\n\n\n\n\n\n\n\n\n\nDec 21, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nWelcome To My Blog\n\n\n\n\n\n\nnews\n\n\n\n\n\n\n\n\n\nDec 18, 2024\n\n\nPrateek\n\n\n\n\n\n\nNo matching items"
   }
 ]
