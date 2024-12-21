@@ -1,0 +1,228 @@
+---
+title: "Are blockbusters getting (reely) longer ?"
+author: "Prateek"
+date: "2023-07-21"
+categories: [analysis, code]
+image: "movie_coupon.jpg"
+toc: true
+---
+
+# Introduction
+
+I recently came across an article posing a question:
+
+> Are blockbusters getting (reely) longer?
+
+Fueled by the buzz around Christopher Nolan’s *Oppenheimer* being his longest movie (just over 3 hours), I decided to explore this question using publicly available data.
+
+As an exercise in inference this question can be answered with some analysis.
+I fetched top grossing movies in each year from *boxoffice mojo* and movie details from *imdb* and combined them to create the following dataset.
+
+[data](https://raw.githubusercontent.com/prteek/regression_room/posts/movies-getting-longer/movies_dataset.csv)
+
+---
+
+## Data
+
+```{python}
+#| echo: false
+import numpy as np
+import pandas as pd
+from scipy import stats
+import duckdb
+import requests
+from bs4 import BeautifulSoup as BS
+import imdb
+import tqdm
+from joblib import Parallel, delayed
+import lets_plot as gg
+from lets_plot import LetsPlot
+
+LetsPlot.setup_html()
+
+# Function Definitions
+ia = imdb.Cinemagoer()
+
+def get_year_matched_movie_from_title(title: str, year: int):
+    """Match titles with their release year in IMDb."""
+    movies = ia.search_movie(title)
+    for movie in movies:
+        if ia.get_movie_main(movie.getID())["data"]["year"] == year:
+            return movie
+    return None
+
+def get_info_from_movie(movie):
+    """Extract runtime and year from an IMDb movie object."""
+    run_time = ia.get_movie_main(movie.getID())["data"]["runtimes"][0]
+    year = ia.get_movie_main(movie.getID())["data"]["year"]
+    return {"release_year": year, "runtime_mins": int(run_time)}
+
+def get_info_for_title(title, year):
+    """Package functionality for parallelism."""
+    movie = get_year_matched_movie_from_title(title, year)
+    if movie is not None:
+        title_info = get_info_from_movie(movie)
+    else:
+        title_info = {"release_year": year}
+    title_info["title"] = title
+    return title_info
+
+def download_data():
+    """Scrape top-grossing movies from Box Office Mojo and fetch details from IMDb."""
+    years = range(1990, 2024)
+    yearly_top_grossing_url = "https://www.boxofficemojo.com/year/world/{year}/"
+    top_n = 10
+    all_titles = []
+
+    pbar = tqdm.tqdm(years)
+    for year in pbar:
+        pbar.set_description(str(year))
+        page = requests.get(yearly_top_grossing_url.format(year=year))
+        soup = BS(page.content, "html.parser")
+        titles = soup.find_all("td", class_="a-text-left mojo-field-type-release_group")
+
+        delayed_year_results = [
+            delayed(get_info_for_title)(t.select("a")[0].string, year) for t in titles[:top_n]
+        ]
+        year_results = Parallel(n_jobs=top_n)(delayed_year_results)
+        all_titles.extend(year_results)
+
+    df_movies = pd.DataFrame(all_titles)
+    df_movies.to_csv("movies_dataset.csv", index=False)
+    return df_movies
+
+# Uncomment below to download data (requires internet access)
+# df_movies = download_data()
+```
+
+
+```{python}
+# Load the dataset
+sql = lambda q: duckdb.sql(q).df()
+query_read_and_format_data = """
+SELECT * FROM read_csv_auto('movies_dataset.csv')
+WHERE runtime_mins IS NOT NULL
+"""
+df_yearly_top_movies = sql(query_read_and_format_data)
+df_yearly_top_movies.head()
+
+```
+
+```{python}
+#| echo: false
+# Verify data integrity
+assert df_yearly_top_movies["runtime_mins"].isna().sum() == 0, "Error in runtime parsing"
+
+# Annotate specific movies for visualization
+annotate = [
+    {"release_year": 2022, "runtime_mins": 192, "title": "Avatar: The Way of Water"},
+    {"release_year": 2019, "runtime_mins": 181, "title": "Avengers: Endgame"},
+]
+df_annotations = pd.DataFrame(annotate)
+
+# Calculate yearly mean runtimes
+mean_df = df_yearly_top_movies.groupby('release_year')['runtime_mins'].mean().reset_index()
+
+```
+
+
+```{python}
+# Plot 1: Scatterplot of runtimes over years
+p1 = (
+    gg.ggplot(df_yearly_top_movies, gg.aes(x='release_year', y='runtime_mins')) +
+    gg.geom_point(size=5) +
+    gg.geom_text(gg.aes(label='title'), data=df_annotations, color="red", nudge_y=5) +
+    gg.geom_line(gg.aes(y='runtime_mins'), data=mean_df, color="black") +
+    gg.ggtitle('Top Grossing Movies per Year')
+)
+p1.show()
+
+```
+
+## Analysis
+
+To simplify the analysis we can consider more recent releases (2022) and compare them to releases from much older timeframe (1990-2000). <br/>
+The runtime distributions for movies in these 2 categories is different although not significantly.
+
+```{python}
+base_window = 1990, 2001
+test_year = 2022
+
+# We shall create a tidy dataset for further exploration
+query_test = f"""
+select runtime_mins
+, case when release_year={test_year} then '{test_year}'
+else '{base_window[0]}-{base_window[1]-1}'
+end as release_year
+from df_yearly_top_movies
+where (release_year >= {base_window[0]} and release_year < {base_window[1]}) or (release_year={test_year})
+"""
+
+df_test = sql(query_test)
+
+p2 = gg.ggplot(df_test) + \
+    gg.geom_density(
+        gg.aes(x='runtime_mins', fill='release_year'),
+        alpha=0.5,
+        size=0.5
+    )
+
+p2.show()
+```
+
+Now we can compare runtimes between two periods. It would have been a straightforward exercise in testing the hypothesis of difference of means using a *t-test* had the distributions of runtimes been more normally distributed. <br/>
+Since this is not the case, we resort to using bootstrap to compare the difference of means. <br/>
+
+```{python}
+variable = "runtime_mins"
+alpha = 0.05
+
+g1 = sql(f"SELECT {variable} FROM df_yearly_top_movies WHERE release_year < 2001")
+g2 = sql(f"SELECT {variable} FROM df_yearly_top_movies WHERE release_year == 2022")
+
+def difference_of_mean(sample1, sample2):
+    return np.mean(sample2) - np.mean(sample1)
+
+res = stats.bootstrap((g1[variable], g2[variable]), statistic=difference_of_mean, random_state=42)
+
+print(f"Mean difference of means: {round(np.mean(res.bootstrap_distribution),0)}")
+print(f"Proportion > 0: {round(np.mean(res.bootstrap_distribution > 0),2)}")
+
+```
+
+
+If we bootstrap the mean of movie times and take the difference between means of release year 2022 from release years 1990-2000,
+there is evidence that blockbuster movies are getting longer in recent years, and the difference can be up to 20 min. <br/>
+
+So on your next visit to the theatre make sure to get some extra popcorn.
+```{python}
+#| echo: false
+data = {"x": res.bootstrap_distribution}
+df = pd.DataFrame(data)
+
+vlines = [
+{"x_intercept": 0},
+]
+
+labels = [
+{"x": 15, "y": 0.02,
+    "label": f"proportion of \n samples > 0: {round(np.mean(res.bootstrap_distribution[0] > 0), 2)}"},
+{"x": 30, "y": 0.04,
+    "label": f"Null hypothesis rejected: {(1 - np.mean(res.bootstrap_distribution[0] > 0)) <= alpha}"},
+{"x": 20, "y": 0.001, "label": f"mean: {round(np.mean(res.bootstrap_distribution[0]), 2)}"},
+]
+
+df1 = pd.DataFrame(vlines)
+df2 = pd.DataFrame(labels)
+
+p3 = gg.ggplot(df, gg.aes(x='x')) + \
+gg.geom_density() + \
+gg.geom_vline(gg.aes(xintercept='x_intercept'), data=df1, color='black') + \
+gg.geom_text(mapping=gg.aes(x='x', y='y', label='label'), data=df2) + \
+gg.labs(x='Bootstrap difference of means')
+
+p3.show()
+
+```
+
+---
