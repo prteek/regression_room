@@ -7,7 +7,7 @@ image: "movie_coupon.jpg"
 toc: true
 ---
 
-# Introduction
+## Introduction
 
 I recently came across an article posing a question:
 
