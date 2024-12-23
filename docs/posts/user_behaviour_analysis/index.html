@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Prateek">
-<meta name="dcterms.date" content="2024-10-21">
+<meta name="dcterms.date" content="2024-12-18">
 
 <title>Blog - User behaviour analysis</title>
 <style>
@@ -21,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -114,6 +148,7 @@ ul.task-list li input[type="checkbox"] {
                                 <div class="quarto-categories">
                 <div class="quarto-category">analysis</div>
                 <div class="quarto-category">code</div>
+                <div class="quarto-category">markov-chain</div>
               </div>
                   </div>
   </div>
@@ -131,7 +166,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">October 21, 2024</p>
+        <p class="date">December 18, 2024</p>
       </div>
     </div>
     
@@ -148,6 +183,11 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
+  <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a>
+  <ul class="collapse">
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -158,10 +198,98 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p><em>Duolingo</em> have been making waves with their customer success stories and strong (and growing) user base. They seem to be taking their metrics seriously and have done a great job explaining their approach to understanding user behaviour in this <a href="https://blog.duolingo.com/growth-model-duolingo/">blog post</a>. <br> In this blog, I wanted to apply their methodology and use it for predicting future customer behaviours.</p>
+</section>
+<section id="methodology" class="level2">
+<h2 class="anchored" data-anchor-id="methodology">Methodology</h2>
+<p>At day d (d = 1, 2, … ) of a user’s lifetime, the user can be in one of the following 7 (mutually-exclusive) states: <br></p>
+<ul>
+<li>new</li>
+<li>current</li>
+<li>reactivated</li>
+<li>resurrected</li>
+<li>at_risk_wau (weekly active user: active in last 7 days)</li>
+<li>at_risk_mau (monthly active user: active in last 30 days but not last 7 days)</li>
+<li>dormant</li>
+</ul>
+<p>These states are defined according to indicators of whether a user was active today, in the last 7 days, or in the last 30 days. A brief overview of how these states are related is below:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="states.png" class="img-fluid figure-img"></p>
+<figcaption>User states and transitions</figcaption>
+</figure>
+</div>
+<p>In keeping with the definition chart above, the next step is to consider user behaviour as a <a href="https://en.wikipedia.org/wiki/Markov_chain">Markov chain</a>. <br> Let M be a transition matrix associated with this Markov process: m(i, j) = P(s_j | s_i) are the probabilities that a user moves to state s_j right after being at state s_i. The matrix M is learned from the historical data.</p>
+<p>Assuming that user behavior is stationary (independent of time), the matrix M fully describes the states of all users in the future.</p>
+<p>Suppose that the vector u_0 of length 7 contains the counts of users in certain states on a given day (say day 0). According to the Markov model, on the next day (day 1), we expect to have the following number of users (u_1) in respective states:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="count_estimation.png" class="img-fluid figure-img"></p>
+<figcaption>State transition counts estimation</figcaption>
+</figure>
+</div>
+<p>Applying this multiplication recursively, we can derive the number of users in any states on any arbitrary day t &gt; 0 in the future (call this vector u_t).</p>
+<p>Now, having u_t calculated, we can determine DAU, WAU and MAU values on day t:</p>
+<ul>
+<li>DAU_t = #New_t + #Current_t + #Reactivated_t + #Resurrected_t</li>
+<li>WAU_t = DAU_t + #AtRiskWau_t</li>
+<li>MAU_t = DAU_t + #AtRiskWau_t + #AtRiskMau_t</li>
+</ul>
+<p>Finally, here’s the algorithm outline:</p>
+<ol type="1">
+<li>For each prediction day t = 1, …, T, calculate the expected number of new users #New_1, …, #New_T.</li>
+<li>For each lifetime day of each user, assign one of the 7 states.</li>
+<li>Calculate the transition matrix M from the historical data.</li>
+<li>Calculate initial state counts u_0 corresponding to day t=0.</li>
+<li>Recursively calculate u_{t+1} = M^t * u_0.</li>
+<li>Calculate DAU, WAU, and MAU for each prediction day t = 1, …, T.</li>
+</ol>
+</section>
+<section id="implementation" class="level2">
+<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
+<section id="data" class="level3">
+<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>We use a simulated dataset based on historical data of a SaaS app. <br> The data is available <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv">here</a> and contains three columns: <strong>user_id, date, and registration_date</strong>.</p>
+<p>Each record indicates a day when a user was active. <br></p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dau_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"dau_data.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(dau_data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 3
+  user_id                              date       registration_date
+  &lt;chr&gt;                                &lt;date&gt;     &lt;date&gt;           
+1 d8c465ab-e9fd-5edd-9e4e-c77094700cb5 2020-10-01 2020-08-25       
+2 269b7f13-a509-5174-85cb-95a8f7b932e8 2020-10-01 2020-08-25       
+3 bfeac474-5b66-566f-8654-262bb79c873e 2020-10-01 2020-05-31       
+4 d32fcac5-122c-5463-8aea-01b39b9ad0bb 2020-10-01 2020-09-30       
+5 c1ece677-e643-5bb3-8701-f1c59a0bf4cd 2020-10-01 2020-09-05       
+6 ba6750c9-9b60-58dc-8d40-504e7375249e 2020-10-01 2020-09-29       </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Total users: 51480</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Date range: 2020-10-01 to 2023-10-31</code></pre>
+</div>
+</div>
+<p>This is how DAU timeseries looks</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<hr>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

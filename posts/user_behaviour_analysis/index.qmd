@@ -1,10 +1,92 @@
 ---
 title: "User behaviour analysis"
 author: "Prateek"
-date: "2024-10-21"
-categories: [analysis, code]
-image: "hourglass.jpg"
+date: "2024-12-18"
+categories: [analysis, code, markov-chain]
 toc: true
 ---
 
-# Introduction
+## Introduction
+
+*Duolingo* have been making waves with their customer success stories and strong (and growing) user base. They seem to be taking their metrics seriously and have done a great job explaining their approach to understanding user behaviour in this [blog post](https://blog.duolingo.com/growth-model-duolingo/). <br/> In this blog, I wanted to apply their methodology and use it for predicting future customer behaviours.
+
+## Methodology
+
+At day d (d = 1, 2, … ) of a user’s lifetime, the user can be in one of the following 7 (mutually-exclusive) states: <br/>
+
+-   new
+-   current
+-   reactivated
+-   resurrected
+-   at_risk_wau (weekly active user: active in last 7 days)
+-   at_risk_mau (monthly active user: active in last 30 days but not last 7 days)
+-   dormant
+
+These states are defined according to indicators of whether a user was active today, in the last 7 days, or in the last 30 days. A brief overview of how these states are related is below:
+
+![User states and transitions](states.png){fig-align="center"}
+
+In keeping with the definition chart above, the next step is to consider user behaviour as a [Markov chain](https://en.wikipedia.org/wiki/Markov_chain). <br/> Let M be a transition matrix associated with this Markov process: m(i, j) = P(s_j | s_i) are the probabilities that a user moves to state s_j right after being at state s_i. The matrix M is learned from the historical data.
+
+Assuming that user behavior is stationary (independent of time), the matrix M fully describes the states of all users in the future.
+
+Suppose that the vector u_0 of length 7 contains the counts of users in certain states on a given day (say day 0). According to the Markov model, on the next day (day 1), we expect to have the following number of users (u_1) in respective states:
+
+![State transition counts estimation](count_estimation.png){fig-align="center"}
+
+Applying this multiplication recursively, we can derive the number of users in any states on any arbitrary day t > 0 in the future (call this vector u_t).
+
+Now, having u_t calculated, we can determine DAU, WAU and MAU values on day t:
+
+* DAU_t = #New_t + #Current_t + #Reactivated_t + #Resurrected_t
+* WAU_t = DAU_t + #AtRiskWau_t
+* MAU_t = DAU_t + #AtRiskWau_t + #AtRiskMau_t
+
+Finally, here’s the algorithm outline:
+
+1. For each prediction day t = 1, …, T, calculate the expected number of new users #New_1, …, #New_T.
+2. For each lifetime day of each user, assign one of the 7 states.
+3. Calculate the transition matrix M from the historical data.
+4. Calculate initial state counts u_0 corresponding to day t=0.
+5. Recursively calculate u_{t+1} = M^t * u_0.
+6. Calculate DAU, WAU, and MAU for each prediction day t = 1, …, T.
+
+## Implementation
+
+### Data
+
+We use a simulated dataset based on historical data of a SaaS app. <br/>
+The data is available [here](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
+
+Each record indicates a day when a user was active. <br/>
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(tidyverse))
+setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
+
+```
+
+```{r}
+dau_data <- read_csv("dau_data.csv", show_col_types = FALSE)
+head(dau_data)
+
+```
+
+```{r}
+#| echo: false
+library(glue)
+cat(glue("Total users: {length(unique(dau_data$user_id))}"))
+cat(glue("Date range: {min(dau_data$date)} to {max(dau_data$date)}"))
+
+```
+
+This is how DAU timeseries looks
+
+```{r}
+#| echo: false
+ggplot(dau_data %>% group_by(date) %>% summarise(DAU=n())) + geom_line(aes(x=date, y=DAU)) + ggtitle('DAU timeseries')
+
+```
+
+---
