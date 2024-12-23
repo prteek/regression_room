@@ -181,8 +181,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
-  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a>
   <ul class="collapse">
@@ -190,7 +189,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#estimating-effect-of-time" id="toc-estimating-effect-of-time" class="nav-link" data-scroll-target="#estimating-effect-of-time">Estimating effect of time</a></li>
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -201,17 +199,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="introduction" class="level1">
-<h1>Introduction</h1>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>I recently came across an article posing a question:</p>
 <blockquote class="blockquote">
 <p>Are blockbusters getting (reely) longer?</p>
 </blockquote>
 <p>Fueled by the buzz around Christopher Nolan’s <em>Oppenheimer</em> being his longest movie (just over 3 hours), I decided to explore this question using publicly available data.</p>
 <p>As an exercise in inference this question can be answered with some analysis. I fetched top grossing movies in each year from <em>boxoffice mojo</em> and movie details from <em>imdb</em> and combined them to create the following dataset.</p>
-<p><a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/movies-getting-longer/movies_dataset.csv">data</a></p>
-<p>The code to download data is also in this very same .qmd <a href="https://github.com/prteek/regression_room/blob/main/posts/movies-getting-longer/index.qmd">file</a></p>
+<p><a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/movies_getting_longer/movies_dataset.csv">data</a></p>
+<p>The code to download data is also in this very same .qmd <a href="https://github.com/prteek/regression_room/blob/main/posts/movies_getting_longer/index.qmd">file</a></p>
 <hr>
+</section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <div class="cell">
@@ -399,7 +398,7 @@ F-statistic: 7.852 on 1 and 335 DF,  p-value: 0.005372</code></pre>
 </div>
 </div>
 </div>
-<p>The <em>Box-Cox</em> transformation check above hints that there may be some benefit if we used log-transformation (since lambda approximately 0). This thred does not materialise into anything meaningful as upon transformation, the diagnostics do not change materially and the effect size of <em>release_year</em> is practically the same (0.32% per year, 0.38 min/year on base of 119 min). So we will not use any transformation in our model.</p>
+<p>The <em>Box-Cox</em> transformation check above hints that there may be some benefit if we used log-transformation (since lambda approximately 0). This thread does not materialise into anything meaningful as upon transformation, the diagnostics do not change materially and the effect size of <em>release_year</em> is practically the same (0.32% per year, 0.38 min/year on base of 119 min). So we will not use any transformation in our model.</p>
 <p>There may also be some degree of autocorrelation among residuals due to the fact that we’re working with timeseries data. We can test for this autocorrelation and handle it if necessary.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
@@ -423,7 +422,6 @@ alternative hypothesis: true autocorrelation is greater than 0</code></pre>
 <hr>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
