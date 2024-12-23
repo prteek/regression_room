@@ -18,10 +18,10 @@ Fueled by the buzz around Christopher Nolan’s *Oppenheimer* being his longest 
 As an exercise in inference this question can be answered with some analysis.
 I fetched top grossing movies in each year from *boxoffice mojo* and movie details from *imdb* and combined them to create the following dataset.
 
-[data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/movies-getting-longer/movies_dataset.csv)
+[data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/movies_getting_longer/movies_dataset.csv)
 
 
-The code to download data is also in this very same .qmd [file](https://github.com/prteek/regression_room/blob/main/posts/movies-getting-longer/index.qmd)
+The code to download data is also in this very same .qmd [file](https://github.com/prteek/regression_room/blob/main/posts/movies_getting_longer/index.qmd)
 ---
 
 ## Data
