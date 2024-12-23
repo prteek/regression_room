@@ -156,13 +156,13 @@ new_dates$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
 new_dates$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
 
 p1 <- ggplot(new_users) +
-    geom_point(aes(x=date, y=new_user_count)) +
-    geom_line(aes(x=date, y=predicted), colour='brown', linewidth = 1) +
-    geom_line(data=new_dates, aes(x=date, y=predicted), colour='red', linewidth = 1) +
+    geom_point(aes(x=date, y=new_user_count), alpha=0.5, size=0.5) +
+    geom_line(aes(x=date, y=predicted), colour='brown', alpha=0.5) +
+    geom_line(data=new_dates, aes(x=date, y=predicted), colour='red', alpha=0.5) +
     ggtitle('New user count timeseries')
 
 p2 <- ggplot(new_users %>% filter(date >= as.Date('2023-07-01'))) +
-    geom_point(aes(x=date, y=new_user_count)) +
+    geom_point(aes(x=date, y=new_user_count), alpha=0.5, size=0.8) +
     geom_line(aes(x=date, y=predicted), colour='brown') +
     geom_ribbon(aes(x=date, ymin=lower_ci, ymax=upper_ci),
               alpha = 0.3, fill = "black") +  # Confidence interval
