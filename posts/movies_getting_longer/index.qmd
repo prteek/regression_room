@@ -98,7 +98,7 @@ def download_data():
 ```{r}
 #| echo: false
 suppressPackageStartupMessages(library(tidyverse))
-setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/movies-getting-longer")
+setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/movies_getting_longer")
 
 ```
 ```{r}

@@ -1,0 +1,10 @@
+---
+title: "User behaviour analysis"
+author: "Prateek"
+date: "2024-10-21"
+categories: [analysis, code]
+image: "hourglass.jpg"
+toc: true
+---
+
+# Introduction
