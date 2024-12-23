@@ -243,7 +243,7 @@ suppressPackageStartupMessages(library(MASS))
 boxcox(lmod, lambda=seq(-1,1,by=0.1))
 
 ```
-The *Box-Cox* transformation check above hints that there may be some benefit if we used log-transformation (since lambda approximately 0). This thred does not materialise into anything meaningful as upon transformation, the diagnostics do not change materially and the effect size of *release_year* is practically the same (0.32% per year, 0.38 min/year on base of 119 min). So we will not use any transformation in our model.
+The *Box-Cox* transformation check above hints that there may be some benefit if we used log-transformation (since lambda approximately 0). This thread does not materialise into anything meaningful as upon transformation, the diagnostics do not change materially and the effect size of *release_year* is practically the same (0.32% per year, 0.38 min/year on base of 119 min). So we will not use any transformation in our model.
 
 There may also be some degree of autocorrelation among residuals due to the fact that we're working with timeseries data.
 We can test for this autocorrelation and handle it if necessary.
