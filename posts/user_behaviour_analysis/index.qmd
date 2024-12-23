@@ -102,10 +102,10 @@ ggplot(dau_data %>%
 
 ### Future new user count model
 
-To even begin thinking about transitions in a future time we first need to acknowledge the fact that new user counts will be a significant missing piece from the analysis. <br/>
-To get around this limitation, we shall first build a new user prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).
+To even begin thinking about transitions on a future date, we first need to acknowledge the fact that new user counts will be a significant missing piece of information in the analysis. <br/>
+To get around this limitation, we shall first build a new user count prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).
 
-The information on new users on any given date is inherent in *registration_date* in the data. We start here
+The information on new users on any given date is inherent in *registration_date* in the data.
 
 ```{r}
 new_users <- dau_data %>%
