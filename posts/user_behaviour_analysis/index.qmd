@@ -12,6 +12,9 @@ toc: true
 
 ## Methodology
 
+First we shall model the process as a Markov chain to see how well the approach predicts future user counts. <br/>
+Subsequently, to validate MC approach and rethink the problem setup in want of simplification, we shall look to model the time-series as a regression problem. We shall do this respecting the mechanics of transition and see how far this can get us in terms of analysing and controlling the process.
+
 At day d (d = 1, 2, … ) of a user’s lifetime, the user can be in one of the following 7 (mutually-exclusive) states: <br/>
 
 -   new
@@ -63,6 +66,11 @@ Each record indicates a day when a user was active. <br/>
 ```{r}
 #| echo: false
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(splines))
+suppressPackageStartupMessages(library(MASS))
+suppressPackageStartupMessages(library(patchwork))
+
 setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
 
 ```
@@ -85,8 +93,90 @@ This is how DAU timeseries looks
 
 ```{r}
 #| echo: false
-ggplot(dau_data %>% group_by(date) %>% summarise(DAU=n())) + geom_line(aes(x=date, y=DAU)) + ggtitle('DAU timeseries')
+ggplot(dau_data %>%
+        group_by(date) %>%
+        summarise(DAU=n())
+        ) + geom_line(aes(x=date, y=DAU)) + ggtitle('DAU timeseries')
 
 ```
+
+### Future new user count model
+
+To even begin thinking about transitions in a future time we first need to acknowledge the fact that new user counts will be a significant missing piece from the analysis. <br/>
+To get around this limitation, we shall first build a new user prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).
+
+The information on new users on any given date is inherent in *registration_date* in the data. We start here
+
+```{r}
+new_users <- dau_data %>%
+                filter(date==registration_date) %>%
+                group_by(date) %>%
+                summarise(new_user_count=n()) %>%
+                mutate(
+                    year = year(date),
+                    week_of_year = isoweek(date),  # ISO 8601 week (Monday starts the week)
+                    month = as.factor(month(date, label = TRUE, abbr = TRUE)),  # Month as abbreviated name
+                    day_of_week = wday(date)
+
+                    )
+
+lmod <- glm.nb(new_user_count ~ year * bs(week_of_year,4) + month + day_of_week , data=new_users)
+
+# summary(lmod)
+
+```
+After some experimentation, the model setup to predict future counts of new users is as above. <br/>
+The counts are assumed Poisson but with a higher variance than normal due to spikes in the data and hence a *negative binomial* model has been used. <br/>
+It was imperative that we used a *robust* version of GLM to be able to get relatively constant variance of errors, that were being caused due to outliers in user count towards beginning of every year. <br/>
+The model appears to be doing a satisfactory job of predicting counts of new users and we consider this acceptable for further analysis.
+
+```{r}
+#| echo: false
+
+# Define prediction start and end dates
+start_date <- as.Date("2023-11-01")
+end_date <- as.Date("2024-12-01")
+
+new_dates <- tibble(date = seq(start_date, end_date, by='day')) %>%
+                mutate(
+                    year = year(date),
+                    week_of_year = isoweek(date),  # ISO 8601 week (Monday starts the week)
+                    month = as.factor(month(date, label = TRUE, abbr = TRUE)),  # Month as abbreviated name
+                    day_of_week = wday(date)
+                    )
+
+predictions <- predict(lmod, newdata=new_users, type = "link", se.fit=TRUE)
+new_users$predicted <- fitted(lmod)
+new_users$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
+new_users$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
+
+predictions <- predict(lmod, newdata=new_dates, type = "link", se.fit=TRUE)
+new_dates$predicted <- exp(predictions$fit)
+new_dates$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
+new_dates$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
+
+p1 <- ggplot(new_users) +
+    geom_point(aes(x=date, y=new_user_count)) +
+    geom_line(aes(x=date, y=predicted), colour='brown', linewidth = 1) +
+    geom_line(data=new_dates, aes(x=date, y=predicted), colour='red', linewidth = 1) +
+    ggtitle('New user count timeseries')
+
+p2 <- ggplot(new_users %>% filter(date >= as.Date('2023-07-01'))) +
+    geom_point(aes(x=date, y=new_user_count)) +
+    geom_line(aes(x=date, y=predicted), colour='brown') +
+    geom_ribbon(aes(x=date, ymin=lower_ci, ymax=upper_ci),
+              alpha = 0.3, fill = "black") +  # Confidence interval
+    geom_line(data=new_dates %>% filter(date < as.Date('2024-01-01')) , aes(x=date, y=predicted), colour='red') +
+    geom_ribbon(data=new_dates %>% filter(date < as.Date('2024-01-01')), aes(x=date, ymin=lower_ci, ymax=upper_ci),
+              alpha = 0.3, fill = "black") +
+    ggtitle('Confidence bounds of prediction')
+
+p1 + p2
+
+```
+
+### Assigning states
+
+
 
 ---

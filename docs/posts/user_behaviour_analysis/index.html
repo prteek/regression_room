@@ -187,6 +187,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a>
   <ul class="collapse">
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#future-new-user-count-model" id="toc-future-new-user-count-model" class="nav-link" data-scroll-target="#future-new-user-count-model">Future new user count model</a></li>
+  <li><a href="#assigning-states" id="toc-assigning-states" class="nav-link" data-scroll-target="#assigning-states">Assigning states</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -204,6 +206,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="methodology" class="level2">
 <h2 class="anchored" data-anchor-id="methodology">Methodology</h2>
+<p>First we shall model the process as a Markov chain to see how well the approach predicts future user counts. <br> Subsequently, to validate MC approach and rethink the problem setup in want of simplification, we shall look to model the time-series as a regression problem. We shall do this respecting the mechanics of transition and see how far this can get us in terms of analysing and controlling the process.</p>
 <p>At day d (d = 1, 2, … ) of a user’s lifetime, the user can be in one of the following 7 (mutually-exclusive) states: <br></p>
 <ul>
 <li>new</li>
@@ -286,6 +289,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
+</section>
+<section id="future-new-user-count-model" class="level3">
+<h3 class="anchored" data-anchor-id="future-new-user-count-model">Future new user count model</h3>
+<p>To even begin thinking about transitions in a future time we first need to acknowledge the fact that new user counts will be a significant missing piece from the analysis. <br> To get around this limitation, we shall first build a new user prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).</p>
+<p>The information on new users on any given date is inherent in <em>registration_date</em> in the data. We start here</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>new_users <span class="ot">&lt;-</span> dau_data <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>                <span class="fu">filter</span>(date<span class="sc">==</span>registration_date) <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                <span class="fu">group_by</span>(date) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                <span class="fu">summarise</span>(<span class="at">new_user_count=</span><span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                <span class="fu">mutate</span>(</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                    <span class="at">year =</span> <span class="fu">year</span>(date),</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>                    <span class="at">week_of_year =</span> <span class="fu">isoweek</span>(date),  <span class="co"># ISO 8601 week (Monday starts the week)</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>                    <span class="at">month =</span> <span class="fu">as.factor</span>(<span class="fu">month</span>(date, <span class="at">label =</span> <span class="cn">TRUE</span>, <span class="at">abbr =</span> <span class="cn">TRUE</span>)),  <span class="co"># Month as abbreviated name</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>                    <span class="at">day_of_week =</span> <span class="fu">wday</span>(date)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>                    )</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>lmod <span class="ot">&lt;-</span> <span class="fu">glm.nb</span>(new_user_count <span class="sc">~</span> year <span class="sc">*</span> <span class="fu">bs</span>(week_of_year,<span class="dv">4</span>) <span class="sc">+</span> month <span class="sc">+</span> day_of_week , <span class="at">data=</span>new_users)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co"># summary(lmod)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>After some experimentation, the model setup to predict future counts of new users is as above. <br> The counts are assumed Poisson but with a higher variance than normal due to spikes in the data and hence a <em>negative binomial</em> model has been used. <br> It was imperative that we used a <em>robust</em> version of GLM to be able to get relatively constant variance of errors, that were being caused due to outliers in user count towards beginning of every year.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="assigning-states" class="level3">
+<h3 class="anchored" data-anchor-id="assigning-states">Assigning states</h3>
 <hr>
 
 
