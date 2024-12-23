@@ -6,3 +6,4 @@ httpgd
 HistData
 reticulate
 lmtest
+patchwork
