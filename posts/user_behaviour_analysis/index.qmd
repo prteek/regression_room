@@ -80,6 +80,7 @@ suppressPackageStartupMessages(library(lubridate))
 suppressPackageStartupMessages(library(splines))
 suppressPackageStartupMessages(library(MASS))
 suppressPackageStartupMessages(library(patchwork))
+suppressPackageStartupMessages(library(knitr))
 
 setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
 
@@ -87,7 +88,7 @@ setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behav
 
 ```{r}
 dau_data <- read_csv("dau_data.csv", show_col_types = FALSE)
-head(dau_data)
+kable(head(dau_data))
 
 ```
 
@@ -141,10 +142,10 @@ After some experimentation, the model setup to predict future counts of new user
 #| echo: false
 
 # Define prediction start and end dates
-start_date <- as.Date("2023-11-01")
-end_date <- as.Date("2024-12-01")
+prediction_start_date <- as.Date("2023-11-01")
+prediction_end_date <- as.Date("2024-12-01")
 
-new_dates <- tibble(date = seq(start_date, end_date, by='day')) %>%
+new_dates <- tibble(date = seq(prediction_start_date, prediction_end_date, by='day')) %>%
                 mutate(
                     year = year(date),
                     week_of_year = isoweek(date),  # ISO 8601 week (Monday starts the week)
@@ -202,11 +203,16 @@ we’d like to get a list like this:
 | ...     | ...        | ...       | ...               |
 | 1234567 | 2023-10-31 | FALSE     | 2023-01-01        |
 
+And from here, finally estimate states for each user_id, corresponding to each day in the data.
+
+The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
 
 ```{r}
-
+states <- read_csv('states.csv', show_col_types = FALSE)
+kable(states %>% filter(grepl('269b7f13-a509-5174-85cb', user_id)) %>% filter((date >= as.Date('2020-10-18')) & (date <= as.Date('2020-10-30'))))
 
 ```
+
 
 
 ------------------------------------------------------------------------
