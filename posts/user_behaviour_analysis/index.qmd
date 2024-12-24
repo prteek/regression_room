@@ -40,7 +40,7 @@ The transition acronyms are defined below:
 
 As is evident, these quantities (along with others) are what will become the elements of Transition matrix (M), that we discuss next.
 
-In keeping with the definition chart above, the next step is to consider user behaviour as a [Markov chain](https://en.wikipedia.org/wiki/Markov_chain). <br/> Let M be a transition matrix associated with this Markov process: m(i, j) = P(s_j \| s_i) are the probabilities that a user moves to state s_j right after being at state s_i. The matrix M is learned from the historical data.
+In keeping with the definition chart above, the next step is to consider user behaviour as a [Markov chain](https://en.wikipedia.org/wiki/Markov_chain). <br/> Let M be a transition matrix associated with this Markov process: m(i, j) = P(s_j | s_i) are the probabilities that a user moves to state s_j right after being at state s_i. The matrix M is learned from the historical data.
 
 Assuming that user behavior is stationary (independent of time), the matrix M fully describes the states of all users in the future.
 
@@ -75,12 +75,12 @@ Each record indicates a day when a user was active. <br/>
 
 ```{r}
 #| echo: false
-suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(lubridate))
 suppressPackageStartupMessages(library(splines))
 suppressPackageStartupMessages(library(MASS))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(tidyverse))
 
 setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
 
@@ -214,7 +214,52 @@ kable(states %>%
         filter(between(date, as.Date('2020-10-18'), as.Date('2020-10-30')))
         )
 
+
 ```
+
+### Calculating transition matrix
+
+We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves.
+
+```{r}
+get_transition_matrix <- function (states_slice) {
+    suppressMessages(
+    M <- states_slice %>%
+        group_by(user_id) %>%
+        arrange(date) %>%
+        mutate(state_to = lead(state)
+                , state_from = state
+        ) %>%
+        ungroup() %>%
+        filter(! is.na(state_to)) %>%
+        group_by(user_id, state_from, state_to) %>%
+        summarise(transition_count = n()) %>%
+        ungroup() %>%
+        group_by(state_from, state_to) %>%
+        summarise(transition_count = sum(transition_count)) %>%
+        ungroup() %>%
+        pivot_wider(names_from = state_to, values_from = transition_count, values_fill = list(transition_count = 0)) %>%
+        mutate(row_sum = rowSums(dplyr::select(., -state_from))) %>%
+        mutate(across(-state_from, ~ . / row_sum)) %>%
+        dplyr::select(-row_sum)
+    )
+    return (M)
+}
+
+M = get_transition_matrix(states %>% filter(between(date, as.Date('2022-11-01'), as.Date('2023-11-01'))))
+
+kable(M)
+
+```
+
+As a sanity check, we can analyse the matrix itself. <br/>
+It makes sense that *current* -> *current* transition value is high. This means that active users tend to continue being active with high probability or otherwise become *at_risk_wau*. <br/>
+It also seems sensible that there is no state from which one could transition to *new*.
+Apparantly quite a high proportion of *dormant* users stay *dormant* which could be one of the focuses of resurrection campaigns in such companies.
+
+
+### Initial state counts
+
 
 
 
