@@ -2,7 +2,7 @@
 title: "Are blockbusters getting (reely) longer ?"
 author: "Prateek"
 date: "2023-07-21"
-categories: [analysis, code]
+categories: [hypothesis testing, bootstrap, regression]
 image: "movie_coupon.jpg"
 toc: true
 ---
