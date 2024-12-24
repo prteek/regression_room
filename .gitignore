@@ -2,3 +2,4 @@
 _freeze/
 *credentials
 *.DS_Store
+posts/user_behaviour_analysis/states.csv
