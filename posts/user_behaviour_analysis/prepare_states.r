@@ -52,7 +52,7 @@ states <- filtered_active_days %>%
         (is_active == FALSE) & (as.numeric(date - last_active_date) <= 30) & (as.numeric(date - last_active_date) > 6) ~ "at_risk_mau",
         TRUE ~ "dormant"
     )) %>%
-    dplyr::select(user_id, date, registration_date, state)
+    dplyr::select(user_id, date, is_active, state, registration_date)
 
 write.csv(states, "states.csv", row.names = FALSE)
 
