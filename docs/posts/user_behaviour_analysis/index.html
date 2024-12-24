@@ -440,7 +440,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r">here</a></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'states.csv'</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(states <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">'269b7f13-a509-5174-85cb'</span>, user_id)) <span class="sc">%&gt;%</span> <span class="fu">filter</span>((date <span class="sc">&gt;=</span> <span class="fu">as.Date</span>(<span class="st">'2020-10-18'</span>)) <span class="sc">&amp;</span> (date <span class="sc">&lt;</span> <span class="fu">as.Date</span>(<span class="st">'2020-10-30'</span>))))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(states <span class="sc">%&gt;%</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">'269b7f13-a509-5174-85cb'</span>, user_id)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(<span class="fu">between</span>(date, <span class="fu">as.Date</span>(<span class="st">'2020-10-18'</span>), <span class="fu">as.Date</span>(<span class="st">'2020-10-30'</span>)))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -540,6 +543,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="even">
 <td style="text-align: left;">269b7f13-a509-5174-85cb-95a8f7b932e8</td>
 <td style="text-align: left;">2020-10-29</td>
+<td style="text-align: left;">TRUE</td>
+<td style="text-align: left;">current</td>
+<td style="text-align: left;">2020-08-25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">269b7f13-a509-5174-85cb-95a8f7b932e8</td>
+<td style="text-align: left;">2020-10-30</td>
 <td style="text-align: left;">TRUE</td>
 <td style="text-align: left;">current</td>
 <td style="text-align: left;">2020-08-25</td>

@@ -209,7 +209,10 @@ The volume of data at our disposal makes this a challenging task to run convenie
 
 ```{r}
 states <- read_csv('states.csv', show_col_types = FALSE)
-kable(states %>% filter(grepl('269b7f13-a509-5174-85cb', user_id)) %>% filter((date >= as.Date('2020-10-18')) & (date <= as.Date('2020-10-30'))))
+kable(states %>%
+        filter(grepl('269b7f13-a509-5174-85cb', user_id)) %>%
+        filter(between(date, as.Date('2020-10-18'), as.Date('2020-10-30')))
+        )
 
 ```
 
