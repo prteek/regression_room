@@ -185,14 +185,14 @@ p1 + p2
 
 ### Assigning states
 
-There needs to be an assignment of one of the 7 states (mentioned earlier) against each date for a user. This will help identify transitions made between states and populate the Transition matrix. However, the data only consists of records of *active days*, we need to explicitly extend them and include the days when a user was not active. In other words, instead of this list of records:
+There needs to be an assignment of one of the 7 states (mentioned earlier) against each date for a user. This will help identify transitions made between states and populate the Transition matrix. However, the data only consists of records of *active days*, we need to explicitly extend them and include the days when a user was not active. In other words, instead of this table of records:
 
 | user_id | date       | registration_date |
 |---------|------------|-------------------|
 | 1234567 | 2023-01-01 | 2023-01-01        |
 | 1234567 | 2023-01-03 | 2023-01-01        |
 
-we’d like to get a list like this:
+we’d like to get a table like this:
 
 | user_id | date       | is_active | registration_date |
 |---------|------------|-----------|-------------------|
@@ -203,7 +203,7 @@ we’d like to get a list like this:
 | ...     | ...        | ...       | ...               |
 | 1234567 | 2023-10-31 | FALSE     | 2023-01-01        |
 
-And from here, finally estimate states for each user_id, corresponding to each day in the data.
+And using this table, subsequently estimate *states* using simple rules (mentioned in definitions above) for each user_id, corresponding to each day in the data.
 
 The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
 

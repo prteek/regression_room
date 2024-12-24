@@ -365,7 +365,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="assigning-states" class="level3">
 <h3 class="anchored" data-anchor-id="assigning-states">Assigning states</h3>
-<p>There needs to be an assignment of one of the 7 states (mentioned earlier) against each date for a user. This will help identify transitions made between states and populate the Transition matrix. However, the data only consists of records of <em>active days</em>, we need to explicitly extend them and include the days when a user was not active. In other words, instead of this list of records:</p>
+<p>There needs to be an assignment of one of the 7 states (mentioned earlier) against each date for a user. This will help identify transitions made between states and populate the Transition matrix. However, the data only consists of records of <em>active days</em>, we need to explicitly extend them and include the days when a user was not active. In other words, instead of this table of records:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -387,7 +387,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>we’d like to get a list like this:</p>
+<p>we’d like to get a table like this:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -436,7 +436,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>And from here, finally estimate states for each user_id, corresponding to each day in the data.</p>
+<p>And using this table, subsequently estimate <em>states</em> using simple rules (mentioned in definitions above) for each user_id, corresponding to each day in the data.</p>
 <p>The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r">here</a></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'states.csv'</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
