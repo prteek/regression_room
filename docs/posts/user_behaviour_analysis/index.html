@@ -189,7 +189,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#future-new-user-count-model" id="toc-future-new-user-count-model" class="nav-link" data-scroll-target="#future-new-user-count-model">Future new user count model</a></li>
   <li><a href="#assigning-states" id="toc-assigning-states" class="nav-link" data-scroll-target="#assigning-states">Assigning states</a></li>
   <li><a href="#calculating-transition-matrix" id="toc-calculating-transition-matrix" class="nav-link" data-scroll-target="#calculating-transition-matrix">Calculating transition matrix</a></li>
-  <li><a href="#initial-state-counts" id="toc-initial-state-counts" class="nav-link" data-scroll-target="#initial-state-counts">Initial state counts</a></li>
+  <li><a href="#predicting-dau" id="toc-predicting-dau" class="nav-link" data-scroll-target="#predicting-dau">Predicting DAU</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -359,7 +359,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -563,120 +563,106 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="calculating-transition-matrix" class="level3">
 <h3 class="anchored" data-anchor-id="calculating-transition-matrix">Calculating transition matrix</h3>
-<p>We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves.</p>
+<p>We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves. <br> Essentially we seek to calculate a matrix which has <em>state_from</em> in its rows <em>state_to</em> as its column and fraction of transitions as values. All the values in a row must sum to 1 obeying the fact that from a given state a user will end up in one of the 7 states.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>get_transition_matrix <span class="ot">&lt;-</span> <span class="cf">function</span> (states_slice) {</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">suppressMessages</span>(</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    M <span class="ot">&lt;-</span> states_slice <span class="sc">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(user_id) <span class="sc">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">arrange</span>(date) <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">state_to =</span> <span class="fu">lead</span>(state)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                , <span class="at">state_from =</span> state</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">%&gt;%</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="fu">filter</span>(<span class="sc">!</span> <span class="fu">is.na</span>(state_to)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(user_id, state_from, state_to) <span class="sc">%&gt;%</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(state_from, state_to) <span class="sc">%&gt;%</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">sum</span>(transition_count)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> state_to, <span class="at">values_from =</span> transition_count, <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">transition_count =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="at">row_sum =</span> <span class="fu">rowSums</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(., <span class="sc">-</span>state_from))) <span class="sc">%&gt;%</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>state_from, <span class="sc">~</span> . <span class="sc">/</span> row_sum)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>row_sum)</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span> (M)</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>M <span class="ot">=</span> <span class="fu">get_transition_matrix</span>(states <span class="sc">%&gt;%</span> <span class="fu">filter</span>(<span class="fu">between</span>(date, <span class="fu">as.Date</span>(<span class="st">'2022-11-01'</span>), <span class="fu">as.Date</span>(<span class="st">'2023-11-01'</span>))))</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">=</span> <span class="fu">get_transition_matrix</span>(states <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>                            <span class="fu">filter</span>(<span class="fu">between</span>(date, start_date, end_date)))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(M)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 12%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 15%">
-<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 4%">
+<col style="width: 14%">
+<col style="width: 14%">
 </colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">state_from</th>
+<th style="text-align: left;"></th>
 <th style="text-align: right;">at_risk_mau</th>
-<th style="text-align: right;">dormant</th>
-<th style="text-align: right;">reactivated</th>
-<th style="text-align: right;">resurrected</th>
 <th style="text-align: right;">at_risk_wau</th>
 <th style="text-align: right;">current</th>
+<th style="text-align: right;">dormant</th>
+<th style="text-align: right;">new</th>
+<th style="text-align: right;">reactivated</th>
+<th style="text-align: right;">resurrected</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">at_risk_mau</td>
 <td style="text-align: right;">0.9520158</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.0384384</td>
+<td style="text-align: right;">0</td>
 <td style="text-align: right;">0.0093866</td>
 <td style="text-align: right;">0.0001591</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">at_risk_wau</td>
 <td style="text-align: right;">0.1308719</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0044715</td>
-<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.7663644</td>
 <td style="text-align: right;">0.0982922</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0044715</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">current</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.1487694</td>
 <td style="text-align: right;">0.8512306</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">dormant</td>
 <td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.9996200</td>
+<td style="text-align: right;">0</td>
 <td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.0003800</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">new</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.4836773</td>
 <td style="text-align: right;">0.5163227</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">reactivated</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.6353907</td>
 <td style="text-align: right;">0.3646093</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">resurrected</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.0000000</td>
 <td style="text-align: right;">0.6848495</td>
 <td style="text-align: right;">0.3151505</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.0000000</td>
+<td style="text-align: right;">0.0000000</td>
 </tr>
 </tbody>
 </table>
@@ -684,8 +670,36 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>As a sanity check, we can analyse the matrix itself. <br> It makes sense that <em>current</em> -&gt; <em>current</em> transition value is high. This means that active users tend to continue being active with high probability or otherwise become <em>at_risk_wau</em>. <br> It also seems sensible that there is no state from which one could transition to <em>new</em>. Apparantly quite a high proportion of <em>dormant</em> users stay <em>dormant</em> which could be one of the focuses of resurrection campaigns in such companies.</p>
 </section>
-<section id="initial-state-counts" class="level3">
-<h3 class="anchored" data-anchor-id="initial-state-counts">Initial state counts</h3>
+<section id="predicting-dau" class="level3">
+<h3 class="anchored" data-anchor-id="predicting-dau">Predicting DAU</h3>
+<p>We start with getting initial state counts for the date on which the dataset ends. This combined with <em>M</em> transition matrix should give us new state counts. We will be mindful to update <em>new_user_count</em> for all the days we would like to predict on. This is done using the prediction model developed earlier.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>data_end_date <span class="ot">&lt;-</span> prediction_start_date <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>state0 <span class="ot">&lt;-</span> states <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(date<span class="sc">==</span>data_end_date) <span class="sc">%&gt;%</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(state) <span class="sc">%&gt;%</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">cnt=</span><span class="fu">n</span>(), <span class="at">.groups=</span><span class="st">'drop'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We shall define a flexible mechanism to predict DAU, to enable changing prediction horizon. We will also supply a dataframe of <em>new_users</em> to this mechanism so that it may use predicted values for appropriate prediction dates.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dau_predicted <span class="ot">&lt;-</span> <span class="fu">predict_dau</span>(M, state0, prediction_start_date, prediction_end_date, new_dates)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>(<span class="fu">ggplot</span>(dau_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(date) <span class="sc">%&gt;%</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">DAU=</span><span class="fu">n</span>())</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x=</span>date, <span class="at">y=</span>DAU)) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="at">data=</span>dau_predicted, <span class="fu">aes</span>(<span class="at">x=</span>date, <span class="at">y=</span>dau), <span class="at">colour=</span><span class="st">'red'</span>) <span class="sc">+</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggtitle</span>(<span class="st">'DAU Predictions'</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <hr>
 
 
