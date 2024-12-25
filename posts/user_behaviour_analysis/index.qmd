@@ -264,7 +264,7 @@ We shall define a flexible mechanism to predict DAU, to enable changing predicti
 
 dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_dates)
 
-(ggplot(dau_data %>%
+p <- (ggplot(dau_data %>%
         group_by(date) %>%
         summarise(DAU=n())
         ) +
@@ -274,6 +274,15 @@ ggtitle('DAU Predictions')
 )
 
 ```
+
+```{r}
+#| echo: false
+dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_dates %>% mutate(predicted=predicted*0.8))
+
+p + geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red', linetype="dotted")
+
+```
+
 The prominent contributer to DAU counts are *current* users, who are aided by addition of new users everyday and the fact that *current* users stay active with a probability of 85% (from M matrix). <br/>
 The prediction makes intuitive sense however the magnitude of spike certainly seems quite large. <br/>
 Observing the shape of predicted DAU, it seems quite strongly influenced by predicted new user count from the model earlier. Additionally, some degree of experimentation with the predictions suggest that about 20% decrease in new user counts bring predicted DAU to comparable levels of previous years.
