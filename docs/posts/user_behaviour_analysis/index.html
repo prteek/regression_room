@@ -684,7 +684,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>dau_predicted <span class="ot">&lt;-</span> <span class="fu">predict_dau</span>(M, state0, prediction_start_date, prediction_end_date, new_dates)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>(<span class="fu">ggplot</span>(dau_data <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> (<span class="fu">ggplot</span>(dau_data <span class="sc">%&gt;%</span></span>
 <span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="fu">group_by</span>(date) <span class="sc">%&gt;%</span></span>
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="fu">summarise</span>(<span class="at">DAU=</span><span class="fu">n</span>())</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        ) <span class="sc">+</span></span>
@@ -692,15 +692,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="fu">geom_line</span>(<span class="at">data=</span>dau_predicted, <span class="fu">aes</span>(<span class="at">x=</span>date, <span class="at">y=</span>dau), <span class="at">colour=</span><span class="st">'red'</span>) <span class="sc">+</span></span>
 <span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggtitle</span>(<span class="st">'DAU Predictions'</span>)</span>
 <span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-11-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>The prominent contributer to DAU counts are <em>current</em> users, who are aided by addition of new users everyday and the fact that <em>current</em> users stay active with a probability of 85% (from M matrix). <br> The prediction makes intuitive sense however the magnitude of spike certainly seems quite large.</p>
+<p>The prominent contributer to DAU counts are <em>current</em> users, who are aided by addition of new users everyday and the fact that <em>current</em> users stay active with a probability of 85% (from M matrix). <br> The prediction makes intuitive sense however the magnitude of spike certainly seems quite large. <br> Observing the shape of predicted DAU, it seems quite strongly influenced by predicted new user count from the model earlier. Additionally, some degree of experimentation with the predictions suggest that about 20% decrease in new user counts bring predicted DAU to comparable levels of previous years.</p>
 <hr>
 
 
