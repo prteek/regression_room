@@ -274,7 +274,7 @@ ggtitle('DAU Predictions')
 )
 
 ```
-
-
+The prominent contributer to DAU counts are *current* users, who are aided by addition of new users everyday and the fact that *current* users stay active with a probability of 85% (from M matrix). <br/>
+The prediction makes intuitive sense however the magnitude of spike certainly seems quite large.
 
 ---
