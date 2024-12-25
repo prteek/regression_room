@@ -39,14 +39,14 @@ get_transition_matrix <- function(states_slice) {
 
 # %%
 
-predict_dau <- function(M, state0, start_date, end_date, new_users) {
+predict_dau <- function(M, state0, start_date, end_date, new_users_predicted) {
     dates <- seq(as.Date(start_date), as.Date(end_date), by = "day")
     new_dau <- state0[match(state0$state, rownames(M)), ]$cnt # Align state0 to transition Matrix name order
     dau_pred <- list()
 
     for (dt in dates) {
         new_dau <- as.integer(t(M) %*% new_dau)
-        new_users_today <- new_users %>%
+        new_users_today <- new_users_predicted %>%
             filter(date == dt) %>%
             pull(predicted) %>%
             as.integer()
