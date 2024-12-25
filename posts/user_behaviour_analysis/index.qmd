@@ -270,10 +270,6 @@ dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_da
         ) +
 geom_line(aes(x=date, y=DAU)) +
 geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red') +
-geom_line(data=dau_predicted, aes(x=date, y=new), colour='blue', alpha=1.0) +
-geom_line(data=dau_predicted, aes(x=date, y=current), colour='green', alpha=0.75) +
-geom_line(data=dau_predicted, aes(x=date, y=reactivated), colour='brown', alpha=0.5) +
-geom_line(data=dau_predicted, aes(x=date, y=resurrected), colour='black', alpha=0.25) +
 ggtitle('DAU Predictions')
 )
 
