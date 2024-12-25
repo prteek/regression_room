@@ -83,6 +83,7 @@ suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(tidyverse))
 
 setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
+source('helpers.r')
 
 ```
 
@@ -141,9 +142,12 @@ After some experimentation, the model setup to predict future counts of new user
 ```{r}
 #| echo: false
 
-# Define prediction start and end dates
+# Define prediction start and end dates and Transition matrix calculation start and end dates
 prediction_start_date <- as.Date("2023-11-01")
 prediction_end_date <- as.Date("2024-12-01")
+
+start_date <- as.Date('2022-11-01')
+end_date <- as.Date('2023-10-31')
 
 new_dates <- tibble(date = seq(prediction_start_date, prediction_end_date, by='day')) %>%
                 mutate(
@@ -162,6 +166,11 @@ predictions <- predict(lmod, newdata=new_dates, type = "link", se.fit=TRUE)
 new_dates$predicted <- exp(predictions$fit)
 new_dates$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
 new_dates$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
+
+```
+
+```{r}
+#| echo: false
 
 p1 <- ggplot(new_users) +
     geom_point(aes(x=date, y=new_user_count), alpha=0.5, size=0.5) +
@@ -214,39 +223,17 @@ kable(states %>%
         filter(between(date, as.Date('2020-10-18'), as.Date('2020-10-30')))
         )
 
-
 ```
 
 ### Calculating transition matrix
 
-We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves.
+We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves. <br/>
+Essentially we seek to calculate a matrix which has *state_from* in its rows *state_to* as its column and fraction of transitions as values. All the values in a row must sum to 1 obeying the fact that from a given state a user will end up in one of the 7 states.
 
 ```{r}
-get_transition_matrix <- function (states_slice) {
-    suppressMessages(
-    M <- states_slice %>%
-        group_by(user_id) %>%
-        arrange(date) %>%
-        mutate(state_to = lead(state)
-                , state_from = state
-        ) %>%
-        ungroup() %>%
-        filter(! is.na(state_to)) %>%
-        group_by(user_id, state_from, state_to) %>%
-        summarise(transition_count = n()) %>%
-        ungroup() %>%
-        group_by(state_from, state_to) %>%
-        summarise(transition_count = sum(transition_count)) %>%
-        ungroup() %>%
-        pivot_wider(names_from = state_to, values_from = transition_count, values_fill = list(transition_count = 0)) %>%
-        mutate(row_sum = rowSums(dplyr::select(., -state_from))) %>%
-        mutate(across(-state_from, ~ . / row_sum)) %>%
-        dplyr::select(-row_sum)
-    )
-    return (M)
-}
 
-M = get_transition_matrix(states %>% filter(between(date, as.Date('2022-11-01'), as.Date('2023-11-01'))))
+M = get_transition_matrix(states %>%
+                            filter(between(date, start_date, end_date)))
 
 kable(M)
 
@@ -258,9 +245,40 @@ It also seems sensible that there is no state from which one could transition to
 Apparantly quite a high proportion of *dormant* users stay *dormant* which could be one of the focuses of resurrection campaigns in such companies.
 
 
-### Initial state counts
+### Predicting DAU
+
+We start with getting initial state counts for the date on which the dataset ends. This combined with *M* transition matrix should give us new state counts. We will be mindful to update *new_user_count* for all the days we would like to predict on. This is done using the prediction model developed earlier.
+
+```{r}
+data_end_date <- prediction_start_date - 1
+state0 <- states %>%
+            filter(date==data_end_date) %>%
+            group_by(state) %>%
+            summarise(cnt=n(), .groups='drop')
+
+```
+
+We shall define a flexible mechanism to predict DAU, to enable changing prediction horizon. We will also supply a dataframe of *new_users* to this mechanism so that it may use predicted values for appropriate prediction dates.
+
+```{r}
+
+dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_dates)
+
+(ggplot(dau_data %>%
+        group_by(date) %>%
+        summarise(DAU=n())
+        ) +
+geom_line(aes(x=date, y=DAU)) +
+geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red') +
+geom_line(data=dau_predicted, aes(x=date, y=new), colour='blue', alpha=1.0) +
+geom_line(data=dau_predicted, aes(x=date, y=current), colour='green', alpha=0.75) +
+geom_line(data=dau_predicted, aes(x=date, y=reactivated), colour='brown', alpha=0.5) +
+geom_line(data=dau_predicted, aes(x=date, y=resurrected), colour='black', alpha=0.25) +
+ggtitle('DAU Predictions')
+)
+
+```
 
 
 
-
-------------------------------------------------------------------------
+---
