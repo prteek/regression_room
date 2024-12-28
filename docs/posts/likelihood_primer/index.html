@@ -313,7 +313,7 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 <p>The double derivative part here implies the rate of change of <em>score</em> itself. <br> At (or near) the maximum values of <em>score</em>, a large value of <span class="math inline">\(I(\theta)\)</span> effectively indicates a large rate of change of <em>score</em>. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.</p>
 <p>Under regularity conditions, the maximum likelihood estimator (MLE) of the parameter <span class="math inline">\(\theta\)</span> , denoted as <span class="math inline">\(\hat{\theta}\)</span> , is asymptotically unbiased and normally distributed. That is: <span class="math display">\[
 \hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
-\]</span> and this means that <span class="math inline">\(var(\hat{\theta}) = I^{-1}(\theta)\)</span>. Which gives us the uncertainty on parameter estimate itself.</p>
+\]</span> and this means that <span class="math inline">\(var(\hat{\theta}) = I^{-1}(\theta)\)</span>. Which gives us the uncertainty on parameter estimate itself. <br> This makes intuitive sense, when Fisher information is high (clearly defined maximum and high curvature of <em>score</em>), then the uncertainty in parameter estimate should be low.</p>
 <section id="fisher-information-for-binomial" class="level3">
 <h3 class="anchored" data-anchor-id="fisher-information-for-binomial">Fisher information for Binomial</h3>
 <p>Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:</p>

@@ -84,7 +84,8 @@ Under regularity conditions, the maximum likelihood estimator (MLE) of the param
 $$
 \hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
 $$
-and this means that $var(\hat{\theta}) = I^{-1}(\theta)$. Which gives us the uncertainty on parameter estimate itself.
+and this means that $var(\hat{\theta}) = I^{-1}(\theta)$. Which gives us the uncertainty on parameter estimate itself. <br/>
+This makes intuitive sense, when Fisher information is high (clearly defined maximum and high curvature of *score*), then the uncertainty in parameter estimate should be low.
 
 ### Fisher information for Binomial
 Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:
