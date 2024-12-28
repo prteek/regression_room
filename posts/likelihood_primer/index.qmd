@@ -176,9 +176,9 @@ mle <- nlm(f, 0.5, hessian=TRUE)
 We use an initial value of $p=0.5$ and set *hessian* to TRUE to get standard errors of the estimate in the output.
 
 ```{r}
-cat(paste("MLE estimate of p:", round(mle$estimate, 2)))
+cat(paste("Numerical estimate of p:", round(mle$estimate, 2)))
 est <- paste("Estimated variance of p:", round(1/mle$hessian, 4))
-act <- paste("Actual variance variance of p:", round(0.4*(1-0.4)/n), 4)
+act <- paste("Actual variance variance of p:", round(0.4*(1-0.4)/n, 4))
 cat(paste(est, act, sep='\n'))
 ```
 

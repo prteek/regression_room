@@ -403,16 +403,16 @@ value</code></pre>
 </div>
 <p>We use an initial value of <span class="math inline">\(p=0.5\)</span> and set <em>hessian</em> to TRUE to get standard errors of the estimate in the output.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">"MLE estimate of p:"</span>, <span class="fu">round</span>(mle<span class="sc">$</span>estimate, <span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">"Numerical estimate of p:"</span>, <span class="fu">round</span>(mle<span class="sc">$</span>estimate, <span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>MLE estimate of p: 0.4</code></pre>
+<pre><code>Numerical estimate of p: 0.4</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Estimated variance of p:"</span>, <span class="fu">round</span>(<span class="dv">1</span><span class="sc">/</span>mle<span class="sc">$</span>hessian, <span class="dv">4</span>))</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>act <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Actual variance variance of p:"</span>, <span class="fu">round</span>(<span class="fl">0.4</span><span class="sc">*</span>(<span class="dv">1</span><span class="fl">-0.4</span>)<span class="sc">/</span>n), <span class="dv">4</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>act <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Actual variance variance of p:"</span>, <span class="fu">round</span>(<span class="fl">0.4</span><span class="sc">*</span>(<span class="dv">1</span><span class="fl">-0.4</span>)<span class="sc">/</span>n, <span class="dv">4</span>))</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(est, act, <span class="at">sep=</span><span class="st">'</span><span class="sc">\n</span><span class="st">'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Estimated variance of p: 0.0096
-Actual variance variance of p: 0 4</code></pre>
+Actual variance variance of p: 0.0096</code></pre>
 </div>
 </div>
 <p>This is a useful toolkit to have when working with estimations and maximum likelihood.</p>
