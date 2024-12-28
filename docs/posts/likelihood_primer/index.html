@@ -313,7 +313,7 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 <p>The double derivative part here implies the rate of change of <em>score</em> itself. <br> At (or near) the maximum values of <em>score</em>, a large value of <span class="math inline">\(I(\theta)\)</span> effectively indicates a large rate of change of <em>score</em>. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.</p>
 <p>Under regularity conditions, the maximum likelihood estimator (MLE) of the parameter <span class="math inline">\(\theta\)</span> , denoted as <span class="math inline">\(\hat{\theta}\)</span> , is asymptotically unbiased and normally distributed. That is: <span class="math display">\[
 \hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
-\]</span> and this means that <span class="math inline">\(var(\hat{\theta}) = I(\theta) ^{-1}\)</span>. Which gives us the uncertainty on parameter estimate itself.</p>
+\]</span> and this means that <span class="math inline">\(var(\hat{\theta}) = I^{-1}(\theta)\)</span>. Which gives us the uncertainty on parameter estimate itself.</p>
 <section id="fisher-information-for-binomial" class="level3">
 <h3 class="anchored" data-anchor-id="fisher-information-for-binomial">Fisher information for Binomial</h3>
 <p>Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:</p>
@@ -413,13 +413,13 @@ value</code></pre>
 value</code></pre>
 </div>
 </div>
-<p>We use an initial value of <span class="math inline">\(p=0.5\)</span> and set <em>hessian</em> to TRUE to get standard errors of the estimate in the output.</p>
-<p>It is convenient to get the estimate value and its variance out of the <em>nlm</em> output. <br> At the MLE <span class="math inline">\(\hat{\theta}\)</span> , the Hessian <span class="math inline">\(H(\hat{\theta})\)</span> is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have <span class="math display">\[
+<p>We use an initial value of <span class="math inline">\(p=0.5\)</span> and set <em>hessian</em> to TRUE to be able to calculate standard errors of the estimate using it.</p>
+<p>At the MLE <span class="math inline">\(\hat{\theta}\)</span> , the Hessian <span class="math inline">\(H(\hat{\theta})\)</span> is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have <span class="math display">\[
 I(\hat{\theta}) \approx -H(\hat{\theta})
-\]</span> which gives <span class="math display">\[
-\text{Var}(\hat{\theta}) \approx \left[ -H(\hat{\theta}) \right]^{-1}
+\]</span> We have seen earlier that the variance of parameter is the inverse of Fisher information, which gives us <span class="math display">\[
+\text{Var}(\hat{\theta}) = I^{-1}(\theta) \approx [-H(\hat{\theta})]^{-1}
 \]</span></p>
-<p>Hence, the inverse of the <em>Hessian</em> at the optimum is equal to the variance of the estimate.</p>
+<p>Hence, the inverse of the <em>Hessian</em> at the optimum is equal to the variance of the estimate. <br> Note: - sign is excluded since we’re working with -log-likelihood in <em>nlm</em></p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">"Numerical estimate of p:"</span>, <span class="fu">round</span>(mle<span class="sc">$</span>estimate, <span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">

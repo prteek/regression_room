@@ -84,7 +84,7 @@ Under regularity conditions, the maximum likelihood estimator (MLE) of the param
 $$
 \hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
 $$
-and this means that $var(\hat{\theta}) = I(\theta) ^{-1}$. Which gives us the uncertainty on parameter estimate itself.
+and this means that $var(\hat{\theta}) = I^{-1}(\theta)$. Which gives us the uncertainty on parameter estimate itself.
 
 ### Fisher information for Binomial
 Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:
@@ -183,19 +183,20 @@ f <- function(x) -loglik(x, y, n)
 mle <- nlm(f, 0.5, hessian=TRUE)
 
 ```
-We use an initial value of $p=0.5$ and set *hessian* to TRUE to get standard errors of the estimate in the output.
+We use an initial value of $p=0.5$ and set *hessian* to TRUE to be able to calculate standard errors of the estimate using it.
 
-It is convenient to get the estimate value and its variance out of the *nlm* output. <br/>
 At the MLE  $\hat{\theta}$ , the Hessian  $H(\hat{\theta})$  is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have
 $$
 I(\hat{\theta}) \approx -H(\hat{\theta})
 $$
-which gives
+We have seen earlier that the variance of parameter is the inverse of Fisher information, which gives us
 $$
-\text{Var}(\hat{\theta}) \approx \left[ -H(\hat{\theta}) \right]^{-1}
+\text{Var}(\hat{\theta}) = I^{-1}(\theta) \approx [-H(\hat{\theta})]^{-1}
 $$
 
-Hence, the inverse of the *Hessian* at the optimum is equal to the variance of the estimate.
+Hence, the inverse of the *Hessian* at the optimum is equal to the variance of the estimate. <br/>
+Note: - sign is excluded since we're working with -log-likelihood in *nlm*
+
 ```{r}
 cat(paste("Numerical estimate of p:", round(mle$estimate, 2)))
 est <- paste("Estimated variance of p:", round(1/mle$hessian, 4))
