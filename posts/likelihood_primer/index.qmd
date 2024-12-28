@@ -1,0 +1,43 @@
+---
+title: "A primer on Likelihood"
+author: "Prateek"
+date: "2024-12-28"
+categories: [likelihood, statistics, theory]
+image: "likelihood.jpg"
+toc: true
+bibliography: references.bib
+---
+
+## Introduction
+
+Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br/> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br/> In this post, I'll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br/> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br/>
+The concepts discussed are deeply inspired by [@extending_lm_with_R_book] and [@statistical_inference]. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.
+
+## Likelihood
+
+### Discrete RV case
+
+If we consider there to be a set of discrete random variables $Y_1,...., Y_n$ with probability mass function $f(y|\theta)$ where $\theta$ is the parameter. <br/> Let $\mathbf{y} = (y_1,....,y_n)^T$ be the observed values, then the *likelihood* function for the distribution is:
+
+$$
+P(\mathbf{Y}=\mathbf{y}) = \prod_{i=1}^{n} f(y_i|\theta) = L(\theta|y)
+$$
+
+As can be seen likelihood is about considering parameter $theta$ as random and data $\mathbf{y}$ as fixed (as opposed to a probability mass function where $\theta$ are fixed). <br/> In essence *likelihood* is the probability of observed data $\mathbf{y}$ for a specified value of the parameter(s).
+
+### Continuous RV case
+
+When the random variables are continuous (with probability density $f(y|\theta)$), in practice one can measure data with limited precision. When a value $y_i$ is observed it effectively indicates an observation in the range $[y_i^l, y_i^u]$, where $y_i^l$ and $y_i^u$ are lower and upper bounds of precision limit. <br/> Using which we can reason that probability of observed value is a concept defined over an interval:
+
+$$
+P(Y_i=y_i) = P(y_i^l<=y_i<=y_i^u) = \int_{y_i^l}^{y_i^u} f(u|\theta) \, du \approx f(y_i|\theta) \delta_i
+$$
+
+such that $\delta_i = y_i^u-y_i^l$, which does not depend on $\theta$ and is related to the precision of measurement. <br/>
+And, the likelihood becomes:
+
+$$
+L(\theta|y) \approx \prod_{i=1}^{n} f(y_i|\theta) \prod_{i=1}^{n}\delta_i
+$$
+
+Given we know that $\delta_i$ does not depend on $\theta$, the last term can be ignored and the likelihood then becomes same as in the discrete case. <br/>

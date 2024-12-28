@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Prateek">
+<meta name="dcterms.date" content="2024-12-28">
 
-<title>Blog - Regression Room</title>
+<title>Blog - A primer on Likelihood</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,27 +22,45 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,35 +88,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -128,7 +119,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed">
@@ -138,7 +129,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Blog</span>
     </a>
   </div>
@@ -149,7 +140,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">Prateek</span></a>
   </li>  
   <li class="nav-item compact">
@@ -167,164 +158,100 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Regression Room</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">A primer on Likelihood</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">likelihood</div>
+                <div class="quarto-category">statistics</div>
+                <div class="quarto-category">theory</div>
+              </div>
+                  </div>
   </div>
     
   
-  <div class="quarto-title-meta column-page-left">
+  <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Prateek </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">December 28, 2024</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(3)</span></div><div class="category" data-category="bootstrap">bootstrap <span class="quarto-category-count">(1)</span></div><div class="category" data-category="hypothesis testing">hypothesis testing <span class="quarto-category-count">(1)</span></div><div class="category" data-category="likelihood">likelihood <span class="quarto-category-count">(1)</span></div><div class="category" data-category="markov chain">markov chain <span class="quarto-category-count">(1)</span></div><div class="category" data-category="regression">regression <span class="quarto-category-count">(1)</span></div><div class="category" data-category="statistics">statistics <span class="quarto-category-count">(1)</span></div><div class="category" data-category="theory">theory <span class="quarto-category-count">(1)</span></div><div class="category" data-category="timeseries">timeseries <span class="quarto-category-count">(1)</span></div></div></div>
-<!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
-
-
-
-
-
-
-
-
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="listing-actions-group">
-    <div class="input-group input-group-sm quarto-listing-filter">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="search form-control" placeholder="Filter">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#likelihood" id="toc-likelihood" class="nav-link" data-scroll-target="#likelihood">Likelihood</a>
+  <ul class="collapse">
+  <li><a href="#discrete-rv-case" id="toc-discrete-rv-case" class="nav-link" data-scroll-target="#discrete-rv-case">Discrete RV case</a></li>
+  <li><a href="#continuous-rv-case" id="toc-continuous-rv-case" class="nav-link" data-scroll-target="#continuous-rv-case">Continuous RV case</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br> In this post, I’ll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br> The concepts discussed are deeply inspired by <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span> and <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span>. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.</p>
+</section>
+<section id="likelihood" class="level2">
+<h2 class="anchored" data-anchor-id="likelihood">Likelihood</h2>
+<section id="discrete-rv-case" class="level3">
+<h3 class="anchored" data-anchor-id="discrete-rv-case">Discrete RV case</h3>
+<p>If we consider there to be a set of discrete random variables <span class="math inline">\(Y_1,...., Y_n\)</span> with probability mass function <span class="math inline">\(f(y|\theta)\)</span> where <span class="math inline">\(\theta\)</span> is the parameter. <br> Let <span class="math inline">\(\mathbf{y} = (y_1,....,y_n)^T\)</span> be the observed values, then the <em>likelihood</em> function for the distribution is:</p>
+<p><span class="math display">\[
+P(\mathbf{Y}=\mathbf{y}) = \prod_{i=1}^{n} f(y_i|\theta) = L(\theta|y)
+\]</span></p>
+<p>As can be seen likelihood is about considering parameter <span class="math inline">\(theta\)</span> as random and data <span class="math inline">\(\mathbf{y}\)</span> as fixed (as opposed to a probability mass function where <span class="math inline">\(\theta\)</span> are fixed). <br> In essence <em>likelihood</em> is the probability of observed data <span class="math inline">\(\mathbf{y}\)</span> for a specified value of the parameter(s).</p>
+</section>
+<section id="continuous-rv-case" class="level3">
+<h3 class="anchored" data-anchor-id="continuous-rv-case">Continuous RV case</h3>
+<p>When the random variables are continuous (with probability density <span class="math inline">\(f(y|\theta)\)</span>), in practice one can measure data with limited precision. When a value <span class="math inline">\(y_i\)</span> is observed it effectively indicates an observation in the range <span class="math inline">\([y_i^l, y_i^u]\)</span>, where <span class="math inline">\(y_i^l\)</span> and <span class="math inline">\(y_i^u\)</span> are lower and upper bounds of precision limit. <br> Using which we can reason that probability of observed value is a concept defined over an interval:</p>
+<p><span class="math display">\[
+P(Y_i=y_i) = P(y_i^l&lt;=y_i&lt;=y_i^u) = \int_{y_i^l}^{y_i^u} f(u|\theta) \, du \approx f(y_i|\theta) \delta_i
+\]</span></p>
+<p>such that <span class="math inline">\(\delta_i = y_i^u-y_i^l\)</span>, which does not depend on <span class="math inline">\(\theta\)</span> and is related to the precision of measurement. <br> And, the likelihood becomes:</p>
+<p><span class="math display">\[
+L(\theta|y) \approx \prod_{i=1}^{n} f(y_i|\theta) \prod_{i=1}^{n}\delta_i
+\]</span></p>
+<p>Given we know that <span class="math inline">\(\delta_i\)</span> does not depend on <span class="math inline">\(\theta\)</span>, the last term can be ignored and the likelihood then becomes same as in the discrete case. <br></p>
+
+
+
+</section>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-extending_lm_with_R_book" class="csl-entry" role="listitem">
+Faraway, Julian J. 2016. <em>Extending the Linear Model with r, Second Edition</em>. CRC Press.
 </div>
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="likelihood,statistics,theory" data-listing-date-sort="1735344000000" data-listing-file-modified-sort="1735353377735" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="2" data-listing-word-count-sort="348">
-<div class="thumbnail">
-<p><a href="./posts/likelihood_primer/index.html" class="no-external"></a></p><a href="./posts/likelihood_primer/index.html" class="no-external">
-<p><img src="./posts/likelihood_primer/likelihood.jpg" class="thumbnail-image"></p>
-</a><p><a href="./posts/likelihood_primer/index.html" class="no-external"></a></p>
+<div id="ref-statistical_inference" class="csl-entry" role="listitem">
+George Casella, Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
 </div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/likelihood_primer/index.html" class="no-external">A primer on Likelihood</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/likelihood_primer/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('likelihood'); return false;">
-likelihood
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('statistics'); return false;">
-statistics
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('theory'); return false;">
-theory
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/likelihood_primer/index.html" class="no-external">Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution…<br><br><br><span class="citation" data-cites="extending_lm_with_R_book"></span><span class="citation" data-cites="statistical_inference"></span></a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/likelihood_primer/index.html" class="no-external">
-<div class="listing-date">
-Dec 28, 2024
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="markov chain,timeseries" data-listing-date-sort="1734480000000" data-listing-file-modified-sort="1735130186001" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3176">
-<div class="thumbnail">
-<p><a href="./posts/user_behaviour_analysis/index.html" class="no-external"></a></p><a href="./posts/user_behaviour_analysis/index.html" class="no-external">
-<p class="card-img-top"><img src="posts/user_behaviour_analysis/states.png"  class="thumbnail-image card-img"/></p>
-</a><p><a href="./posts/user_behaviour_analysis/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external">User behaviour analysis</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('markov chain'); return false;">
-markov chain
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('timeseries'); return false;">
-timeseries
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external"><em>Duolingo</em> have been making waves with their customer success stories and strong (and growing) user base. They seem to be taking their metrics seriously and have done a great…<br><br></a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external">
-<div class="listing-date">
-Dec 18, 2024
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="hypothesis testing,bootstrap,regression" data-listing-date-sort="1689894000000" data-listing-file-modified-sort="1735064796721" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1246">
-<div class="thumbnail">
-<p><a href="./posts/movies_getting_longer/index.html" class="no-external"></a></p><a href="./posts/movies_getting_longer/index.html" class="no-external">
-<p><img src="./posts/movies_getting_longer/movie_coupon.jpg" class="thumbnail-image"></p>
-</a><p><a href="./posts/movies_getting_longer/index.html" class="no-external"></a></p>
-</div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/movies_getting_longer/index.html" class="no-external">Are blockbusters getting (reely) longer ?</a>
-</h3>
-<div class="listing-subtitle">
-<a href="./posts/movies_getting_longer/index.html" class="no-external"></a>
-</div>
-<div class="listing-categories">
-<div class="listing-category" onclick="window.quartoListingCategory('hypothesis testing'); return false;">
-hypothesis testing
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('bootstrap'); return false;">
-bootstrap
-</div>
-<div class="listing-category" onclick="window.quartoListingCategory('regression'); return false;">
-regression
-</div>
-</div>
-<div class="listing-description">
-<a href="./posts/movies_getting_longer/index.html" class="no-external">I recently came across an article posing a question:</a>
-</div>
-</div>
-<div class="metadata">
-<a href="./posts/movies_getting_longer/index.html" class="no-external">
-<div class="listing-date">
-Jul 21, 2023
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">
-No matching items
-</div>
-</div></main> <!-- /main -->
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

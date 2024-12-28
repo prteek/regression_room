@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/likelihood_primer/index.html",
       "/posts/user_behaviour_analysis/index.html",
       "/posts/movies_getting_longer/index.html"
     ]
