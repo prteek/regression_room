@@ -17,17 +17,17 @@ The concepts discussed are deeply inspired by [@extending_lm_with_R_book] and [@
 
 ### Discrete RV case
 
-If we consider there to be a set of discrete random variables $Y_1,...., Y_n$ with probability mass function $f(y|\theta)$ where $\theta$ is the parameter. <br/> Let $\mathbf{y} = (y_1,....,y_n)^T$ be the observed values, then the *likelihood* function for the distribution is:
+If we consider there to be a set of independent **discrete** random variables $Y_1,...., Y_n$ with probability mass function $f(y|\theta)$ where $\theta$ is the parameter. <br/> Let $\mathbf{y} = (y_1,....,y_n)^T$ be the observed values, then the *likelihood* function for the distribution is:
 
 $$
 P(\mathbf{Y}=\mathbf{y}) = \prod_{i=1}^{n} f(y_i|\theta) = L(\theta|y)
 $$
 
-As can be seen likelihood is about considering parameter $theta$ as random and data $\mathbf{y}$ as fixed (as opposed to a probability mass function where $\theta$ are fixed). <br/> In essence *likelihood* is the probability of observed data $\mathbf{y}$ for a specified value of the parameter(s).
+As can be seen likelihood is about considering parameter $theta$ as random and data $\mathbf{y}$ as fixed (as opposed to a joint density function where $\theta$ are fixed and $\mathbf{y}$ are random). <br/> In essence *likelihood* is the probability of observed data $\mathbf{y}$ for a specified value of the parameter(s).
 
 ### Continuous RV case
 
-When the random variables are continuous (with probability density $f(y|\theta)$), in practice one can measure data with limited precision. When a value $y_i$ is observed it effectively indicates an observation in the range $[y_i^l, y_i^u]$, where $y_i^l$ and $y_i^u$ are lower and upper bounds of precision limit. <br/> Using which we can reason that probability of observed value is a concept defined over an interval:
+When the random variables are **continuous** (with probability density $f(y|\theta)$), in practice one can measure data with limited precision. When a value $y_i$ is observed it effectively indicates an observation in the range $[y_i^l, y_i^u]$, where $y_i^l$ and $y_i^u$ are lower and upper bounds of precision limit. <br/> Using which we can reason that probability of observed value is a concept defined over an interval:
 
 $$
 P(Y_i=y_i) = P(y_i^l<=y_i<=y_i^u) = \int_{y_i^l}^{y_i^u} f(u|\theta) \, du \approx f(y_i|\theta) \delta_i
@@ -41,3 +41,83 @@ L(\theta|y) \approx \prod_{i=1}^{n} f(y_i|\theta) \prod_{i=1}^{n}\delta_i
 $$
 
 Given we know that $\delta_i$ does not depend on $\theta$, the last term can be ignored and the likelihood then becomes same as in the discrete case. <br/>
+
+## Binomial example
+Let's consider a binomially distributed random variable $Y  ~ B(n,p)$ (Note: here $p$ is the parameter of interest). <br/>
+Its likelihood is:
+
+$$
+L(p|y) = \binom{n}{y}p^y(1-p)^{n-y}
+$$
+
+The *maximum likelihood* estimate (MLE) of $p$ results in the largest probability of observed data. The value at which the maximum occurs is called the maximum likelihood estimate and is denoted as $\hat{p}$.
+
+Often, it is simpler to maximise the log of likelihood function $l(\theta|y) = log(L(\theta|y))$, considering that *log* is a monotonic increasing function so maximising either should result in the exact same estimate $\hat{\theta}$.
+
+To find the solution for $\hat{p}$ in our binomial case, we can start by defining the log-likelihood:
+
+$$
+l(p|y) = log(\binom{n}{y}) + ylog(p) + (n-y)log(1-p)
+$$
+
+A typical calculus approach to maximising this function would be to take the derivative of this log-likelihood w.r.t. parameters of interest and set it to 0. <br/>
+Worth noting that the derivative is called *score function* and denoted as $u(\theta)$ in general. For binomial we have:
+
+$$
+u(p) = \frac{d}{dp}l(p|y) = \frac{y}{p} - \frac{n-y}{1-p}
+$$
+
+To get the maximum likelihood estimate $\hat{p}$ we solve for $u(p) = 0$ and get $\hat{p} = y/n$.
+
+### Fisher Information (uncertainty)
+Some measure of uncertainty of this estimate is desired to be able to rely on the estimate. This is given by Fisher information:
+
+$$
+I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)]
+$$
+
+The double derivative part here implies the rate of change of *score* itself. <br/>
+At (or near) the maximum values of *score*, a large value of $I(\theta)$ effectively indicates a large rate of change of *score*. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.
+
+Here, the expectation is w.r.t. data. Consider the following for binomial distributed data:
+
+```{=latex}
+\begin{align}
+    \frac{d}{dp}l(p|y) = \frac{y}{p} - \frac{n-y}{1-p} \\
+    \frac{d^2}{dp}l(p|y)l(p|y) = -\frac{y}{p^2} - \frac{n-y}{(1-p)^2} \\
+    \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = \mathbb{E}[-\frac{y}{p^2} - \frac{n-y}{(1-p)^2}] \\
+    and, \mathbb{E}[y] = np \\
+    \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = -\frac{n}{p} - \frac{n}{(1-p)} \\
+    I(p) = - \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = \frac{n}{p} + \frac{n}{(1-p)} \\
+    I(p) = \frac{n}{p(1-p)}
+
+\end{align}
+```
+So, the larger the $n$ (sample size) the greater is Fisher information and lesser uncertainty about the maxima point of *score* function. Similarly, for same $n$ more extreme values of $p$ will enable estimation of parameter with greater degree of confidence due to higher Fisher Information.
+
+```{r}
+#| echo: false
+FI <- function(x,n) {n/(x*(1-x))}
+curve(FI(x,n=25), 0,1, lty=1, xlab='p', ylab='Fisher information', main='Fisher information for Binomial distribution')
+curve(FI(x,n=50), 0,1, add=TRUE, lty=2)
+grid()
+legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
+```
+
+We can also illustrate the effect on *score* (log-likelihood) becoming more defined with higher Fisher information (due to higher $n$) with same choices as above plot. <br/>
+Essentially we consider 2 binomial datasets one with $n=25, y=10$ and another with $n=50, y=20$ where $y$ is observed counts of successes.
+
+```{r}
+loglik <- function(x, y, n) lchoose(n,y) + y*log(x) + (n-y)*log(1-x)
+
+curve(loglik(x,y=10,n=25), 0,1, lty=1, xlab='p', ylab='Log-likelihood', main='Log-likelihood of Binomial distribution')
+curve(loglik(x,y=20,n=50), 0,1, add=TRUE, lty=2)
+grid()
+legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
+
+```
+The maximum can be noticed at $p=0.4$. For larger sample size $n=50$ the curvature is greater as there is more information in this case. <br/>
+For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not alwaysb possible to analytically maximise log-likelihood and estimate parameters.
+
+## Numerical estimation
+Typically numerical optimisation is necessary when estimating parameters using log-likelihood maximisation. The *Newton-Raphson* method is the most well-known technique.
