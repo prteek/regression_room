@@ -241,7 +241,12 @@ window.Quarto = {
   <ul class="collapse">
   <li><a href="#fisher-information-uncertainty" id="toc-fisher-information-uncertainty" class="nav-link" data-scroll-target="#fisher-information-uncertainty">Fisher Information (uncertainty)</a></li>
   </ul></li>
-  <li><a href="#numerical-estimation" id="toc-numerical-estimation" class="nav-link" data-scroll-target="#numerical-estimation">Numerical estimation</a></li>
+  <li><a href="#numerical-estimation" id="toc-numerical-estimation" class="nav-link" data-scroll-target="#numerical-estimation">Numerical estimation</a>
+  <ul class="collapse">
+  <li><a href="#normal-example" id="toc-normal-example" class="nav-link" data-scroll-target="#normal-example">Normal example</a></li>
+  <li><a href="#binomial-solution" id="toc-binomial-solution" class="nav-link" data-scroll-target="#binomial-solution">Binomial solution</a></li>
+  </ul></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap up</a></li>
   </ul>
 </nav>
     </div>
@@ -314,7 +319,7 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
     I(p) = \frac{n}{p(1-p)}
 
 \end{align}\]</span>
-<p>So, the larger the <span class="math inline">\(n\)</span> (sample size) the greater is Fisher information and lesser uncertainty about the maxima point of <em>score</em> function. Similarly, for same <span class="math inline">\(n\)</span> more extreme values of <span class="math inline">\(p\)</span> will enable estimation of parameter with greater degree of confidence due to higher Fisher Information.</p>
+<p>So, the larger the <span class="math inline">\(n\)</span> (sample size) the greater is Fisher information and lesser uncertainty about the maxima point of <em>score</em> function. Similarly, for same <span class="math inline">\(n\)</span> more extreme values of <span class="math inline">\(p\)</span> will enable estimation of parameter with greater degree of confidence due to higher Fisher Information. Intuitively, this is because extreme values in data will be observed (lots of 1s or lots or 0s).</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -328,10 +333,11 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>loglik <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, n) <span class="fu">lchoose</span>(n,y) <span class="sc">+</span> y<span class="sc">*</span><span class="fu">log</span>(x) <span class="sc">+</span> (n<span class="sc">-</span>y)<span class="sc">*</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">-</span>x)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">loglik</span>(x,<span class="at">y=</span><span class="dv">10</span>,<span class="at">n=</span><span class="dv">25</span>), <span class="dv">0</span>,<span class="dv">1</span>, <span class="at">lty=</span><span class="dv">1</span>, <span class="at">xlab=</span><span class="st">'p'</span>, <span class="at">ylab=</span><span class="st">'Log-likelihood'</span>, <span class="at">main=</span><span class="st">'Log-likelihood of Binomial distribution'</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">loglik</span>(x,<span class="at">y=</span><span class="dv">20</span>,<span class="at">n=</span><span class="dv">50</span>), <span class="dv">0</span>,<span class="dv">1</span>, <span class="at">add=</span><span class="cn">TRUE</span>, <span class="at">lty=</span><span class="dv">2</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"n=25"</span>, <span class="st">"n=50"</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">loglik</span>(x,<span class="at">y=</span><span class="dv">10</span>,<span class="at">n=</span><span class="dv">25</span>), <span class="dv">0</span>,<span class="dv">1</span>, <span class="at">lty=</span><span class="dv">1</span>, <span class="at">xlab=</span><span class="st">'p'</span>, <span class="at">ylab=</span><span class="st">'Log-likelihood'</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        <span class="at">main=</span><span class="st">'Log-likelihood of Binomial distribution'</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">curve</span>(<span class="fu">loglik</span>(x,<span class="at">y=</span><span class="dv">20</span>,<span class="at">n=</span><span class="dv">50</span>), <span class="dv">0</span>,<span class="dv">1</span>, <span class="at">add=</span><span class="cn">TRUE</span>, <span class="at">lty=</span><span class="dv">2</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">grid</span>()</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">legend</span>(<span class="st">"topright"</span>, <span class="at">legend =</span> <span class="fu">c</span>(<span class="st">"n=25"</span>, <span class="st">"n=50"</span>), <span class="at">lty =</span> <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -340,12 +346,81 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 </div>
 </div>
 </div>
-<p>The maximum can be noticed at <span class="math inline">\(p=0.4\)</span>. For larger sample size <span class="math inline">\(n=50\)</span> the curvature is greater as there is more information in this case. <br> For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not alwaysb possible to analytically maximise log-likelihood and estimate parameters.</p>
+<p>The maximum can be noticed at <span class="math inline">\(p=0.4\)</span> (which is <span class="math inline">\(n/y\)</span> in both cases as derived earlier). For larger sample size <span class="math inline">\(n=50\)</span> the curvature is greater as there is more information in this case. <br> For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not alwaysb possible to analytically maximise log-likelihood and estimate parameters.</p>
 </section>
 </section>
 <section id="numerical-estimation" class="level2">
 <h2 class="anchored" data-anchor-id="numerical-estimation">Numerical estimation</h2>
-<p>Typically numerical optimisation is necessary when estimating parameters using log-likelihood maximisation. The <em>Newton-Raphson</em> method is the most well-known technique.</p>
+<p>Typically numerical optimisation is necessary when estimating parameters using log-likelihood maximisation. The <em>Newton-Raphson</em> method is applied for these purposes. Consider <span class="math inline">\(\theta_0\)</span> as an initial guess for <span class="math inline">\(\theta\)</span>, then an update is made using: <span class="math display">\[
+\theta_1 = \theta_0 - H^{-1}(\theta_0) J(\theta_0)
+\]</span> Where, <br> <span class="math inline">\(H(\theta) = \frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)\)</span> is the Hessian matrix of second derivatives. <br> <span class="math inline">\(J(\theta) = \frac{d}{d\theta}l(\theta)\)</span> is the Jacobian matrix of derivatives.</p>
+<p>This method works well provided the log-likelihood is smooth and convex around the maximum and the initial value is reasonably chosen, but is not a guaranteed solution for all maximisation problems. <br></p>
+<section id="normal-example" class="level3">
+<h3 class="anchored" data-anchor-id="normal-example">Normal example</h3>
+<p>To develop an intuition on this method consider a normal distribution: <span class="math display">\[
+f(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
+\]</span></p>
+<p>Its log-likelihood can be written as <span class="math display">\[
+l(\mu) = -\frac{n}{2} \log(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2.
+\]</span></p>
+<p>We calculate the first and second derivatives of log-likelihood</p>
+<span class="math display">\[\begin{align}
+l'(\mu) = \frac{\partial l(\mu)}{\partial \mu} = \frac{1}{\sigma^2} \sum_{i=1}^n (x_i - \mu) \\
+
+l''(\mu) = \frac{\partial^2 l(\mu)}{\partial \mu^2} = -\frac{n}{\sigma^2}
+
+\end{align}\]</span>
+<p>Then we perform the <em>Newton Raphson</em> update</p>
+<span class="math display">\[\begin{align}
+\mu^{(t+1)} = \mu^{(t)} - \frac{l'(\mu^{(t)})}{l''(\mu^{(t)})} \\
+\mu^{(t+1)} = \mu^{(t)} - \frac{\frac{1}{\sigma^2} \sum_{i=1}^n (x_i - \mu^{(t)})}{-\frac{n}{\sigma^2}} \\
+\mu^{(t+1)} = \mu^{(t)} + \frac{\sum_{i=1}^n (x_i - \mu^{(t)})}{n} \\
+\mu^{(t+1)} = \frac{1}{n} \sum_{i=1}^n x_i
+\end{align}\]</span>
+<p>Thus, in this case, the Newton-Raphson method directly converges to the sample mean <span class="math inline">\(\bar{x}\)</span> , which is the maximum likelihood estimate (MLE) for <span class="math inline">\(\mu\)</span>.</p>
+</section>
+<section id="binomial-solution" class="level3">
+<h3 class="anchored" data-anchor-id="binomial-solution">Binomial solution</h3>
+<p>Let’s now revert back to our Binomial distribution setting. We can apply this method using <em>R</em>. Note that we need to minimize <span class="math inline">\(-l(\theta)\)</span> because <em>nlm</em> minimizes and doesn’t maximize.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">25</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="sc">-</span><span class="fu">loglik</span>(x, <span class="dv">10</span>, n)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>mle <span class="ot">&lt;-</span> <span class="fu">nlm</span>(f, <span class="fl">0.5</span>, <span class="at">hessian=</span><span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in log(x): NaNs produced</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in nlm(f, 0.5, hessian = TRUE): NA/Inf replaced by maximum positive
+value</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in log(x): NaNs produced</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in nlm(f, 0.5, hessian = TRUE): NA/Inf replaced by maximum positive
+value</code></pre>
+</div>
+</div>
+<p>We use an initial value of <span class="math inline">\(p=0.5\)</span> and set <em>hessian</em> to TRUE to get standard errors of the estimate in the output.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">"MLE estimate of p:"</span>, <span class="fu">round</span>(mle<span class="sc">$</span>estimate, <span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>MLE estimate of p: 0.4</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>est <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Estimated variance of p:"</span>, <span class="fu">round</span>(<span class="dv">1</span><span class="sc">/</span>mle<span class="sc">$</span>hessian, <span class="dv">4</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>act <span class="ot">&lt;-</span> <span class="fu">paste</span>(<span class="st">"Actual variance variance of p:"</span>, <span class="fu">round</span>(<span class="fl">0.4</span><span class="sc">*</span>(<span class="dv">1</span><span class="fl">-0.4</span>)<span class="sc">/</span>n), <span class="dv">4</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(est, act, <span class="at">sep=</span><span class="st">'</span><span class="sc">\n</span><span class="st">'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Estimated variance of p: 0.0096
+Actual variance variance of p: 0 4</code></pre>
+</div>
+</div>
+<p>This is a useful toolkit to have when working with estimations and maximum likelihood.</p>
+</section>
+</section>
+<section id="wrap-up" class="level2">
+<h2 class="anchored" data-anchor-id="wrap-up">Wrap up</h2>
+<p>By understanding these fundamental concepts, one can gain deeper insights into statistical inference and model fitting, helping to make more informed decisions in real-world applications.</p>
 
 
 
