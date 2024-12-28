@@ -253,7 +253,7 @@ We can test for this autocorrelation and handle it if necessary.
 suppressPackageStartupMessages(library(lmtest))
 
 res <- residuals(lmod)
-print(c("Auto-correlation among residuals: ", round(cor(res[-1], res[-length(res)]), 2)))
+cat(paste("Auto-correlation among residuals: ", round(cor(res[-1], res[-length(res)]), 2)))
 
 dwtest(runtime_mins ~ release_year, data=yearly_top_movies)
 
@@ -264,5 +264,3 @@ There doesn't appear to be significant autocorrelation and other model diagnotic
 ## Conclusion
 There has been a rather steady increase of 0.38 min/year (on average) in movie runtimes as per the dataset we have used.
 In effect expect to be seated for about 10 more minutes in your favourite blockbuster compared to when you went to movies as a kid.
-
----
