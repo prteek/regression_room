@@ -169,7 +169,8 @@ Let's now revert back to our Binomial distribution setting. We can apply this me
 
 ```{r}
 n <- 25
-f <- function(x) -loglik(x, 10, n)
+y <- 10
+f <- function(x) -loglik(x, y, n)
 mle <- nlm(f, 0.5, hessian=TRUE)
 
 ```
