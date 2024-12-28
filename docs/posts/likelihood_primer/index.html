@@ -237,9 +237,11 @@ window.Quarto = {
   <li><a href="#discrete-rv-case" id="toc-discrete-rv-case" class="nav-link" data-scroll-target="#discrete-rv-case">Discrete RV case</a></li>
   <li><a href="#continuous-rv-case" id="toc-continuous-rv-case" class="nav-link" data-scroll-target="#continuous-rv-case">Continuous RV case</a></li>
   </ul></li>
-  <li><a href="#binomial-example" id="toc-binomial-example" class="nav-link" data-scroll-target="#binomial-example">Binomial example</a>
+  <li><a href="#binomial-example" id="toc-binomial-example" class="nav-link" data-scroll-target="#binomial-example">Binomial example</a></li>
+  <li><a href="#fisher-information-uncertainty" id="toc-fisher-information-uncertainty" class="nav-link" data-scroll-target="#fisher-information-uncertainty">Fisher Information (uncertainty)</a>
   <ul class="collapse">
-  <li><a href="#fisher-information-uncertainty" id="toc-fisher-information-uncertainty" class="nav-link" data-scroll-target="#fisher-information-uncertainty">Fisher Information (uncertainty)</a></li>
+  <li><a href="#fisher-information-for-binomial" id="toc-fisher-information-for-binomial" class="nav-link" data-scroll-target="#fisher-information-for-binomial">Fisher information for Binomial</a></li>
+  <li><a href="#effect-of-fisher-information-on-log-likelihood" id="toc-effect-of-fisher-information-on-log-likelihood" class="nav-link" data-scroll-target="#effect-of-fisher-information-on-log-likelihood">Effect of Fisher information on log-likelihood</a></li>
   </ul></li>
   <li><a href="#numerical-estimation" id="toc-numerical-estimation" class="nav-link" data-scroll-target="#numerical-estimation">Numerical estimation</a>
   <ul class="collapse">
@@ -269,7 +271,7 @@ window.Quarto = {
 <p><span class="math display">\[
 P(\mathbf{Y}=\mathbf{y}) = \prod_{i=1}^{n} f(y_i|\theta) = L(\theta|y)
 \]</span></p>
-<p>As can be seen likelihood is about considering parameter <span class="math inline">\(theta\)</span> as random and data <span class="math inline">\(\mathbf{y}\)</span> as fixed (as opposed to a joint density function where <span class="math inline">\(\theta\)</span> are fixed and <span class="math inline">\(\mathbf{y}\)</span> are random). <br> In essence <em>likelihood</em> is the probability of observed data <span class="math inline">\(\mathbf{y}\)</span> for a specified value of the parameter(s).</p>
+<p>As can be seen likelihood is about considering parameter <span class="math inline">\(\theta\)</span> as random and data <span class="math inline">\(\mathbf{y}\)</span> as fixed (hence the notation <span class="math inline">\(L(\theta|y)\)</span>). This is as opposed to a joint density function where <span class="math inline">\(\theta\)</span> are fixed and <span class="math inline">\(y\)</span> are random. <br> Effectively though <em>likelihood</em> is still the probability of observed data <span class="math inline">\(\mathbf{y}\)</span> for a specified value of the parameter(s) i.e.&nbsp;<span class="math inline">\(p(\mathbf{y}|\theta)\)</span> but the key distinction is that <em>likelihood</em> changes as <span class="math inline">\(\theta\)</span> changes.</p>
 </section>
 <section id="continuous-rv-case" class="level3">
 <h3 class="anchored" data-anchor-id="continuous-rv-case">Continuous RV case</h3>
@@ -286,7 +288,7 @@ L(\theta|y) \approx \prod_{i=1}^{n} f(y_i|\theta) \prod_{i=1}^{n}\delta_i
 </section>
 <section id="binomial-example" class="level2">
 <h2 class="anchored" data-anchor-id="binomial-example">Binomial example</h2>
-<p>Let’s consider a binomially distributed random variable <span class="math inline">\(Y  ~ B(n,p)\)</span> (Note: here <span class="math inline">\(p\)</span> is the parameter of interest). <br> Its likelihood is:</p>
+<p>Let’s consider a binomially distributed random variable <span class="math inline">\(Y \sim B(n,p)\)</span> (Note: here <span class="math inline">\(p\)</span> is the parameter of interest). <br> Its likelihood is:</p>
 <p><span class="math display">\[
 L(p|y) = \binom{n}{y}p^y(1-p)^{n-y}
 \]</span></p>
@@ -301,14 +303,20 @@ l(p|y) = log(\binom{n}{y}) + ylog(p) + (n-y)log(1-p)
 u(p) = \frac{d}{dp}l(p|y) = \frac{y}{p} - \frac{n-y}{1-p}
 \]</span></p>
 <p>To get the maximum likelihood estimate <span class="math inline">\(\hat{p}\)</span> we solve for <span class="math inline">\(u(p) = 0\)</span> and get <span class="math inline">\(\hat{p} = y/n\)</span>.</p>
-<section id="fisher-information-uncertainty" class="level3">
-<h3 class="anchored" data-anchor-id="fisher-information-uncertainty">Fisher Information (uncertainty)</h3>
-<p>Some measure of uncertainty of this estimate is desired to be able to rely on the estimate. This is given by Fisher information:</p>
+</section>
+<section id="fisher-information-uncertainty" class="level2">
+<h2 class="anchored" data-anchor-id="fisher-information-uncertainty">Fisher Information (uncertainty)</h2>
+<p>Some measure of uncertainty is desirable here to be able to rely on the estimate. This is given by Fisher information:</p>
 <p><span class="math display">\[
 I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)]
 \]</span></p>
 <p>The double derivative part here implies the rate of change of <em>score</em> itself. <br> At (or near) the maximum values of <em>score</em>, a large value of <span class="math inline">\(I(\theta)\)</span> effectively indicates a large rate of change of <em>score</em>. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.</p>
-<p>Here, the expectation is w.r.t. data. Consider the following for binomial distributed data:</p>
+<p>Under regularity conditions, the maximum likelihood estimator (MLE) of the parameter <span class="math inline">\(\theta\)</span> , denoted as <span class="math inline">\(\hat{\theta}\)</span> , is asymptotically unbiased and normally distributed. That is: <span class="math display">\[
+\hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
+\]</span> and this means that <span class="math inline">\(var(\hat{\theta}) = I(\theta) ^{-1}\)</span>. Which gives us the uncertainty on parameter estimate itself.</p>
+<section id="fisher-information-for-binomial" class="level3">
+<h3 class="anchored" data-anchor-id="fisher-information-for-binomial">Fisher information for Binomial</h3>
+<p>Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:</p>
 <span class="math display">\[\begin{align}
     \frac{d}{dp}l(p|y) = \frac{y}{p} - \frac{n-y}{1-p} \\
     \frac{d^2}{dp}l(p|y)l(p|y) = -\frac{y}{p^2} - \frac{n-y}{(1-p)^2} \\
@@ -329,6 +337,9 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 </div>
 </div>
 </div>
+</section>
+<section id="effect-of-fisher-information-on-log-likelihood" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-fisher-information-on-log-likelihood">Effect of Fisher information on log-likelihood</h3>
 <p>We can also illustrate the effect on <em>score</em> (log-likelihood) becoming more defined with higher Fisher information (due to higher <span class="math inline">\(n\)</span>) with same choices as above plot. <br> Essentially we consider 2 binomial datasets one with <span class="math inline">\(n=25, y=10\)</span> and another with <span class="math inline">\(n=50, y=20\)</span> where <span class="math inline">\(y\)</span> is observed counts of successes.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>loglik <span class="ot">&lt;-</span> <span class="cf">function</span>(x, y, n) <span class="fu">lchoose</span>(n,y) <span class="sc">+</span> y<span class="sc">*</span><span class="fu">log</span>(x) <span class="sc">+</span> (n<span class="sc">-</span>y)<span class="sc">*</span><span class="fu">log</span>(<span class="dv">1</span><span class="sc">-</span>x)</span>
@@ -346,18 +357,18 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 </div>
 </div>
 </div>
-<p>The maximum can be noticed at <span class="math inline">\(p=0.4\)</span> (which is <span class="math inline">\(n/y\)</span> in both cases as derived earlier). For larger sample size <span class="math inline">\(n=50\)</span> the curvature is greater as there is more information in this case. <br> For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not alwaysb possible to analytically maximise log-likelihood and estimate parameters.</p>
+<p>The maximum can be noticed at <span class="math inline">\(p=0.4\)</span> (equal to <span class="math inline">\(n/y\)</span> in both cases as derived earlier). For larger sample size <span class="math inline">\(n=50\)</span> the curvature is greater as there is more information in this case. <br> For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not always possible to analytically maximise log-likelihood and estimate parameters.</p>
 </section>
 </section>
 <section id="numerical-estimation" class="level2">
 <h2 class="anchored" data-anchor-id="numerical-estimation">Numerical estimation</h2>
 <p>Typically numerical optimisation is necessary when estimating parameters using log-likelihood maximisation. The <em>Newton-Raphson</em> method is applied for these purposes. Consider <span class="math inline">\(\theta_0\)</span> as an initial guess for <span class="math inline">\(\theta\)</span>, then an update is made using: <span class="math display">\[
 \theta_1 = \theta_0 - H^{-1}(\theta_0) J(\theta_0)
-\]</span> Where, <br> <span class="math inline">\(H(\theta) = \frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)\)</span> is the Hessian matrix of second derivatives. <br> <span class="math inline">\(J(\theta) = \frac{d}{d\theta}l(\theta)\)</span> is the Jacobian matrix of derivatives.</p>
-<p>This method works well provided the log-likelihood is smooth and convex around the maximum and the initial value is reasonably chosen, but is not a guaranteed solution for all maximisation problems. <br></p>
+\]</span> Where, <br> <span class="math inline">\(H(\theta) = \frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)\)</span> is the Hessian matrix of second derivatives of log-likelihood w.r.t. <span class="math inline">\(\theta\)</span> . <br> <span class="math inline">\(J(\theta) = \frac{d}{d\theta}l(\theta)\)</span> is the Jacobian matrix of derivatives of log-likelihood w.r.t. <span class="math inline">\(\theta\)</span> .</p>
+<p>This method works well, provided the log-likelihood is smooth and convex around the maximum and the initial value is reasonably chosen, but is not a guaranteed solution for all maximisation problems (such as when maximum is on boundary of parameter space or when there are several local maximums). <br></p>
 <section id="normal-example" class="level3">
 <h3 class="anchored" data-anchor-id="normal-example">Normal example</h3>
-<p>To develop an intuition on this method consider a normal distribution: <span class="math display">\[
+<p>To develop intuition on this method consider a Normal distribution: <span class="math display">\[
 f(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
 \]</span></p>
 <p>Its log-likelihood can be written as <span class="math display">\[
@@ -381,7 +392,7 @@ l''(\mu) = \frac{\partial^2 l(\mu)}{\partial \mu^2} = -\frac{n}{\sigma^2}
 </section>
 <section id="binomial-solution" class="level3">
 <h3 class="anchored" data-anchor-id="binomial-solution">Binomial solution</h3>
-<p>Let’s now revert back to our Binomial distribution setting. We can apply this method using <em>R</em>. Note that we need to minimize <span class="math inline">\(-l(\theta)\)</span> because <em>nlm</em> minimizes and doesn’t maximize.</p>
+<p>Let’s now revert back to our Binomial distribution setting. We can perform log-likelihhod maximisation with <em>Newton Raphson</em> using <em>R</em>. Note that we need to minimize <span class="math inline">\(-l(\theta)\)</span> because <em>nlm</em> minimizes and doesn’t maximize.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">25</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>y <span class="ot">&lt;-</span> <span class="dv">10</span></span>
@@ -403,6 +414,12 @@ value</code></pre>
 </div>
 </div>
 <p>We use an initial value of <span class="math inline">\(p=0.5\)</span> and set <em>hessian</em> to TRUE to get standard errors of the estimate in the output.</p>
+<p>It is convenient to get the estimate value and its variance out of the <em>nlm</em> output. <br> At the MLE <span class="math inline">\(\hat{\theta}\)</span> , the Hessian <span class="math inline">\(H(\hat{\theta})\)</span> is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have <span class="math display">\[
+I(\hat{\theta}) \approx -H(\hat{\theta})
+\]</span> which gives <span class="math display">\[
+\text{Var}(\hat{\theta}) \approx \left[ -H(\hat{\theta}) \right]^{-1}
+\]</span></p>
+<p>Hence, the inverse of the <em>Hessian</em> at the optimum is equal to the variance of the estimate.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(<span class="st">"Numerical estimate of p:"</span>, <span class="fu">round</span>(mle<span class="sc">$</span>estimate, <span class="dv">2</span>)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">

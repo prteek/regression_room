@@ -23,7 +23,8 @@ $$
 P(\mathbf{Y}=\mathbf{y}) = \prod_{i=1}^{n} f(y_i|\theta) = L(\theta|y)
 $$
 
-As can be seen likelihood is about considering parameter $theta$ as random and data $\mathbf{y}$ as fixed (as opposed to a joint density function where $\theta$ are fixed and $\mathbf{y}$ are random). <br/> In essence *likelihood* is the probability of observed data $\mathbf{y}$ for a specified value of the parameter(s).
+As can be seen likelihood is about considering parameter $\theta$ as random and data $\mathbf{y}$ as fixed (hence the notation $L(\theta|y)$). This is as opposed to a joint density function where $\theta$ are fixed and $y$ are random. <br/>
+Effectively though *likelihood* is still the probability of observed data $\mathbf{y}$ for a specified value of the parameter(s) i.e. $p(\mathbf{y}|\theta)$ but the key distinction is that *likelihood* changes as $\theta$ changes.
 
 ### Continuous RV case
 
@@ -43,7 +44,7 @@ $$
 Given we know that $\delta_i$ does not depend on $\theta$, the last term can be ignored and the likelihood then becomes same as in the discrete case. <br/>
 
 ## Binomial example
-Let's consider a binomially distributed random variable $Y  ~ B(n,p)$ (Note: here $p$ is the parameter of interest). <br/>
+Let's consider a binomially distributed random variable $Y \sim B(n,p)$ (Note: here $p$ is the parameter of interest). <br/>
 Its likelihood is:
 
 $$
@@ -69,8 +70,8 @@ $$
 
 To get the maximum likelihood estimate $\hat{p}$ we solve for $u(p) = 0$ and get $\hat{p} = y/n$.
 
-### Fisher Information (uncertainty)
-Some measure of uncertainty of this estimate is desired to be able to rely on the estimate. This is given by Fisher information:
+## Fisher Information (uncertainty)
+Some measure of uncertainty is desirable here to be able to rely on the estimate. This is given by Fisher information:
 
 $$
 I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)]
@@ -79,7 +80,14 @@ $$
 The double derivative part here implies the rate of change of *score* itself. <br/>
 At (or near) the maximum values of *score*, a large value of $I(\theta)$ effectively indicates a large rate of change of *score*. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.
 
-Here, the expectation is w.r.t. data. Consider the following for binomial distributed data:
+Under regularity conditions, the maximum likelihood estimator (MLE) of the parameter $\theta$ , denoted as  $\hat{\theta}$ , is asymptotically unbiased and normally distributed. That is:
+$$
+\hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
+$$
+and this means that $var(\hat{\theta}) = I(\theta) ^{-1}$. Which gives us the uncertainty on parameter estimate itself.
+
+### Fisher information for Binomial
+Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:
 
 ```{=latex}
 \begin{align}
@@ -105,6 +113,7 @@ grid()
 legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
 ```
 
+### Effect of Fisher information on log-likelihood
 We can also illustrate the effect on *score* (log-likelihood) becoming more defined with higher Fisher information (due to higher $n$) with same choices as above plot. <br/>
 Essentially we consider 2 binomial datasets one with $n=25, y=10$ and another with $n=50, y=20$ where $y$ is observed counts of successes.
 
@@ -118,8 +127,8 @@ grid()
 legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
 
 ```
-The maximum can be noticed at $p=0.4$ (which is $n/y$ in both cases as derived earlier). For larger sample size $n=50$ the curvature is greater as there is more information in this case. <br/>
-For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not alwaysb possible to analytically maximise log-likelihood and estimate parameters.
+The maximum can be noticed at $p=0.4$ (equal to $n/y$ in both cases as derived earlier). For larger sample size $n=50$ the curvature is greater as there is more information in this case. <br/>
+For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not always possible to analytically maximise log-likelihood and estimate parameters.
 
 ## Numerical estimation
 Typically numerical optimisation is necessary when estimating parameters using log-likelihood maximisation. The *Newton-Raphson* method is applied for these purposes. Consider $\theta_0$ as an initial guess for $\theta$, then an update is made using:
@@ -127,13 +136,13 @@ $$
 \theta_1 = \theta_0 - H^{-1}(\theta_0) J(\theta_0)
 $$
 Where, <br/>
-$H(\theta) = \frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)$ is the Hessian matrix of second derivatives. <br/>
-$J(\theta) = \frac{d}{d\theta}l(\theta)$ is the Jacobian matrix of derivatives.
+$H(\theta) = \frac{\partial^2}{\partial \theta \partial \theta^T}l(\theta)$ is the Hessian matrix of second derivatives of log-likelihood w.r.t. $\theta$ . <br/>
+$J(\theta) = \frac{d}{d\theta}l(\theta)$ is the Jacobian matrix of derivatives of log-likelihood w.r.t. $\theta$ .
 
-This method works well provided the log-likelihood is smooth and convex around the maximum and the initial value is reasonably chosen, but is not a guaranteed solution for all maximisation problems. <br/>
+This method works well, provided the log-likelihood is smooth and convex around the maximum and the initial value is reasonably chosen, but is not a guaranteed solution for all maximisation problems (such as when maximum is on boundary of parameter space or when there are several local maximums). <br/>
 
 ### Normal example
-To develop an intuition on this method consider a normal distribution:
+To develop intuition on this method consider a Normal distribution:
 $$
 f(x \mid \mu, \sigma^2) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x - \mu)^2}{2\sigma^2}\right)
 $$
@@ -165,7 +174,7 @@ Then we perform the *Newton Raphson* update
 Thus, in this case, the Newton-Raphson method directly converges to the sample mean  $\bar{x}$ , which is the maximum likelihood estimate (MLE) for  $\mu$.
 
 ### Binomial solution
-Let's now revert back to our Binomial distribution setting. We can apply this method using *R*. Note that we need to minimize $-l(\theta)$ because *nlm* minimizes and doesn't maximize.
+Let's now revert back to our Binomial distribution setting. We can perform log-likelihhod maximisation with *Newton Raphson* using *R*. Note that we need to minimize $-l(\theta)$ because *nlm* minimizes and doesn't maximize.
 
 ```{r}
 n <- 25
@@ -176,6 +185,17 @@ mle <- nlm(f, 0.5, hessian=TRUE)
 ```
 We use an initial value of $p=0.5$ and set *hessian* to TRUE to get standard errors of the estimate in the output.
 
+It is convenient to get the estimate value and its variance out of the *nlm* output. <br/>
+At the MLE  $\hat{\theta}$ , the Hessian  $H(\hat{\theta})$  is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have
+$$
+I(\hat{\theta}) \approx -H(\hat{\theta})
+$$
+which gives
+$$
+\text{Var}(\hat{\theta}) \approx \left[ -H(\hat{\theta}) \right]^{-1}
+$$
+
+Hence, the inverse of the *Hessian* at the optimum is equal to the variance of the estimate.
 ```{r}
 cat(paste("Numerical estimate of p:", round(mle$estimate, 2)))
 est <- paste("Estimated variance of p:", round(1/mle$hessian, 4))
