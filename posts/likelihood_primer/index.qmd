@@ -78,14 +78,14 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 $$
 
 The double derivative part here implies the rate of change of *score* itself. <br/>
-At (or near) the maximum values of *score*, a large value of $I(\theta)$ effectively indicates a large rate of change of *score*. Which means that the maximum is well defined (curvature of score is large) which would indicate a high level of confidence in the estimate.
+At (or near) the maximum values of log-likelihood, a large value of $I(\theta)$ effectively indicates a large rate of change of *score*. Which means that the maximum is clearly defined (curvature of log-likelihood is large).
 
 Under regularity conditions, the maximum likelihood estimator (MLE) of the parameter $\theta$ , denoted as  $\hat{\theta}$ , is asymptotically unbiased and normally distributed. That is:
 $$
 \hat{\theta} \sim \mathcal{N}\left(\theta, \frac{1}{I(\theta)}\right).
 $$
 and this means that $var(\hat{\theta}) = I^{-1}(\theta)$. Which gives us the uncertainty on parameter estimate itself. <br/>
-This makes intuitive sense, when Fisher information is high (clearly defined maximum and high curvature of *score*), then the uncertainty in parameter estimate should be low.
+This makes intuitive sense, when Fisher information is high (clearly defined maximum and high curvature of log-likelihood), then the uncertainty in parameter estimate should be low.
 
 ### Fisher information for Binomial
 Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:
@@ -128,7 +128,7 @@ grid()
 legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
 
 ```
-The maximum can be noticed at $p=0.4$ (equal to $n/y$ in both cases as derived earlier). For larger sample size $n=50$ the curvature is greater as there is more information in this case. <br/>
+The maximum can be noticed at $p=0.4$ (equal to $n/y$ in both cases as derived earlier). For larger sample size $n=50$ the curvature of log-likelihood is greater as there is more information available. <br/>
 For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not always possible to analytically maximise log-likelihood and estimate parameters.
 
 ## Numerical estimation
