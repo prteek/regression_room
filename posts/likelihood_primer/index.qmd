@@ -1,11 +1,12 @@
 ---
-title: "A primer on Likelihood"
+title: "Primer on Likelihood"
 author: "Prateek"
 date: "2024-12-28"
 categories: [likelihood, fisher information, newton raphson]
 image: "likelihood.jpg"
 toc: true
 bibliography: references.bib
+description: Applied to parameter estimation
 ---
 
 ## Introduction

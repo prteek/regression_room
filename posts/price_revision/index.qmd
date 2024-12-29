@@ -5,7 +5,7 @@ date: "2025-01-04"
 categories: [logistic regression, probability]
 toc: true
 freeze: true
-description: Analysis of likelihood of price revision
+description: Modelling and analysis of probability of revision
 ---
 
 ## Introduction
