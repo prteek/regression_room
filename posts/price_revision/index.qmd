@@ -1,0 +1,19 @@
+---
+title: "Price revision"
+author: "Prateek"
+date: "2025-01-04"
+categories: [logistic regression, probability]
+toc: true
+freeze: true
+description: Analysis of likelihood of price revision
+---
+
+## Introduction
+
+```{r}
+library(dplyr)
+library(knitr)
+
+kable(mtcars)
+
+```
