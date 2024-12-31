@@ -70,7 +70,7 @@ frequently_revised <- listings_with_revisions %>%
         all_revisions = n(), price_levels = n_distinct(revised_asking_price),
         price_revisions = sum(price_change, na.rm = TRUE)
     ) %>%
-    filter(price_change <= price_levels)
+    filter(price_revisions <= price_levels)
 
 suspect_id = 15578098
 suspected_revisions <- listings_with_revisions %>% filter(listing_id == suspect_id)
@@ -104,12 +104,29 @@ start_and_end_revisions <- filtered_listings_with_revisions %>%
         max_revision_date = last(revision_date),
         listing_date = first(revision_date),
     ) %>%
-    mutate(active_days = max_revision_date - listing_date)
+    mutate(active_days = max_revision_date - listing_date) %>%
+    # Keep sensible changes. Large changes may be due to reasons that make properties not interesting for our application (e.g. damage/long onward-chain)
+    filter(between(last_price / first_price, 0.7, 1.3))
 
 terminal_revisions <- inner_join(filtered_listings_with_revisions, start_and_end_revisions %>% select(-listing_date), by = c("listing_id" = "listing_id", "revision_date" = "max_revision_date", "revised_asking_price" = "last_price")) %>%
-    select(names(filtered_listings_with_revisions))
+    select(names(filtered_listings_with_revisions)) %>%
+    # Add binary indicator for >= 5% reduction
+    mutate(is_5percent_reduced = if_else(revised_asking_price / asking_price <= 0.95, 1, 0))
 
 # %%
-write.csv(terminal_revisions, "terminal_revisions.csv", row.names = F)
+write.csv(terminal_revisions %>% select(-revised_asking_price),
+    "terminal_revisions.csv",
+    row.names = F
+)
+
+# %%
+
+plot(terminal_revisions$asking_price, terminal_revisions$revised_asking_price)
+abline(0, 1.3, lty = 1)
+abline(0, 1, lty = 1)
+abline(0, 0.95, lty = 2)
+abline(0, 0.7, lty = 1)
+
+plot(ecdf(terminal_revisions$revised_asking_price / terminal_revisions$asking_price), main = "% price change ECDF", xlab = "% price change")
 
 # %%
