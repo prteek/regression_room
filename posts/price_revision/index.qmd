@@ -17,3 +17,19 @@ The current analysis aspires to be able to understand where and based on what fa
 A better understanding of factors associated with price reductions can help drive strategic decisions e.g. if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there.
 
 The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand.
+
+## Data
+The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings_with_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
+These files individually contain basic attributes of properties and revised prices (both increased in decreased). There are no missing values and the data values are checked for the suitability of application.
+These are cleaned up for sensible choices of attributes in listing data and price revisions. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
+
+```{r}
+#| echo: false
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(knitr))
+library(this.path)
+setwd(here())
+revisions <- read_csv('listings_with_revisions.csv', show_col_types=F)
+kable(head(revisions))
+```
+The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) abd that location refers to a post town in UK.

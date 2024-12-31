@@ -155,6 +155,7 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
   </ul>
 </nav>
     </div>
@@ -170,6 +171,117 @@ ul.task-list li input[type="checkbox"] {
 <p>In real estate universe, often listings on the market experience updates due to either changes to property specific information or due to an influence of markets. <br> The market influences prices of listings in major way and can lead to price increase or decrease post original advertisement.<br> Of interest to a real investment company are price revisions that are &lt; 0, i.e.&nbsp;where prices of listings decrease. Such properties can offer immediate improvement to rental yield investment cases and shorter times to close due to comparatively lower demand.</p>
 <p>The current analysis aspires to be able to understand where and based on what factors could price changes have happened using a historic listings dataset. This is to validate the analysis against subject matter knowledge and also expand the current understanding about price revision behaviours in the market. <br> A better understanding of factors associated with price reductions can help drive strategic decisions e.g.&nbsp;if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there.</p>
 <p>The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings_with_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased). There are no missing values and the data values are checked for the suitability of application. These are cleaned up for sensible choices of attributes in listing data and price revisions. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 10%">
+<col style="width: 15%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">listing_id</th>
+<th style="text-align: left;">revision_date</th>
+<th style="text-align: right;">revised_asking_price</th>
+<th style="text-align: left;">listing_date</th>
+<th style="text-align: left;">listing_type</th>
+<th style="text-align: left;">property_type</th>
+<th style="text-align: left;">tenure</th>
+<th style="text-align: right;">bedroom_count</th>
+<th style="text-align: left;">location</th>
+<th style="text-align: right;">asking_price</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">13467305</td>
+<td style="text-align: left;">2021-05-10</td>
+<td style="text-align: right;">425000</td>
+<td style="text-align: left;">2021-05-05</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: left;">freehold</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Brighton</td>
+<td style="text-align: right;">450000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13475467</td>
+<td style="text-align: left;">2021-07-08</td>
+<td style="text-align: right;">215995</td>
+<td style="text-align: left;">2021-05-06</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: left;">freehold</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: left;">Mansfield</td>
+<td style="text-align: right;">212995</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13489700</td>
+<td style="text-align: left;">2021-06-01</td>
+<td style="text-align: right;">320000</td>
+<td style="text-align: left;">2021-05-07</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: left;">freehold</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Coventry</td>
+<td style="text-align: right;">350000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13505296</td>
+<td style="text-align: left;">2021-12-26</td>
+<td style="text-align: right;">245000</td>
+<td style="text-align: left;">2021-05-10</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: left;">freehold</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Cardiff</td>
+<td style="text-align: right;">230000</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">13549862</td>
+<td style="text-align: left;">2022-01-17</td>
+<td style="text-align: right;">325000</td>
+<td style="text-align: left;">2021-05-13</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">flat</td>
+<td style="text-align: left;">leasehold</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Bromley</td>
+<td style="text-align: right;">325000</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">13578826</td>
+<td style="text-align: left;">2021-07-18</td>
+<td style="text-align: right;">350000</td>
+<td style="text-align: left;">2021-05-16</td>
+<td style="text-align: left;">buy</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: left;">freehold</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">Exeter</td>
+<td style="text-align: right;">475000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) abd that location refers to a post town in UK.</p>
 
 
 </section>
