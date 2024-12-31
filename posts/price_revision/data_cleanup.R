@@ -4,13 +4,88 @@ library(knitr)
 library(patchwork)
 library(this.path)
 setwd(here())
+options(width = 200)
+
 # %%
-# We remove periods of COVID which may have caused market movement that are not representative of normal conditions
+
 min_data_date <- as.Date("2021-01-01")
 listings <- read_csv("listings.csv", show_col_types = F) %>%
-    filter(listing_date >= min_data_date)
-revisions <- read_csv("revisions.csv", show_col_types = F) %>%
-    filter(revision_date >= min_data_date)
+    # remove periods of COVID which may have caused market movement that are not representative of normal conditions, max date < Mini budget
+    filter(listing_date >= min_data_date) %>%
+    mutate(location = if_else(location == "Newcastle upon Tyne", "Newcastle Upon Tyne", location)) %>%
+    # remove bathroom_count from analysis as it has quite a lot of missing values and does not seem very valuable piece of info
+    select(-bathroom_count) %>%
+    # remove 0 and 1 bed houses (likely errors) and restrict to 5 beds since those are asset classes of interest
+    filter((property_type == "flat" & bedroom_count <= 5) | (property_type == "house" & between(bedroom_count, 2, 5))) %>%
+    # sensible max price
+    filter((bedroom_count == 0 & asking_price < 300000) | (asking_price <= 1000000 & between(bedroom_count, 1, 4)) | (asking_price <= 1500000 & bedroom_count == 5))
 
+# This is a smaller subset of listings
+revisions <- read_csv("revisions.csv", show_col_types = F)
+
+summary(listings)
+
+# %%
+# Check distribution of prices
+for (bed in unique(sort(listings$bedroom_count))) {
+    p <- ggplot(listings %>% filter(bedroom_count == bed)) +
+        geom_histogram(aes(x = asking_price, y = after_stat(count / max(count)), colour = property_type), alpha = 0.3) +
+        ggtitle(paste("Beds: ", bed))
+    print(p)
+}
+
+# %%
+# Check for duplicates
+listings %>%
+    group_by(listing_id) %>%
+    summarise(counts = n()) %>%
+    arrange(desc(counts))
+
+# %%
+# Filter revisions using sensible listings
+
+listings_with_revisions <- inner_join(revisions, listings, by = "listing_id")
+
+# Check distribution of revised prices
+for (bed in unique(sort(listings_with_revisions$bedroom_count))) {
+    p <- ggplot(listings_with_revisions %>% filter(bedroom_count == bed)) +
+        geom_histogram(aes(x = revised_asking_price, y = after_stat(count / max(count)), colour = property_type), alpha = 0.3) +
+        ggtitle(paste("Beds: ", bed))
+    print(p)
+}
+
+# %%
+frequently_revised <- listings_with_revisions %>%
+    arrange(listing_id, revision_date) %>%
+    group_by(listing_id) %>%
+    mutate(price_change = revised_asking_price != lag(revised_asking_price, default = first(revised_asking_price))) %>%
+    summarise(
+        all_revisions = n(), price_levels = n_distinct(revised_asking_price),
+        price_revisions = sum(price_change, na.rm = TRUE)
+    )
+
+suspect_id = 15578098
+suspected_revisions <- listings_with_revisions %>% filter(listing_id == suspect_id)
+# print(suspected_revisions)
+ggplot(suspected_revisions) +
+    geom_line(aes(x = revision_date, y = revised_asking_price))
+
+# %%
+filtered_listings_with_revisions <- listings_with_revisions %>%
+    filter(listing_id %in% frequently_revised$listing_id)
+
+# Check if siginificant rows have been dropped from revisions
+nrow(revisions)
+nrow(listings_with_revisions)
+nrow(filtered_listings_with_revisions)
+
+# Check if significant number of listitngs were affected
+length(revisions %>% pull(listing_id) %>% unique())
+length(listings_with_revisions %>% pull(listing_id) %>% unique())
+length(filtered_listings_with_revisions %>% pull(listing_id) %>% unique())
+
+# Since there aren't significant number of listings affected the results of filtering are acceptable
+
+write.csv(filtered_listings_with_revisions, "listings_with_revisions.csv", row.names = F)
 
 # %%
