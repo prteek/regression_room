@@ -45,9 +45,13 @@ listings %>%
 # Filter revisions using sensible listings
 
 listings_with_revisions <- inner_join(listings, revisions, by = "listing_id") %>%
+    # Logically remove revisions occuring before listing date. Could be related to previous sale
+    filter(revision_date >= listing_date) %>%
     # sensible max price
     filter(revised_asking_price >= 100000) %>%
-    filter((bedroom_count == 0 & revised_asking_price < 300000) | (revised_asking_price <= 1000000 & between(bedroom_count, 1, 4)) | (revised_asking_price <= 1500000 & bedroom_count == 5))
+    filter((bedroom_count == 0 & revised_asking_price < 300000) | (revised_asking_price <= 1000000 & between(bedroom_count, 1, 4)) | (revised_asking_price <= 1500000 & bedroom_count == 5)) %>%
+    # remove instances where listings may be inactive for long promting at a possible recycling of existing listing
+    filter((revision_date - listing_date) <= 270)
 
 # Check distribution of revised prices
 for (bed in unique(sort(listings_with_revisions$bedroom_count))) {
@@ -65,7 +69,8 @@ frequently_revised <- listings_with_revisions %>%
     summarise(
         all_revisions = n(), price_levels = n_distinct(revised_asking_price),
         price_revisions = sum(price_change, na.rm = TRUE)
-    )
+    ) %>%
+    filter(price_change <= price_levels)
 
 suspect_id = 15578098
 suspected_revisions <- listings_with_revisions %>% filter(listing_id == suspect_id)
@@ -89,6 +94,22 @@ length(filtered_listings_with_revisions %>% pull(listing_id) %>% unique())
 
 # Since there aren't significant number of listings affected the results of filtering are acceptable
 
-write.csv(filtered_listings_with_revisions, "listings_with_revisions.csv", row.names = F)
+# %%
+first_and_last_revisions <- filtered_listings_with_revisions %>%
+    arrange(listing_id, revision_date, desc(revised_asking_price)) %>%
+    group_by(listing_id) %>%
+    summarise(
+        first_price = first(asking_price),
+        last_price = last(revised_asking_price),
+        max_revision_date = last(revision_date),
+        listing_date = first(revision_date),
+    ) %>%
+    mutate(active_days = max_revision_date - listing_date)
+
+negative_revisions <- inner_join(filtered_listings_with_revisions, first_and_last_revisions %>% select(-listing_date) %>% filter(last_price < first_price), by = c("listing_id" = "listing_id", "revision_date" = "max_revision_date", "revised_asking_price" = "last_price")) %>%
+    select(names(filtered_listings_with_revisions))
+
+# %%
+write.csv(negative_revisions, "negative_revisions.csv", row.names = F)
 
 # %%
