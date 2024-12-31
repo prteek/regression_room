@@ -19,7 +19,7 @@ A better understanding of factors associated with price reductions can help driv
 The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand.
 
 ## Data
-The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings_with_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
+The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
 These files individually contain basic attributes of properties and revised prices (both increased in decreased).
 
 These are cleaned up for sensible choices of attributes in listing data and price revisions and only negative price revisions for listings are retained. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
@@ -28,9 +28,53 @@ These are cleaned up for sensible choices of attributes in listing data and pric
 #| echo: false
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(knitr))
+library(patchwork)
 library(this.path)
 setwd(here())
-revisions <- read_csv('terminal_revisions.csv', show_col_types=F)
+options(width=200)
+revisions <- read_csv('terminal_revisions.csv', show_col_types=F) %>%
+                mutate(bedroom_count=as.factor(bedroom_count))
 kable(head(revisions))
 ```
 The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) and that location refers to a post town in UK.
+
+We've converted *bedroom_count* to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1->2 ~= 2 -> 3). <br/>
+Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.
+
+### EDA
+
+There are unknown values in *tenure* which should likely be either of the other 2 categories. The proportion of these listings is about 8% in the data so we cannot drop these listings since their share is quite large. <br/>
+Additionally, most often *flats* are observed to be leasehold (which is sensible given that land is not definitively owned) and *houses* are observed to be freehold. Thus suggesting a strong correlation between *tenure* and *property_type*, which means we can drop this column from analysis and use just the *property_type* for both pieces of information.
+
+```{r}
+#| echo: false
+kable(revisions %>% group_by(tenure, property_type) %>% summarise(counts=n(), .groups='keep'))
+
+```
+
+We do not find a clear relationship between *asking_price* and 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on *location* or *property_type* etc.
+
+```{r}
+#| echo: false
+p1 <- ggplot(revisions) + geom_jitter(aes(x=asking_price, y=is_5percent_reduced), height=0.02, width=0.1, size=0.1) + theme_minimal()
+p2 <- ggplot(revisions) + geom_histogram(aes(x=asking_price, fill=is_5percent_reduced), alpha=0.5, bins=25) + theme_minimal()
+p1|p2
+
+```
+
+There are locations which have had a higher share of properties reduced and this is encouraging as conditional on location effect other variables may be different.
+
+```{r}
+#| echo: false
+ggplot(revisions %>%
+        group_by(location) %>%
+        mutate(prop_yes=sum(is_5percent_reduced == "yes") / n()) %>%
+        ungroup(),
+        aes(x = reorder(location, prop_yes), fill = is_5percent_reduced)
+ ) +
+  geom_bar(position = "fill", alpha=0.5) +  # "fill" shows proportions
+  labs(title = "Location vs reductions", y = "Proportion") +
+  coord_flip() +
+  theme_minimal()
+
+```

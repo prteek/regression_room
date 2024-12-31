@@ -155,7 +155,10 @@ ul.task-list li input[type="checkbox"] {
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
+  <ul class="collapse">
+  <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda">EDA</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -174,7 +177,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings_with_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased).</p>
+<p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased).</p>
 <p>These are cleaned up for sensible choices of attributes in listing data and price revisions and only negative price revisions for listings are retained. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -198,11 +201,11 @@ ul.task-list li input[type="checkbox"] {
 <th style="text-align: left;">listing_type</th>
 <th style="text-align: left;">property_type</th>
 <th style="text-align: left;">tenure</th>
-<th style="text-align: right;">bedroom_count</th>
+<th style="text-align: left;">bedroom_count</th>
 <th style="text-align: left;">location</th>
 <th style="text-align: right;">asking_price</th>
 <th style="text-align: left;">revision_date</th>
-<th style="text-align: right;">revised_asking_price</th>
+<th style="text-align: left;">is_5percent_reduced</th>
 </tr>
 </thead>
 <tbody>
@@ -212,11 +215,11 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">flat</td>
 <td style="text-align: left;">leasehold</td>
-<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
 <td style="text-align: left;">Gloucester</td>
 <td style="text-align: right;">155000</td>
 <td style="text-align: left;">2021-12-16</td>
-<td style="text-align: right;">160000</td>
+<td style="text-align: left;">no</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">15528531</td>
@@ -224,11 +227,11 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">house</td>
 <td style="text-align: left;">freehold</td>
-<td style="text-align: right;">3</td>
+<td style="text-align: left;">3</td>
 <td style="text-align: left;">Coventry</td>
 <td style="text-align: right;">225000</td>
 <td style="text-align: left;">2022-01-11</td>
-<td style="text-align: right;">230000</td>
+<td style="text-align: left;">no</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">15542023</td>
@@ -236,11 +239,11 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">house</td>
 <td style="text-align: left;">freehold</td>
-<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
 <td style="text-align: left;">Reading</td>
 <td style="text-align: right;">325000</td>
 <td style="text-align: left;">2021-10-16</td>
-<td style="text-align: right;">310000</td>
+<td style="text-align: left;">no</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">15550261</td>
@@ -248,11 +251,11 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">house</td>
 <td style="text-align: left;">freehold</td>
-<td style="text-align: right;">3</td>
+<td style="text-align: left;">3</td>
 <td style="text-align: left;">Sheffield</td>
 <td style="text-align: right;">270000</td>
 <td style="text-align: left;">2022-05-11</td>
-<td style="text-align: right;">260000</td>
+<td style="text-align: left;">no</td>
 </tr>
 <tr class="odd">
 <td style="text-align: right;">15557544</td>
@@ -260,11 +263,11 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">house</td>
 <td style="text-align: left;">freehold</td>
-<td style="text-align: right;">4</td>
+<td style="text-align: left;">4</td>
 <td style="text-align: left;">Warrington</td>
 <td style="text-align: right;">299950</td>
 <td style="text-align: left;">2022-01-25</td>
-<td style="text-align: right;">290000</td>
+<td style="text-align: left;">no</td>
 </tr>
 <tr class="even">
 <td style="text-align: right;">15565980</td>
@@ -272,19 +275,89 @@ ul.task-list li input[type="checkbox"] {
 <td style="text-align: left;">buy</td>
 <td style="text-align: left;">house</td>
 <td style="text-align: left;">freehold</td>
-<td style="text-align: right;">2</td>
+<td style="text-align: left;">2</td>
 <td style="text-align: left;">Watford</td>
 <td style="text-align: right;">450000</td>
 <td style="text-align: left;">2022-02-25</td>
-<td style="text-align: right;">485000</td>
+<td style="text-align: left;">no</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
 <p>The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) and that location refers to a post town in UK.</p>
+<p>We’ve converted <em>bedroom_count</em> to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1-&gt;2 ~= 2 -&gt; 3). <br> Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.</p>
+<section id="eda" class="level3">
+<h3 class="anchored" data-anchor-id="eda">EDA</h3>
+<p>There are unknown values in <em>tenure</em> which should likely be either of the other 2 categories. The proportion of these listings is about 8% in the data so we cannot drop these listings since their share is quite large. <br> Additionally, most often <em>flats</em> are observed to be leasehold (which is sensible given that land is not definitively owned) and <em>houses</em> are observed to be freehold. Thus suggesting a strong correlation between <em>tenure</em> and <em>property_type</em>, which means we can drop this column from analysis and use just the <em>property_type</em> for both pieces of information.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">tenure</th>
+<th style="text-align: left;">property_type</th>
+<th style="text-align: right;">counts</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">freehold</td>
+<td style="text-align: left;">flat</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">freehold</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: right;">40117</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">leasehold</td>
+<td style="text-align: left;">flat</td>
+<td style="text-align: right;">17176</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">leasehold</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: right;">21</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">unknown</td>
+<td style="text-align: left;">flat</td>
+<td style="text-align: right;">456</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">unknown</td>
+<td style="text-align: left;">house</td>
+<td style="text-align: right;">4689</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>We do not find a clear relationship between <em>asking_price</em> and 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on <em>location</em> or <em>property_type</em> etc.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There are locations which have had a higher share of properties reduced and this is encouraging as conditional on location effect other variables may be different.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
