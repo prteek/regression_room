@@ -7,20 +7,6 @@
     "text": "I am a Lead Data Scientist at Bricklane Technologies. When not dabbling in data analysis, I enjoy spending time reading or running."
   },
   {
-    "objectID": "posts/price_revision/index.html",
-    "href": "posts/price_revision/index.html",
-    "title": "Analysis of price reductions",
-    "section": "",
-    "text": "In real estate universe, often listings on the market experience updates due to either changes to property specific information or due to an influence of markets.  The market influences prices of listings in major way and can lead to price increase or decrease post original advertisement. Of interest to a real investment company are price revisions that are &lt; 0, i.e. where prices of listings decrease. Such properties can offer immediate improvement to rental yield investment cases and shorter times to close due to comparatively lower demand. The current analysis aspires to be able to understand where and based on what factors could price changes have happened using a historic listings dataset. This is to validate the analysis against subject matter knowledge and also expand the current understanding about price revision behaviours in the market. A better understanding of factors associated with price reductions can help drive strategic decisions e.g. if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there.  The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand."
-  },
-  {
-    "objectID": "posts/price_revision/index.html#introduction",
-    "href": "posts/price_revision/index.html#introduction",
-    "title": "Analysis of price reductions",
-    "section": "",
-    "text": "In real estate universe, often listings on the market experience updates due to either changes to property specific information or due to an influence of markets.  The market influences prices of listings in major way and can lead to price increase or decrease post original advertisement. Of interest to a real investment company are price revisions that are &lt; 0, i.e. where prices of listings decrease. Such properties can offer immediate improvement to rental yield investment cases and shorter times to close due to comparatively lower demand. The current analysis aspires to be able to understand where and based on what factors could price changes have happened using a historic listings dataset. This is to validate the analysis against subject matter knowledge and also expand the current understanding about price revision behaviours in the market. A better understanding of factors associated with price reductions can help drive strategic decisions e.g. if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there.  The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand."
-  },
-  {
     "objectID": "posts/movies_getting_longer/index.html",
     "href": "posts/movies_getting_longer/index.html",
     "title": "Are blockbusters getting (reely) longer ?",
@@ -137,6 +123,6 @@
     "href": "index.html",
     "title": "Regression Room",
     "section": "",
-    "text": "Analysis of price reductions\n\n\n\n\n\n\nlogistic regression\n\n\nprobability\n\n\nEDA\n\n\n\nModelling and analysing probability of house sale price reductions\n\n\n\n\n\nJan 4, 2025\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nPrimer on Likelihood\n\n\n\n\n\n\nlikelihood\n\n\nfisher information\n\n\nnewton raphson\n\n\n\nApplied to parameter estimation\n\n\n\n\n\nDec 28, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nUser behaviour analysis\n\n\n\n\n\n\nmarkov chain\n\n\ntimeseries\n\n\n\n\n\n\n\n\n\nDec 18, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nAre blockbusters getting (reely) longer ?\n\n\n\n\n\n\nhypothesis testing\n\n\nbootstrap\n\n\nregression\n\n\n\n\n\n\n\n\n\nJul 21, 2023\n\n\nPrateek\n\n\n\n\n\n\nNo matching items"
+    "text": "Primer on Likelihood\n\n\n\n\n\n\nlikelihood\n\n\nfisher information\n\n\nnewton raphson\n\n\n\nApplied to parameter estimation\n\n\n\n\n\nDec 28, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nUser behaviour analysis\n\n\n\n\n\n\nmarkov chain\n\n\ntimeseries\n\n\n\n\n\n\n\n\n\nDec 18, 2024\n\n\nPrateek\n\n\n\n\n\n\n\n\n\n\n\n\nAre blockbusters getting (reely) longer ?\n\n\n\n\n\n\nhypothesis testing\n\n\nbootstrap\n\n\nregression\n\n\n\n\n\n\n\n\n\nJul 21, 2023\n\n\nPrateek\n\n\n\n\n\n\nNo matching items"
   }
 ]

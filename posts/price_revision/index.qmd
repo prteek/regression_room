@@ -4,7 +4,7 @@ author: "Prateek"
 date: "2025-01-04"
 categories: [logistic regression, probability, EDA]
 toc: true
-freeze: true
+draft: true
 description: Modelling and analysing probability of house sale price reductions
 ---
 
@@ -12,5 +12,8 @@ description: Modelling and analysing probability of house sale price reductions
 In real estate universe, often listings on the market experience updates due to either changes to property specific information or due to an influence of markets. <br/>
 The market influences prices of listings in major way and can lead to price increase or decrease post original advertisement.<br/>
 Of interest to a real investment company are price revisions that are < 0, i.e. where prices of listings decrease. Such properties can offer immediate improvement to rental yield investment cases and shorter times to close due to comparatively lower demand.
-The current analysis aspires to be able to understand where and based on what factors could price changes have happened using a historic listings dataset. This is to validate the analysis against subject matter knowledge and also expand the current understanding about price revision behaviours in the market. A better understanding of factors associated with price reductions can help drive strategic decisions e.g. if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there. <br/>
+
+The current analysis aspires to be able to understand where and based on what factors could price changes have happened using a historic listings dataset. This is to validate the analysis against subject matter knowledge and also expand the current understanding about price revision behaviours in the market. <br/>
+A better understanding of factors associated with price reductions can help drive strategic decisions e.g. if prices are more likely to be reduced at a particular location in recent data then the market may be experiencing a contraction there.
+
 The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand.
