@@ -15,8 +15,8 @@ listings <- read_csv("listings.csv", show_col_types = F) %>%
     mutate(location = if_else(location == "Newcastle upon Tyne", "Newcastle Upon Tyne", location)) %>%
     # remove bathroom_count from analysis as it has quite a lot of missing values and does not seem very valuable piece of info
     select(-bathroom_count) %>%
-    # remove 0 and 1 bed houses (likely errors) and restrict to 5 beds since those are asset classes of interest
-    filter((property_type == "flat" & bedroom_count <= 5) | (property_type == "house" & between(bedroom_count, 2, 5))) %>%
+    # remove 0 and 1 bed houses (likely errors), flats with > 2 beds (very few 3 beds exist) and restrict to 5 beds overall since those may be asset classes of interest
+    filter((property_type == "flat" & between(bedroom_count, 0, 2)) | (property_type == "house" & between(bedroom_count, 2, 5))) %>%
     # sensible max price
     filter((bedroom_count == 0 & asking_price < 300000) | (asking_price <= 1000000 & between(bedroom_count, 1, 4)) | (asking_price <= 1500000 & bedroom_count == 5))
 
@@ -29,7 +29,7 @@ summary(listings)
 # Check distribution of prices
 for (bed in unique(sort(listings$bedroom_count))) {
     p <- ggplot(listings %>% filter(bedroom_count == bed)) +
-        geom_histogram(aes(x = asking_price, y = after_stat(count / max(count)), colour = property_type), alpha = 0.3) +
+        geom_histogram(aes(x = asking_price, y = after_stat(count / max(count)), fill = property_type), alpha = 0.8, position = "dodge") +
         ggtitle(paste("Beds: ", bed))
     print(p)
 }
@@ -44,12 +44,15 @@ listings %>%
 # %%
 # Filter revisions using sensible listings
 
-listings_with_revisions <- inner_join(revisions, listings, by = "listing_id")
+listings_with_revisions <- inner_join(listings, revisions, by = "listing_id") %>%
+    # sensible max price
+    filter(revised_asking_price >= 100000) %>%
+    filter((bedroom_count == 0 & revised_asking_price < 300000) | (revised_asking_price <= 1000000 & between(bedroom_count, 1, 4)) | (revised_asking_price <= 1500000 & bedroom_count == 5))
 
 # Check distribution of revised prices
 for (bed in unique(sort(listings_with_revisions$bedroom_count))) {
     p <- ggplot(listings_with_revisions %>% filter(bedroom_count == bed)) +
-        geom_histogram(aes(x = revised_asking_price, y = after_stat(count / max(count)), colour = property_type), alpha = 0.3) +
+        geom_histogram(aes(x = revised_asking_price, y = after_stat(count / max(count)), fill = property_type), alpha = 0.7, position = "dodge") +
         ggtitle(paste("Beds: ", bed))
     print(p)
 }

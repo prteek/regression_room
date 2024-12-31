@@ -32,4 +32,4 @@ setwd(here())
 revisions <- read_csv('listings_with_revisions.csv', show_col_types=F)
 kable(head(revisions))
 ```
-The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) abd that location refers to a post town in UK.
+The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) and that location refers to a post town in UK.
