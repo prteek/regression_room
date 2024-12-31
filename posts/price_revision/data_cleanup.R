@@ -109,7 +109,7 @@ start_and_end_revisions <- filtered_listings_with_revisions %>%
     filter(between(last_price / first_price, 0.7, 1.3))
 
 terminal_revisions <- inner_join(filtered_listings_with_revisions, start_and_end_revisions %>% select(-listing_date), by = c("listing_id" = "listing_id", "revision_date" = "max_revision_date", "revised_asking_price" = "last_price")) %>%
-    select(names(filtered_listings_with_revisions)) %>%
+    select(names(filtered_listings_with_revisions), active_days) %>%
     # Add binary indicator for >= 5% reduction
     mutate(is_5percent_reduced = if_else(revised_asking_price / asking_price <= 0.95, "yes", "no"))
 
