@@ -1299,6 +1299,16 @@
       ],
       "Hash": "573e0d015b7fc3e555f83e254cad7533"
     },
+    "this.path": {
+      "Package": "this.path",
+      "Version": "2.6.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "b21ad87c95be5bb2d941f66ed0a2a8d4"
+    },
     "tibble": {
       "Package": "tibble",
       "Version": "3.2.1",
