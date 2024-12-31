@@ -20,8 +20,9 @@ The analysis also extends to prediction of probability of price reduction based 
 
 ## Data
 The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings_with_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
-These files individually contain basic attributes of properties and revised prices (both increased in decreased). There are no missing values and the data values are checked for the suitability of application.
-These are cleaned up for sensible choices of attributes in listing data and price revisions. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
+These files individually contain basic attributes of properties and revised prices (both increased in decreased).
+
+These are cleaned up for sensible choices of attributes in listing data and price revisions and only negative price revisions for listings are retained. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
 
 ```{r}
 #| echo: false
@@ -29,7 +30,7 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(knitr))
 library(this.path)
 setwd(here())
-revisions <- read_csv('listings_with_revisions.csv', show_col_types=F)
+revisions <- read_csv('terminal_revisions.csv', show_col_types=F)
 kable(head(revisions))
 ```
 The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) and that location refers to a post town in UK.

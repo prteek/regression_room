@@ -95,7 +95,7 @@ length(filtered_listings_with_revisions %>% pull(listing_id) %>% unique())
 # Since there aren't significant number of listings affected the results of filtering are acceptable
 
 # %%
-first_and_last_revisions <- filtered_listings_with_revisions %>%
+start_and_end_revisions <- filtered_listings_with_revisions %>%
     arrange(listing_id, revision_date, desc(revised_asking_price)) %>%
     group_by(listing_id) %>%
     summarise(
@@ -106,10 +106,10 @@ first_and_last_revisions <- filtered_listings_with_revisions %>%
     ) %>%
     mutate(active_days = max_revision_date - listing_date)
 
-negative_revisions <- inner_join(filtered_listings_with_revisions, first_and_last_revisions %>% select(-listing_date) %>% filter(last_price < first_price), by = c("listing_id" = "listing_id", "revision_date" = "max_revision_date", "revised_asking_price" = "last_price")) %>%
+terminal_revisions <- inner_join(filtered_listings_with_revisions, start_and_end_revisions %>% select(-listing_date), by = c("listing_id" = "listing_id", "revision_date" = "max_revision_date", "revised_asking_price" = "last_price")) %>%
     select(names(filtered_listings_with_revisions))
 
 # %%
-write.csv(negative_revisions, "negative_revisions.csv", row.names = F)
+write.csv(terminal_revisions, "terminal_revisions.csv", row.names = F)
 
 # %%
