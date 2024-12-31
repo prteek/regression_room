@@ -82,8 +82,9 @@ suppressPackageStartupMessages(library(MASS))
 suppressPackageStartupMessages(library(patchwork))
 suppressPackageStartupMessages(library(knitr))
 suppressPackageStartupMessages(library(tidyverse))
+library(this.path)
 
-setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/user_behaviour_analysis")
+setwd(here())
 source('helpers.r')
 
 ```

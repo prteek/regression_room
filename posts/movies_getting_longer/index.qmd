@@ -98,8 +98,8 @@ def download_data():
 ```{r}
 #| echo: false
 suppressPackageStartupMessages(library(tidyverse))
-setwd("/Users/prateek/Documents/projects/prteek/regression_room/posts/movies_getting_longer")
-
+library(this.path)
+setwd(here())
 ```
 ```{r}
 yearly_top_movies = read_delim('movies_dataset.csv',
