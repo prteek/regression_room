@@ -29,14 +29,20 @@ These are cleaned up for sensible choices of attributes in listing data and pric
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(knitr))
 library(patchwork)
+library(faraway)
 library(this.path)
 setwd(here())
 options(width=200)
 revisions <- read_csv('terminal_revisions.csv', show_col_types=F) %>%
-                mutate(bedroom_count=as.factor(bedroom_count))
+                mutate(bedroom_count=as.factor(bedroom_count),
+                location=relevel(as.factor(location), ref='Watford'),
+                property_type=as.factor(property_type)
+                )
+
 kable(head(revisions))
+
 ```
-The columns are self explanatory and the only thing worth noting is that prices are in GBP (£) and that location refers to a post town in UK.
+The columns are self explanatory and the thing worth noting is that active days indicate the time elapsed from *listing_date to revision_date*.
 
 We've converted *bedroom_count* to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1->2 ~= 2 -> 3). <br/>
 Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.
@@ -52,29 +58,107 @@ kable(revisions %>% group_by(tenure, property_type) %>% summarise(counts=n(), .g
 
 ```
 
-We do not find a clear relationship between *asking_price* and 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on *location* or *property_type* etc.
+We do not find a clear relationship between *asking_price* and properties that have had 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on *location* or *property_type* etc. <br/>
+Similar conclusion for *active_days*. Due to both of these variables having a long tail, these were log transformed and for the rest of the analysis we shall do the same treatment.
 
 ```{r}
 #| echo: false
-p1 <- ggplot(revisions) + geom_jitter(aes(x=asking_price, y=is_5percent_reduced), height=0.02, width=0.1, size=0.1) + theme_minimal()
-p2 <- ggplot(revisions) + geom_histogram(aes(x=asking_price, fill=is_5percent_reduced), alpha=0.5, bins=25) + theme_minimal()
+p1 <- ggplot(revisions %>% filter(asking_price>0)) + geom_boxplot(aes(y=log(asking_price), x=is_5percent_reduced)) + theme_minimal()
+
+p2 <- ggplot(revisions %>% filter(active_days>0)) + geom_boxplot(aes(y=log(active_days), x=is_5percent_reduced)) + theme_minimal()
+
 p1|p2
 
 ```
 
-There are locations which have had a higher share of properties reduced and this is encouraging as conditional on location effect other variables may be different.
+There are locations which have had a higher share of properties reduced and this is encouraging as conditional on *location* effect other variables may be different. <br/>
+We observe some association between reductions and *bedroom count* and *property type* too.
 
 ```{r}
 #| echo: false
-ggplot(revisions %>%
+p1 <- ggplot(revisions %>%
         group_by(location) %>%
         mutate(prop_yes=sum(is_5percent_reduced == "yes") / n()) %>%
         ungroup(),
         aes(x = reorder(location, prop_yes), fill = is_5percent_reduced)
  ) +
   geom_bar(position = "fill", alpha=0.5) +  # "fill" shows proportions
-  labs(title = "Location vs reductions", y = "Proportion") +
+  labs(title = "Location vs reductions", y = "Proportion", x="Location") +
   coord_flip() +
   theme_minimal()
 
+p2 <- ggplot(revisions,
+        aes(x = bedroom_count, fill = is_5percent_reduced)) +
+  geom_bar(position = "fill", alpha=0.5) +  # "fill" shows proportions
+  labs(title = "Bedrooms vs reductions", y = "Proportion", x="Bedrooms") +
+  coord_flip() +
+  theme_minimal()
+
+
+p3 <- ggplot(revisions %>%
+        group_by(property_type) %>%
+        mutate(prop_yes=sum(is_5percent_reduced == "yes") / n()) %>%
+        ungroup(),
+        aes(x = reorder(property_type, prop_yes), fill = is_5percent_reduced)
+ ) +
+  geom_bar(position = "fill", alpha=0.5) +  # "fill" shows proportions
+  labs(title = "Property type vs reductions", y = "Proportion", x="Property type") +
+  coord_flip() +
+  theme_minimal()
+
+p1
+p2 | p3
+```
+
+
+There doesn't seem to be a pattern where during certain periods of time there were relatively more properties are getting revisions leading to price reductions. We shall not focus on the time component in the rest of the analysis.
+
+```{r}
+#| echo: false
+ggplot(revisions %>% mutate(revision_month=floor_date(revision_date, unit='month')) %>% group_by(revision_month, is_5percent_reduced) %>% summarise(counts=n(), .groups='keep')) + geom_point(aes(x=revision_month, y=counts, colour=is_5percent_reduced)) + geom_line(aes(x=revision_month, y=counts, colour=is_5percent_reduced)) + theme_minimal()
+
+```
+
+## Model
+
+```{r}
+#| echo: false
+train <- revisions[1:50000,] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
+test <- revisions[50000:nrow(revisions),] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
+lmod <- glm(is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + log(active_days) + location, family=binomial, train)
+
+beta <- coef(lmod)
+
+```
+
+```{r}
+#| echo: false
+par(mfrow=c(1,2))
+n <- 30 # 3 bed house in Leicester
+X <- model.matrix(lmod)[n,]
+col_name = "log(asking_price)"
+i_beta <- which(names(beta)==col_name)
+X[col_name] = 0
+contrib <- t(as.matrix(X)) %*% beta
+plot(jitter(is_5percent_reduced, 0.1) ~ jitter(asking_price), data=train, pch='.', xlab='asking price', ylab='prob(is_5percent_reduced)')
+curve(ilogit(contrib[1] + beta[i_beta]*log(x)), add=TRUE)
+curve(ilogit(contrib[1] + beta[i_beta]*log(x) - beta['property_typehouse']*1), add=TRUE, lty=2)
+legend("right", legend = c("house", "flat"), lty = c(1,2))
+grid()
+
+X <- model.matrix(lmod)[n,]
+col_name = "log(active_days)"
+i_beta <- which(names(beta)==col_name)
+X[col_name] = 0
+contrib <- t(as.matrix(X)) %*% beta
+plot(jitter(is_5percent_reduced, 0.1) ~ jitter(active_days), data=train, pch='.', xlab='active days', ylab='prob(is_5percent_reduced)')
+curve(ilogit(contrib[1] + beta[i_beta]*log(x)), add=TRUE)
+curve(ilogit(contrib[1] + beta[i_beta]*log(x) - beta['property_typehouse']*1), add=TRUE, lty=2)
+legend("right", legend = c("house", "flat"), lty = c(1,2))
+grid()
+par(mfrow=c(1,1))
+
+# scale <- sqrt(diag(summary(lmod)$cov.unscaled))[2:length(beta)]
+# beta_p <- beta[2:length(beta)]
+# round(exp(cbind(odds_ratio=beta_p, lower=beta_p-1.96*scale, upper=beta_p+1.96*scale)),2)
 ```
