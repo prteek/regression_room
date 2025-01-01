@@ -44,7 +44,7 @@ kable(head(revisions))
 ```
 The columns are self explanatory and the thing worth noting is that active days indicate the time elapsed from *listing_date to revision_date*.
 
-We've converted *bedroom_count* to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1->2 ~= 2 -> 3). <br/>
+We've converted *bedroom_count* to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1->2 != 2 -> 3). <br/>
 Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.
 
 ### EDA

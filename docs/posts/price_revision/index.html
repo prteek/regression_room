@@ -295,7 +295,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 <p>The columns are self explanatory and the thing worth noting is that active days indicate the time elapsed from <em>listing_date to revision_date</em>.</p>
-<p>We’ve converted <em>bedroom_count</em> to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1-&gt;2 ~= 2 -&gt; 3). <br> Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.</p>
+<p>We’ve converted <em>bedroom_count</em> to a qualitative type, since bedroom count has a highly non linear effect on prices and other attributes of property (1-&gt;2 != 2 -&gt; 3). <br> Additionally, there are only a few different bedroom counts in the data and it could be analysed without treating this information as quantitative.</p>
 <section id="eda" class="level3">
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>There are unknown values in <em>tenure</em> which should likely be either of the other 2 categories. The proportion of these listings is about 8% in the data so we cannot drop these listings since their share is quite large. <br> Additionally, most often <em>flats</em> are observed to be leasehold (which is sensible given that land is not definitively owned) and <em>houses</em> are observed to be freehold. Thus suggesting a strong correlation between <em>tenure</em> and <em>property_type</em>, which means we can drop this column from analysis and use just the <em>property_type</em> for both pieces of information.</p>
