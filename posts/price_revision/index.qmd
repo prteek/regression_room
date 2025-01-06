@@ -1,7 +1,7 @@
 ---
 title: "Analysis of price reductions"
 author: "Prateek"
-date: "2025-01-04"
+date: "2025-01-08"
 categories: [logistic regression, probability, EDA]
 toc: true
 draft: true
@@ -58,8 +58,9 @@ kable(revisions %>% group_by(tenure, property_type) %>% summarise(counts=n(), .g
 
 ```
 
-We do not find a clear relationship between *asking_price* and properties that have had 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on *location* or *property_type* etc. <br/>
-Similar conclusion for *active_days*. Due to both of these variables having a long tail, these were log transformed and for the rest of the analysis we shall do the same treatment.
+We do not find a clear relationship between *asking_price* and properties that have had 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps confounded by *location* or *property_type* etc. <br/>
+We expect that inclusion of *location* and other factors in the model will clarify effect of *asking_price* on revisions. <br/>
+Similar conclusion for *active_days*. Due to both of these variables having a long tail, these were log transformed and for the rest of the analysis we shall apply the same treatment.
 
 ```{r}
 #| echo: false
@@ -70,6 +71,7 @@ p2 <- ggplot(revisions %>% filter(active_days>0)) + geom_boxplot(aes(y=log(activ
 p1|p2
 
 ```
+
 
 There are locations which have had a higher share of properties reduced and this is encouraging as conditional on *location* effect other variables may be different. <br/>
 We observe some association between reductions and *bedroom count* and *property type* too.
@@ -111,13 +113,24 @@ p2 | p3
 ```
 
 
-There doesn't seem to be a pattern where during certain periods of time there were relatively more properties are getting revisions leading to price reductions. We shall not focus on the time component in the rest of the analysis.
+The proportion of properties undergoing price reductions is fairly (mean) stable over time, across almost all locations. We shall not focus on the time component in the rest of the analysis for simplification.
 
 ```{r}
 #| echo: false
-ggplot(revisions %>% mutate(revision_month=floor_date(revision_date, unit='month')) %>% group_by(revision_month, is_5percent_reduced) %>% summarise(counts=n(), .groups='keep')) + geom_point(aes(x=revision_month, y=counts, colour=is_5percent_reduced)) + geom_line(aes(x=revision_month, y=counts, colour=is_5percent_reduced)) + theme_minimal()
+#| fig-width: 12
+#| fig-height: 10
+revisions_summary <- revisions %>%
+  mutate(revision_month = floor_date(revision_date, unit = 'month')) %>%
+  group_by(revision_month, location, is_5percent_reduced) %>%
+  summarise(counts = n(), .groups = 'keep') %>%
+  pivot_wider(names_from = is_5percent_reduced, values_from = counts, values_fill = 0) %>%
+  mutate(proportion_yes = yes / (no + yes))
+
+ggplot(revisions_summary) + geom_point(aes(x=revision_month, y=proportion_yes)) + geom_line(aes(x=revision_month, y=proportion_yes)) + facet_wrap(~location) + theme_minimal()
+
 
 ```
+
 
 ## Model
 
@@ -129,7 +142,21 @@ lmod <- glm(is_5percent_reduced ~ property_type + bedroom_count + log(asking_pri
 
 beta <- coef(lmod)
 
+cat(paste("Null deviance:", round(lmod$null.deviance,0)))
+cat(paste("Model deviance:", round(lmod$deviance,0)))
+cat(paste("Model df:", lmod$df.null-lmod$df.residual))
+cat(paste("P-Value X^2:", 1-pchisq(lmod$null.deviance-lmod$deviance, lmod$df.null-lmod$df.residual)))
+
 ```
+
+The chi-square p value suggests that the model is significant and we can continue analysing effects captured by the model. <br/>
+Even without a formal test we can see that a chi-sq distribution with n degrees of freedom should have an expected value of n. In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model fit is not significantly different from null model with no predictors.
+
+### Effect of asking price and active days
+
+It can be observed that *asking_price* increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br/>
+*active_days* does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to *asking_price*, we shall test for this more formally. <br/>
+Both of these variables have shapes characteristic of a *log* transform which was applied previously.
 
 ```{r}
 #| echo: false

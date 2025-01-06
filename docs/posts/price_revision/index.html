@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Prateek">
-<meta name="dcterms.date" content="2025-01-04">
+<meta name="dcterms.date" content="2025-01-08">
 <meta name="description" content="Modelling and analysing probability of house sale price reductions">
 
 <title>Blog - Analysis of price reductions</title>
@@ -138,7 +138,7 @@ ul.task-list li input[type="checkbox"] {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">January 4, 2025</p>
+        <p class="date">January 8, 2025</p>
       </div>
     </div>
     
@@ -159,7 +159,10 @@ ul.task-list li input[type="checkbox"] {
   <ul class="collapse">
   <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda">EDA</a></li>
   </ul></li>
-  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a></li>
+  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
+  <ul class="collapse">
+  <li><a href="#effect-of-asking-price-and-active-days" id="toc-effect-of-asking-price-and-active-days" class="nav-link" data-scroll-target="#effect-of-asking-price-and-active-days">Effect of asking price and active days</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -344,7 +347,7 @@ ul.task-list li input[type="checkbox"] {
 </table>
 </div>
 </div>
-<p>We do not find a clear relationship between <em>asking_price</em> and properties that have had 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps conditional on <em>location</em> or <em>property_type</em> etc. <br> Similar conclusion for <em>active_days</em>. Due to both of these variables having a long tail, these were log transformed and for the rest of the analysis we shall do the same treatment.</p>
+<p>We do not find a clear relationship between <em>asking_price</em> and properties that have had 5% reduction in prices. It is still possible for there to be some relationship but it is perhaps confounded by <em>location</em> or <em>property_type</em> etc. <br> We expect that inclusion of <em>location</em> and other factors in the model will clarify effect of <em>asking_price</em> on revisions. <br> Similar conclusion for <em>active_days</em>. Due to both of these variables having a long tail, these were log transformed and for the rest of the analysis we shall apply the same treatment.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -371,12 +374,12 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>There doesn’t seem to be a pattern where during certain periods of time there were relatively more properties are getting revisions leading to price reductions. We shall not focus on the time component in the rest of the analysis.</p>
+<p>The proportion of properties undergoing price reductions is fairly (mean) stable over time, across almost all locations. We shall not focus on the time component in the rest of the analysis for simplification.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="1152"></p>
 </figure>
 </div>
 </div>
@@ -385,6 +388,24 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Null deviance: 14392</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model deviance: 13776</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Model df: 39</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>P-Value X^2: 0</code></pre>
+</div>
+</div>
+<p>The chi-square p value suggests that the model is significant and we can continue analysing effects captured by the model. <br> Even without a formal test we can see that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model fit is not significantly different from null model with no predictors.</p>
+<section id="effect-of-asking-price-and-active-days" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-asking-price-and-active-days">Effect of asking price and active days</h3>
+<p>It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br> <em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>, we shall test for this more formally. <br> Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -396,6 +417,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
