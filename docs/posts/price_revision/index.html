@@ -229,6 +229,7 @@ window.Quarto = {
   <li><a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics">Diagnostics</a></li>
   <li><a href="#goodness-of-fit" id="toc-goodness-of-fit" class="nav-link" data-scroll-target="#goodness-of-fit">Goodness of fit</a></li>
   </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -250,6 +251,18 @@ window.Quarto = {
 <p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased).</p>
 <p>These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
 <div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Type 'citation("pROC")' for a citation.</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'pROC'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>The following objects are masked from 'package:stats':
+
+    cov, smooth, var</code></pre>
+</div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -490,7 +503,7 @@ window.Quarto = {
 </div>
 <p><em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br> We can test individual explanatory variables by fitting models that drop each variable once and compute the difference in deviance observed.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Single term deletions
 
@@ -543,8 +556,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <h4 class="anchored" data-anchor-id="relationship-between-explanatory-variables-and-residuals">Relationship between Explanatory variables and Residuals</h4>
 <p>Among the categorical variables only <em>property_type</em> appears to have some degree of association with residuals. We will not address this at this point as the model is still likely to change.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(residuals <span class="sc">~</span> location <span class="sc">+</span> property_type <span class="sc">+</span> bedroom_count, train)</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(residuals <span class="sc">~</span> location <span class="sc">+</span> property_type <span class="sc">+</span> bedroom_count, train)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>                 Df Sum Sq Mean Sq F value Pr(&gt;F)  
 location         31     20   0.657   0.550 0.9798  
@@ -605,11 +618,43 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>As explained above this value is small and this is partly expected. This does not however rule out further model improvements like including additional informative explanatory variables and changing the functional forms in existing model (as was observed with <em>log(active days)</em>).</p>
 <section id="sensitivity-specificity-tradeoff" class="level4">
 <h4 class="anchored" data-anchor-id="sensitivity-specificity-tradeoff">Sensitivity specificity tradeoff</h4>
-<p>The model can also be used to predict the outcome for each property in the dataset (we’ve separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs.</p>
-
-
+<p>The model can also be used to predict the outcome for each property in the dataset (we’ve separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs. At the default 0.5 threshold, the classification table looks as below.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>          predout
+is_reduced   no  yes
+       no   400 3296
+       yes  294 7446</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Setting levels: control = 0, case = 1</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Setting direction: controls &lt; cases</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>          predout
+is_reduced   no  yes
+       no  1880 1816
+       yes 2510 5230</code></pre>
+</div>
+</div>
+<p>The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of <em>p=0.65</em> the classification table already looks much better.</p>
 </section>
 </section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>There is much scope for improvement still. The problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br> This exercise is but a small step in understanding this phenomenon and it definitely has indicated that more information is required to enhance accuracy of the model.</p>
+
+
 </section>
 
 </main> <!-- /main -->

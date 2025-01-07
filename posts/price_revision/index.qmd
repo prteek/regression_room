@@ -30,6 +30,7 @@ suppressPackageStartupMessages(library(knitr))
 library(patchwork)
 library(faraway)
 library(this.path)
+library(pROC)
 setwd(here())
 options(width=200)
 revisions <- read_csv('terminal_revisions.csv', show_col_types=F) %>%
@@ -137,8 +138,6 @@ ggplot(revisions_summary) + geom_point(aes(x=revision_month, y=proportion_yes)) 
 
 ```{r}
 #| echo: false
-
-library(splines)
 train <- revisions[1:50000,] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
 test <- revisions[50000:nrow(revisions),] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
 
@@ -317,9 +316,33 @@ cat(paste("Nagelkerke's R^2: ", round((1-exp((lmod$dev-lmod$null)/n))/(1-exp(-lm
 As explained above this value is small and this is partly expected. This does not however rule out further model improvements like including additional informative explanatory variables and changing the functional forms in existing model (as was observed with *log(active days)*).
 
 #### Sensitivity specificity tradeoff
-The model can also be used to predict the outcome for each property in the dataset (we've separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs.
+The model can also be used to predict the outcome for each property in the dataset (we've separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs. At the default 0.5 threshold, the classification table looks as below.
 
 ```{r}
+#| echo: false
 
+train <- train %>% mutate(predout=ifelse(predprob < 0.5, "no", "yes"), is_reduced=ifelse(is_5percent_reduced < 0.5, "no", "yes"))
+
+xtabs(~ is_reduced + predout, train)
+
+roc_obj <- roc(train$is_5percent_reduced, train$predprob)
+plot(roc_obj$thresholds, roc_obj$sensitivities, type = "l", lty=1,
+     xlab = "thresholds", ylab = "Sensitivity",
+     main = "Sensitivity-Specificity Tradeoff")
+lines(roc_obj$thresholds, roc_obj$specificities, lty=3,
+     xlab = "thresholds", ylab = "Specificity")
+legend("right", legend = c("Sensitivity", "Specificity"), lty = c(1, 3))
+grid()
+
+train <- train %>% mutate(predout=ifelse(predprob < 0.65, "no", "yes"), is_reduced=ifelse(is_5percent_reduced < 0.5, "no", "yes"))
+
+xtabs(~ is_reduced + predout, train)
 
 ```
+
+The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of *p=0.65* the classification table already looks much better.
+
+
+## Conclusion
+There is much scope for improvement still. The problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br/>
+This exercise is but a small step in understanding this phenomenon and it definitely has indicated that more information is required to enhance accuracy of the model.
