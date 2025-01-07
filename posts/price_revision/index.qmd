@@ -2,9 +2,8 @@
 title: "Analysis of price reductions"
 author: "Prateek"
 date: "2025-01-08"
-categories: [logistic regression, probability, EDA]
+categories: [logistic regression, probability]
 toc: true
-draft: true
 description: Modelling and analysing probability of house sale price reductions
 ---
 
@@ -22,7 +21,7 @@ The analysis also extends to prediction of probability of price reduction based 
 The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
 These files individually contain basic attributes of properties and revised prices (both increased in decreased).
 
-These are cleaned up for sensible choices of attributes in listing data and price revisions and only negative price revisions for listings are retained. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
+These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
 
 ```{r}
 #| echo: false
@@ -134,29 +133,33 @@ ggplot(revisions_summary) + geom_point(aes(x=revision_month, y=proportion_yes)) 
 
 ## Model
 
+### Inference
+
 ```{r}
 #| echo: false
+
+library(splines)
 train <- revisions[1:50000,] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
 test <- revisions[50000:nrow(revisions),] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
-lmod <- glm(is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + log(active_days) + location, family=binomial, train)
+
+lmod <- glm(is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + log(active_days) + log(active_days) + location, family=binomial, train)
 
 beta <- coef(lmod)
-
+formula(lmod)
 cat(paste("Null deviance:", round(lmod$null.deviance,0)))
 cat(paste("Model deviance:", round(lmod$deviance,0)))
-cat(paste("Model df:", lmod$df.null-lmod$df.residual))
+cat(paste("Null df - Model df:", lmod$df.null-lmod$df.residual))
 cat(paste("P-Value X^2:", 1-pchisq(lmod$null.deviance-lmod$deviance, lmod$df.null-lmod$df.residual)))
 
 ```
 
-The chi-square p value suggests that the model is significant and we can continue analysing effects captured by the model. <br/>
-Even without a formal test we can see that a chi-sq distribution with n degrees of freedom should have an expected value of n. In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model fit is not significantly different from null model with no predictors.
+Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n. In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br/>
+The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br/>
 
 ### Effect of asking price and active days
 
-It can be observed that *asking_price* increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br/>
-*active_days* does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to *asking_price*, we shall test for this more formally. <br/>
 Both of these variables have shapes characteristic of a *log* transform which was applied previously.
+It can be observed that *asking_price* increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br/>
 
 ```{r}
 #| echo: false
@@ -188,4 +191,135 @@ par(mfrow=c(1,1))
 # scale <- sqrt(diag(summary(lmod)$cov.unscaled))[2:length(beta)]
 # beta_p <- beta[2:length(beta)]
 # round(exp(cbind(odds_ratio=beta_p, lower=beta_p-1.96*scale, upper=beta_p+1.96*scale)),2)
+```
+*active_days* does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to *asking_price*. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br/>
+We can test individual explanatory variables by fitting models that drop each variable once and compute the difference in deviance observed.
+
+```{r}
+drop1(lmod, test="Chi")
+
+```
+A formal evaluation suggests that all of the explanatory variables are significant. This clarifies confusion around *log(active_days)*. This is in contrast to what was observed during EDA, suggesting a confounding effect due to other variables in the model.
+
+### Effect of location
+
+The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a *fair* comparison between locations (unlike the plot in EDA). <br/>
+For example, *Hull* which appeared mid-table in EDA is now at the top. One prominent reason is that *Hull* has the lowest average *asking_price* (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br/>
+The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions.
+
+```{r}
+#| echo: false
+coefficients <- coef(lmod)
+
+location_coeffs <- coefficients[grep("location", names(coefficients))]
+odds <- exp(location_coeffs)
+
+location_names <- gsub("location", "", names(location_coeffs))
+location_odds <- data.frame(Location = location_names, odds = odds)
+
+location_odds <- location_odds[order(-location_odds$odds),]
+
+ggplot(location_odds, aes(x = reorder(Location, odds), y = odds)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Odds of reduction (reference=Watford)",
+       x = "Location", y = "Odds of reduction") +
+  theme_minimal() +
+  coord_flip()
+
+```
+
+
+### Diagnostics
+
+#### Relationship between Predicted values and Residuals
+
+We construct residual plot by gruping residuals into bins where bins are based on similar predictor values. The choice of number of bins is arbitrary and is made to ensure that we have roughly 500 observations per bin. <br/>
+
+The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is approximately even variation as the linear prediction varies (except perhaps at the very top and bottom ends). We do not consider this as a major issue at this point.
+
+```{r}
+#| echo: false
+
+train <- train %>% mutate(residuals=residuals(lmod), linpred=predict(lmod))
+
+gdf <- group_by(train, cut(linpred, breaks=unique(quantile(linpred, (1:100)/101))))
+
+diagdf <- summarise(gdf, residuals=mean(residuals), linpred=mean(linpred))
+
+ggplot(diagdf, aes(x=linpred, y=residuals)) + geom_point() + xlab('linear prediction') + ylab('deviance residuals') + theme_minimal()
+
+```
+
+#### Relationship between Explanatory variables and Residuals
+
+Among the categorical variables only *property_type* appears to have some degree of association with residuals. We will not address this at this point as the model is still likely to change.
+
+```{r}
+mod <- aov(residuals ~ location + property_type + bedroom_count, train)
+summary(mod)
+
+```
+
+Residuals exhibit a strong patter against *log(active days)*. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines later).
+
+```{r}
+#| echo: false
+
+gdf <- group_by(train, cut(asking_price, breaks=unique(quantile(asking_price, (1:100)/101))))
+
+diagdf <- summarise(gdf, residuals=mean(residuals), asking_price=mean(asking_price))
+
+p1 <- ggplot(diagdf, aes(x=log(asking_price), y=residuals)) + geom_point() + geom_smooth() + xlab('log(asking price)') + ylab('deviance residuals') + theme_minimal()
+
+gdf <- group_by(train, cut(active_days, breaks=unique(quantile(active_days, (1:100)/101))))
+
+diagdf <- summarise(gdf, residuals=mean(residuals), active_days=mean(active_days))
+
+p2 <- ggplot(diagdf, aes(x=log(active_days), y=residuals)) + geom_point() + geom_smooth() + xlab('log(active days)') + ylab('deviance residuals') + theme_minimal()
+
+p1 | p2
+```
+
+#### Unusual points
+Examining the leverages, there don't seem to be very unusual points that warrant further analysis. Unlike OLS residuals there is no reason to expect normality in this case and so absence of linearity is not of concern.
+```{r}
+#| echo: false
+halfnorm(hatvalues(lmod))
+grid()
+
+```
+
+### Goodness of fit
+
+A preliminary examination of how well the model fits the data can be performed by visualising predicted probabilities against observed propertions of price reductions in the data. <br/>
+When we make a prediction with probability *p*, we would hope that the event occurs in practice with that proportion.
+
+```{r}
+#| echo: false
+
+train <- train %>% mutate(predprob=predict(lmod, type='response'))
+gdf <- group_by(train, cut(linpred, breaks=unique(quantile(linpred, (1:100)/101))))
+hldf <- summarise(gdf, y=sum(is_5percent_reduced), ppred=mean(predprob), count=n()) %>% mutate(se.fit=sqrt(ppred*(1-ppred)/count))
+
+ggplot(hldf, aes(x=ppred, y=y/count, ymin=y/count-2*se.fit, ymax=y/count+2*se.fit)) + geom_point() + geom_linerange(colour=grey(0.75)) + geom_abline(intercept=0, slope=1) + xlab("Predicted probability") + ylab("Observed proportion")
+
+```
+There is no consistent deviation from what is expected and y=x line is contained in the bounds of majority of the data bins. <br/>
+A reason to look at the fit visually is that numerical summaries which emulate $R^2$ akin to OLS generally report very low numbers due to bounded response and MLE estimation not explicitly targeting variance of the data.
+
+```{r}
+#| echo: false
+n <- nrow(train)
+
+cat(paste("Nagelkerke's R^2: ", round((1-exp((lmod$dev-lmod$null)/n))/(1-exp(-lmod$null/n)), 3)))
+
+```
+As explained above this value is small and this is partly expected. This does not however rule out further model improvements like including additional informative explanatory variables and changing the functional forms in existing model (as was observed with *log(active days)*).
+
+#### Sensitivity specificity tradeoff
+The model can also be used to predict the outcome for each property in the dataset (we've separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs.
+
+```{r}
+
+
 ```

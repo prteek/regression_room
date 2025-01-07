@@ -104,6 +104,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -154,7 +183,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
                           <div class="quarto-categories">
                 <div class="quarto-category">logistic regression</div>
                 <div class="quarto-category">probability</div>
-                <div class="quarto-category">EDA</div>
               </div>
                   </div>
   </div>
@@ -197,7 +225,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul class="collapse">
   <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
   <li><a href="#effect-of-asking-price-and-active-days" id="toc-effect-of-asking-price-and-active-days" class="nav-link" data-scroll-target="#effect-of-asking-price-and-active-days">Effect of asking price and active days</a></li>
+  <li><a href="#effect-of-location" id="toc-effect-of-location" class="nav-link" data-scroll-target="#effect-of-location">Effect of location</a></li>
   <li><a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics">Diagnostics</a></li>
+  <li><a href="#goodness-of-fit" id="toc-goodness-of-fit" class="nav-link" data-scroll-target="#goodness-of-fit">Goodness of fit</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -429,7 +459,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + 
-    log(active_days) + location</code></pre>
+    log(active_days) + log(active_days) + location</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Null deviance: 14392</code></pre>
@@ -444,7 +474,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>P-Value X^2: 0</code></pre>
 </div>
 </div>
-<p>Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no predictors. <br> The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br></p>
+<p>Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br> The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br></p>
 </section>
 <section id="effect-of-asking-price-and-active-days" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-asking-price-and-active-days">Effect of asking price and active days</h3>
@@ -458,7 +488,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<p><em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br> We can test individual predictors by fitting models that drop individual predictors and computing the difference in deviance observed.</p>
+<p><em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br> We can test individual explanatory variables by fitting models that drop each variable once and compute the difference in deviance observed.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
@@ -466,7 +496,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 Model:
 is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + 
-    log(active_days) + location
+    log(active_days) + log(active_days) + location
                   Df Deviance   AIC    LRT  Pr(&gt;Chi)    
 &lt;none&gt;                  13776 13856                     
 property_type      1    13820 13898  44.18 2.997e-11 ***
@@ -478,12 +508,107 @@ location          31    14132 14150 355.59 &lt; 2.2e-16 ***
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<p>A formal evaluation suggests that all of the predictors are significant. This clarifies confusion around <em>log(active_days)</em>. This is in contrast to what was observed during EDA, suggesting a confounding effect due to other variables in the model.</p>
+<p>A formal evaluation suggests that all of the explanatory variables are significant. This clarifies confusion around <em>log(active_days)</em>. This is in contrast to what was observed during EDA, suggesting a confounding effect due to other variables in the model.</p>
+</section>
+<section id="effect-of-location" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-location">Effect of location</h3>
+<p>The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a <em>fair</em> comparison between locations (unlike the plot in EDA). <br> For example, <em>Hull</em> which appeared mid-table in EDA is now at the top. One prominent reason is that <em>Hull</em> has the lowest average <em>asking_price</em> (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br> The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 <section id="diagnostics" class="level3">
 <h3 class="anchored" data-anchor-id="diagnostics">Diagnostics</h3>
+<section id="relationship-between-predicted-values-and-residuals" class="level4">
+<h4 class="anchored" data-anchor-id="relationship-between-predicted-values-and-residuals">Relationship between Predicted values and Residuals</h4>
+<p>We construct residual plot by gruping residuals into bins where bins are based on similar predictor values. The choice of number of bins is arbitrary and is made to ensure that we have roughly 500 observations per bin. <br></p>
+<p>The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is approximately even variation as the linear prediction varies (except perhaps at the very top and bottom ends). We do not consider this as a major issue at this point.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="relationship-between-explanatory-variables-and-residuals" class="level4">
+<h4 class="anchored" data-anchor-id="relationship-between-explanatory-variables-and-residuals">Relationship between Explanatory variables and Residuals</h4>
+<p>Among the categorical variables only <em>property_type</em> appears to have some degree of association with residuals. We will not address this at this point as the model is still likely to change.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(residuals <span class="sc">~</span> location <span class="sc">+</span> property_type <span class="sc">+</span> bedroom_count, train)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>                 Df Sum Sq Mean Sq F value Pr(&gt;F)  
+location         31     20   0.657   0.550 0.9798  
+property_type     1      5   5.368   4.493 0.0341 *
+bedroom_count     5      1   0.199   0.166 0.9750  
+Residuals     11398  13618   1.195                 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Residuals exhibit a strong patter against <em>log(active days)</em>. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines later).</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="unusual-points" class="level4">
+<h4 class="anchored" data-anchor-id="unusual-points">Unusual points</h4>
+<p>Examining the leverages, there don’t seem to be very unusual points that warrant further analysis. Unlike OLS residuals there is no reason to expect normality in this case and so absence of linearity is not of concern.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="goodness-of-fit" class="level3">
+<h3 class="anchored" data-anchor-id="goodness-of-fit">Goodness of fit</h3>
+<p>A preliminary examination of how well the model fits the data can be performed by visualising predicted probabilities against observed propertions of price reductions in the data. <br> When we make a prediction with probability <em>p</em>, we would hope that the event occurs in practice with that proportion.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>There is no consistent deviation from what is expected and y=x line is contained in the bounds of majority of the data bins. <br> A reason to look at the fit visually is that numerical summaries which emulate <span class="math inline">\(R^2\)</span> akin to OLS generally report very low numbers due to bounded response and MLE estimation not explicitly targeting variance of the data.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Nagelkerke's R^2:  0.073</code></pre>
+</div>
+</div>
+<p>As explained above this value is small and this is partly expected. This does not however rule out further model improvements like including additional informative explanatory variables and changing the functional forms in existing model (as was observed with <em>log(active days)</em>).</p>
+<section id="sensitivity-specificity-tradeoff" class="level4">
+<h4 class="anchored" data-anchor-id="sensitivity-specificity-tradeoff">Sensitivity specificity tradeoff</h4>
+<p>The model can also be used to predict the outcome for each property in the dataset (we’ve separated a test set already). However, using a 0.5 probability threshold may not be appropriate and we can look at sensitivity/specificity trade off to make cost judgement on model classification outputs.</p>
 
 
+</section>
 </section>
 </section>
 
