@@ -325,11 +325,11 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
 <p>Now, in the Fisher information, the expectation is w.r.t. data. Consider the following for binomial distributed data:</p>
 <span class="math display">\[\begin{align}
     \frac{d}{dp}l(p|y) = \frac{y}{p} - \frac{n-y}{1-p} \\
-    \frac{d^2}{dp}l(p|y)l(p|y) = -\frac{y}{p^2} - \frac{n-y}{(1-p)^2} \\
-    \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = \mathbb{E}[-\frac{y}{p^2} - \frac{n-y}{(1-p)^2}] \\
+    \frac{d^2}{dp^2}l(p|y)l(p|y) = -\frac{y}{p^2} - \frac{n-y}{(1-p)^2} \\
+    \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = \mathbb{E}[-\frac{y}{p^2} - \frac{n-y}{(1-p)^2}] \\
     and, \mathbb{E}[y] = np \\
-    \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = -\frac{n}{p} - \frac{n}{(1-p)} \\
-    I(p) = - \mathbb{E}[\frac{d^2}{dp}l(p|y)l(p|y)] = \frac{n}{p} + \frac{n}{(1-p)} \\
+    \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = -\frac{n}{p} - \frac{n}{(1-p)} \\
+    I(p) = - \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = \frac{n}{p} + \frac{n}{(1-p)} \\
     I(p) = \frac{n}{p(1-p)}
 
 \end{align}\]</span>

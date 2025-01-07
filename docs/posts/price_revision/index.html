@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -161,7 +195,9 @@ ul.task-list li input[type="checkbox"] {
   </ul></li>
   <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
   <ul class="collapse">
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
   <li><a href="#effect-of-asking-price-and-active-days" id="toc-effect-of-asking-price-and-active-days" class="nav-link" data-scroll-target="#effect-of-asking-price-and-active-days">Effect of asking price and active days</a></li>
+  <li><a href="#diagnostics" id="toc-diagnostics" class="nav-link" data-scroll-target="#diagnostics">Diagnostics</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -182,7 +218,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased).</p>
-<p>These are cleaned up for sensible choices of attributes in listing data and price revisions and only negative price revisions for listings are retained. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
+<p>These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -388,7 +424,13 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
+<section id="inference" class="level3">
+<h3 class="anchored" data-anchor-id="inference">Inference</h3>
 <div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + 
+    log(active_days) + location</code></pre>
+</div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Null deviance: 14392</code></pre>
 </div>
@@ -396,16 +438,17 @@ ul.task-list li input[type="checkbox"] {
 <pre><code>Model deviance: 13776</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Model df: 39</code></pre>
+<pre><code>Null df - Model df: 39</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>P-Value X^2: 0</code></pre>
 </div>
 </div>
-<p>The chi-square p value suggests that the model is significant and we can continue analysing effects captured by the model. <br> Even without a formal test we can see that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model fit is not significantly different from null model with no predictors.</p>
+<p>Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no predictors. <br> The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br></p>
+</section>
 <section id="effect-of-asking-price-and-active-days" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-asking-price-and-active-days">Effect of asking price and active days</h3>
-<p>It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br> <em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>, we shall test for this more formally. <br> Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously.</p>
+<p>Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously. It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -415,6 +458,30 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
+<p><em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br> We can test individual predictors by fitting models that drop individual predictors and computing the difference in deviance observed.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + 
+    log(active_days) + location
+                  Df Deviance   AIC    LRT  Pr(&gt;Chi)    
+&lt;none&gt;                  13776 13856                     
+property_type      1    13820 13898  44.18 2.997e-11 ***
+bedroom_count      5    13836 13906  59.43 1.591e-11 ***
+log(asking_price)  1    13952 14030 175.67 &lt; 2.2e-16 ***
+log(active_days)   1    13809 13887  32.73 1.057e-08 ***
+location          31    14132 14150 355.59 &lt; 2.2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>A formal evaluation suggests that all of the predictors are significant. This clarifies confusion around <em>log(active_days)</em>. This is in contrast to what was observed during EDA, suggesting a confounding effect due to other variables in the model.</p>
+</section>
+<section id="diagnostics" class="level3">
+<h3 class="anchored" data-anchor-id="diagnostics">Diagnostics</h3>
 
 
 </section>
