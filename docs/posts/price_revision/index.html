@@ -251,18 +251,6 @@ window.Quarto = {
 <p>The <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv">data</a> is derived using 2 different data files <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv">listings.csv</a> and <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv">revisions.csv</a>. <br> These files individually contain basic attributes of properties and revised prices (both increased in decreased).</p>
 <p>These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R">here</a>.</p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Type 'citation("pROC")' for a citation.</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'pROC'</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    cov, smooth, var</code></pre>
-</div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -475,10 +463,10 @@ Attaching package: 'pROC'</code></pre>
     log(active_days) + log(active_days) + location</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Null deviance: 14392</code></pre>
+<pre><code>Null deviance: 66829</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Model deviance: 13776</code></pre>
+<pre><code>Model deviance: 60479</code></pre>
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Null df - Model df: 39</code></pre>
@@ -493,6 +481,10 @@ Attaching package: 'pROC'</code></pre>
 <h3 class="anchored" data-anchor-id="effect-of-asking-price-and-active-days">Effect of asking price and active days</h3>
 <p>Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously. It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br></p>
 <div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning in log(x): NaNs produced
+Warning in log(x): NaNs produced</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -503,7 +495,7 @@ Attaching package: 'pROC'</code></pre>
 </div>
 <p><em>active_days</em> does not seem to strongly affect probability of price reduction across its range of values. Towards the initial range of values, the effect seems to be similar to <em>asking_price</em>. The small magnitude of change in probabilities makes the judgement of significance of this variable ambiguos from visual inspection of this single example. <br> We can test individual explanatory variables by fitting models that drop each variable once and compute the difference in deviance observed.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(lmod, <span class="at">test=</span><span class="st">"Chi"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Single term deletions
 
@@ -511,12 +503,12 @@ Model:
 is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + 
     log(active_days) + log(active_days) + location
                   Df Deviance   AIC    LRT  Pr(&gt;Chi)    
-&lt;none&gt;                  13776 13856                     
-property_type      1    13820 13898  44.18 2.997e-11 ***
-bedroom_count      5    13836 13906  59.43 1.591e-11 ***
-log(asking_price)  1    13952 14030 175.67 &lt; 2.2e-16 ***
-log(active_days)   1    13809 13887  32.73 1.057e-08 ***
-location          31    14132 14150 355.59 &lt; 2.2e-16 ***
+&lt;none&gt;                  60479 60559                     
+property_type      1    60530 60608   51.4 7.718e-13 ***
+bedroom_count      5    60698 60768  219.3 &lt; 2.2e-16 ***
+log(asking_price)  1    60677 60755  198.3 &lt; 2.2e-16 ***
+log(active_days)   1    65525 65603 5046.2 &lt; 2.2e-16 ***
+location          31    61157 61175  677.8 &lt; 2.2e-16 ***
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
@@ -541,7 +533,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <section id="relationship-between-predicted-values-and-residuals" class="level4">
 <h4 class="anchored" data-anchor-id="relationship-between-predicted-values-and-residuals">Relationship between Predicted values and Residuals</h4>
 <p>We construct residual plot by gruping residuals into bins where bins are based on similar predictor values. The choice of number of bins is arbitrary and is made to ensure that we have roughly 500 observations per bin. <br></p>
-<p>The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is approximately even variation as the linear prediction varies (except perhaps at the very top and bottom ends). We do not consider this as a major issue at this point.</p>
+<p>The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is over prediction at the top end of predicted values which could be a good avenue to start exploring options for model improvement in the future.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -554,21 +546,21 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </section>
 <section id="relationship-between-explanatory-variables-and-residuals" class="level4">
 <h4 class="anchored" data-anchor-id="relationship-between-explanatory-variables-and-residuals">Relationship between Explanatory variables and Residuals</h4>
-<p>Among the categorical variables only <em>property_type</em> appears to have some degree of association with residuals. We will not address this at this point as the model is still likely to change.</p>
+<p>Among the categorical variables only <em>property_type</em> appears to have strong association with residuals. We will not address it at this point but again park it as an assessment to be made in future.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(residuals <span class="sc">~</span> location <span class="sc">+</span> property_type <span class="sc">+</span> bedroom_count, train)</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>mod <span class="ot">&lt;-</span> <span class="fu">aov</span>(residuals <span class="sc">~</span> location <span class="sc">+</span> property_type <span class="sc">+</span> bedroom_count, train)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(mod)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>                 Df Sum Sq Mean Sq F value Pr(&gt;F)  
-location         31     20   0.657   0.550 0.9798  
-property_type     1      5   5.368   4.493 0.0341 *
-bedroom_count     5      1   0.199   0.166 0.9750  
-Residuals     11398  13618   1.195                 
+<pre><code>                 Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+location         31     41   1.339   1.112    0.306    
+property_type     1     30  30.363  25.214 5.15e-07 ***
+bedroom_count     5      9   1.845   1.532    0.176    
+Residuals     49962  60164   1.204                     
 ---
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<p>Residuals exhibit a strong patter against <em>log(active days)</em>. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines later).</p>
+<p>Residuals exhibit a strong patter against <em>log(active days)</em>. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines in a later version of the model).</p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'
@@ -612,7 +604,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>There is no consistent deviation from what is expected and y=x line is contained in the bounds of majority of the data bins. <br> A reason to look at the fit visually is that numerical summaries which emulate <span class="math inline">\(R^2\)</span> akin to OLS generally report very low numbers due to bounded response and MLE estimation not explicitly targeting variance of the data.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<pre><code>Nagelkerke's R^2:  0.073</code></pre>
+<pre><code>Nagelkerke's R^2:  0.162</code></pre>
 </div>
 </div>
 <p>As explained above this value is small and this is partly expected. This does not however rule out further model improvements like including additional informative explanatory variables and changing the functional forms in existing model (as was observed with <em>log(active days)</em>).</p>
@@ -622,9 +614,9 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>          predout
-is_reduced   no  yes
-       no   400 3296
-       yes  294 7446</code></pre>
+is_reduced    no   yes
+       no  26866  3685
+       yes 11634  7815</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Setting levels: control = 0, case = 1</code></pre>
@@ -641,18 +633,24 @@ is_reduced   no  yes
 </div>
 <div class="cell-output cell-output-stdout">
 <pre><code>          predout
-is_reduced   no  yes
-       no  1880 1816
-       yes 2510 5230</code></pre>
+is_reduced    no   yes
+       no  21451  9100
+       yes  8009 11440</code></pre>
 </div>
 </div>
-<p>The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of <em>p=0.65</em> the classification table already looks much better.</p>
+<p>The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of <em>p=0.35</em> the classification table already looks much better.</p>
 </section>
 </section>
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>There is much scope for improvement still. The problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br> This exercise is but a small step in understanding this phenomenon and it definitely has indicated that more information is required to enhance accuracy of the model.</p>
+<p>There is much scope for improvement in the current model. <br> A few points identified in the analysis above are:</p>
+<ul>
+<li>Greater overprediction at higher predicted values</li>
+<li>Property type is correlated with residuals</li>
+<li>log(active days) has a 2nd order like pattern with residuals</li>
+</ul>
+<p>Very fundamentally though, the problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br> This exercise is but a small step in understanding this phenomenon and it definitely has indicated that more information is required to enhance accuracy of the model.</p>
 
 
 </section>

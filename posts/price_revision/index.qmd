@@ -30,7 +30,7 @@ suppressPackageStartupMessages(library(knitr))
 library(patchwork)
 library(faraway)
 library(this.path)
-library(pROC)
+suppressPackageStartupMessages(library(pROC))
 setwd(here())
 options(width=200)
 revisions <- read_csv('terminal_revisions.csv', show_col_types=F) %>%
@@ -138,8 +138,10 @@ ggplot(revisions_summary) + geom_point(aes(x=revision_month, y=proportion_yes)) 
 
 ```{r}
 #| echo: false
-train <- revisions[1:50000,] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
-test <- revisions[50000:nrow(revisions),] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0)) %>% filter(active_days>0 & asking_price>0)
+train <- revisions[1:50000,] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0),
+active_days=if_else(active_days==0, 0.001, active_days)) %>% filter(asking_price>0)
+test <- revisions[50000:nrow(revisions),] %>% mutate(is_5percent_reduced=if_else(is_5percent_reduced=='yes',1,0),
+active_days=if_else(active_days==0, 0.001, active_days)) %>% filter(asking_price>0)
 
 lmod <- glm(is_5percent_reduced ~ property_type + bedroom_count + log(asking_price) + log(active_days) + log(active_days) + location, family=binomial, train)
 
@@ -172,7 +174,7 @@ contrib <- t(as.matrix(X)) %*% beta
 plot(jitter(is_5percent_reduced, 0.1) ~ jitter(asking_price), data=train, pch='.', xlab='asking price', ylab='prob(is_5percent_reduced)')
 curve(ilogit(contrib[1] + beta[i_beta]*log(x)), add=TRUE)
 curve(ilogit(contrib[1] + beta[i_beta]*log(x) - beta['property_typehouse']*1), add=TRUE, lty=2)
-legend("right", legend = c("house", "flat"), lty = c(1,2))
+legend("left", legend = c("house", "flat"), lty = c(1,2))
 grid()
 
 X <- model.matrix(lmod)[n,]
@@ -234,7 +236,7 @@ ggplot(location_odds, aes(x = reorder(Location, odds), y = odds)) +
 
 We construct residual plot by gruping residuals into bins where bins are based on similar predictor values. The choice of number of bins is arbitrary and is made to ensure that we have roughly 500 observations per bin. <br/>
 
-The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is approximately even variation as the linear prediction varies (except perhaps at the very top and bottom ends). We do not consider this as a major issue at this point.
+The deviance residuals are not constrained to have mean zero so the mean level of the plot is not of interest. There is over prediction at the top end of predicted values which could be a good avenue to start exploring options for model improvement in the future.
 
 ```{r}
 #| echo: false
@@ -251,7 +253,7 @@ ggplot(diagdf, aes(x=linpred, y=residuals)) + geom_point() + xlab('linear predic
 
 #### Relationship between Explanatory variables and Residuals
 
-Among the categorical variables only *property_type* appears to have some degree of association with residuals. We will not address this at this point as the model is still likely to change.
+Among the categorical variables only *property_type* appears to have strong association with residuals. We will not address it at this point but again park it as an assessment to be made in future.
 
 ```{r}
 mod <- aov(residuals ~ location + property_type + bedroom_count, train)
@@ -259,7 +261,7 @@ summary(mod)
 
 ```
 
-Residuals exhibit a strong patter against *log(active days)*. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines later).
+Residuals exhibit a strong patter against *log(active days)*. This is suggestive of a more flexible treatment of active days in the model (we shall opt for splines in a later version of the model).
 
 ```{r}
 #| echo: false
@@ -334,15 +336,22 @@ lines(roc_obj$thresholds, roc_obj$specificities, lty=3,
 legend("right", legend = c("Sensitivity", "Specificity"), lty = c(1, 3))
 grid()
 
-train <- train %>% mutate(predout=ifelse(predprob < 0.65, "no", "yes"), is_reduced=ifelse(is_5percent_reduced < 0.5, "no", "yes"))
+train <- train %>% mutate(predout=ifelse(predprob < 0.35, "no", "yes"), is_reduced=ifelse(is_5percent_reduced < 0.5, "no", "yes"))
 
 xtabs(~ is_reduced + predout, train)
 
 ```
 
-The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of *p=0.65* the classification table already looks much better.
+The selection of threshold is going to be biased to favour Sensitivity since there may be desire to be precise about revisions. For now we just balance the 2 attributes and observe that upon choosing a reasonable threshold of *p=0.35* the classification table already looks much better.
 
 
 ## Conclusion
-There is much scope for improvement still. The problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br/>
+There is much scope for improvement in the current model. <br/>
+A few points identified in the analysis above are:
+
+* Greater overprediction at higher predicted values
+* Property type is correlated with residuals
+* log(active days) has a 2nd order like pattern with residuals
+
+Very fundamentally though, the problem of predicting price reduction is tricky, there are a lot of subjective factors at play with each property along with market related factors. <br/>
 This exercise is but a small step in understanding this phenomenon and it definitely has indicated that more information is required to enhance accuracy of the model.
