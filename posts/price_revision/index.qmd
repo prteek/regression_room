@@ -206,7 +206,15 @@ A formal evaluation suggests that all of the explanatory variables are significa
 
 The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a *fair* comparison between locations (unlike the plot in EDA). <br/>
 For example, *Hull* which appeared mid-table in EDA is now at the top. One prominent reason is that *Hull* has the lowest average *asking_price* (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br/>
-The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions.
+The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions. <br/>
+As an example in the chart, places with high odds of reduction:
+
+* Sheffield
+* Hull
+* Mansfield
+* Warrington
+
+Are all clustered together in the north not very far from each other. Indicative of a broader market behaviour of North UK.
 
 ```{r}
 #| echo: false
