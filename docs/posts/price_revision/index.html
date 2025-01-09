@@ -475,11 +475,11 @@ window.Quarto = {
 <pre><code>P-Value X^2: 0</code></pre>
 </div>
 </div>
-<p>Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br> The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br></p>
+<p>Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n.&nbsp;In our case (66829-60479=6350) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br> The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br></p>
 </section>
 <section id="effect-of-asking-price-and-active-days" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-asking-price-and-active-days">Effect of asking price and active days</h3>
-<p>Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously. It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br></p>
+<p>Both of these variables have shapes characteristic of a <em>log</em> transform which was applied previously. It can be observed that <em>asking_price</em> increasing in the lower end significantly affects the likelihood of price reduction. This is reflective of the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br></p>
 <div class="cell">
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in log(x): NaNs produced
@@ -517,7 +517,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </section>
 <section id="effect-of-location" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-location">Effect of location</h3>
-<p>The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a <em>fair</em> comparison between locations (unlike the plot in EDA). <br> For example, <em>Hull</em> which appeared mid-table in EDA is now at the top. One prominent reason is that <em>Hull</em> has the lowest average <em>asking_price</em> (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br> The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions. <br> As an example in the chart, places with high odds of reduction:</p>
+<p>The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a <em>fair</em> comparison between locations (unlike the plot in EDA). <br> For example, <em>Hull</em> which appeared mid-table in EDA is now near the top. One prominent reason is that <em>Hull</em> has the lowest average <em>asking_price</em> (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br> The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions. <br> As an example in the chart, places with high odds of reduction:</p>
 <ul>
 <li>Sheffield</li>
 <li>Hull</li>

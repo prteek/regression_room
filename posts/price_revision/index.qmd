@@ -154,13 +154,13 @@ cat(paste("P-Value X^2:", 1-pchisq(lmod$null.deviance-lmod$deviance, lmod$df.nul
 
 ```
 
-Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n. In our case (14392-13776=616) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br/>
+Even without a formal test we know that a chi-sq distribution with n degrees of freedom should have an expected value of n. In our case (66829-60479=6350) is much larger than DoF: 39, so we can reject the hypothesis that model is not significantly different from the null model with no explanatory variables. <br/>
 The chi-square p value suggests the same and we can continue analysing effects captured by the model. <br/>
 
 ### Effect of asking price and active days
 
 Both of these variables have shapes characteristic of a *log* transform which was applied previously.
-It can be observed that *asking_price* increasing in the lower end significantly affects the likelihood of price reduction. This could be due to the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br/>
+It can be observed that *asking_price* increasing in the lower end significantly affects the likelihood of price reduction. This is reflective of the fact that on a lower baseline, a change of price can easily materialise into a 5% difference as opposed to at higher end of price where 5% reduction requires a very large £ value reduction. <br/>
 
 ```{r}
 #| echo: false
@@ -205,7 +205,7 @@ A formal evaluation suggests that all of the explanatory variables are significa
 ### Effect of location
 
 The plot below gives a comparative assessment of which locations are associated with higher odds of price reduction. This is useful since the summary strips away effects of other explanatory variables and allows a *fair* comparison between locations (unlike the plot in EDA). <br/>
-For example, *Hull* which appeared mid-table in EDA is now at the top. One prominent reason is that *Hull* has the lowest average *asking_price* (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br/>
+For example, *Hull* which appeared mid-table in EDA is now near the top. One prominent reason is that *Hull* has the lowest average *asking_price* (~200,000£) which as seen above, is associated with a very low probability of price reduction. This fact confounds the effect of location itself which is now revealed. <br/>
 The overall result may be combined with other data sources to affirm market level behaviours which can be useful for internal know how and targeted acquisitions. <br/>
 As an example in the chart, places with high odds of reduction:
 
