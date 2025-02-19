@@ -7,6 +7,8 @@ toc: true
 bibliography: references.bib
 ---
 
+
+
 ## Introduction
 
 *Duolingo* have been making waves with their customer success stories and strong (and growing) user base. They seem to be taking their metrics seriously and have done a great job explaining their approach to understanding user behaviour in this [@duolingo_metrics]. <br/> In the current blog, I wanted to apply their methodology and use it for predicting future customer behaviours. <br/>
@@ -74,6 +76,8 @@ We use a simulated dataset based on historical data of a SaaS app. <br/> The dat
 
 Each record indicates a day when a user was active. <br/>
 
+
+
 ```{r}
 #| echo: false
 #| warning: false
@@ -104,7 +108,11 @@ cat(glue("Date range: {min(dau_data$date)} to {max(dau_data$date)}"))
 
 ```
 
+
+
 This is how DAU timeseries looks
+
+
 
 ```{r}
 #| echo: false
@@ -115,11 +123,15 @@ ggplot(dau_data %>%
 
 ```
 
+
+
 ### Future new user count model
 
 To even begin thinking about transitions on a future date, we first need to acknowledge the fact that new user counts will be a significant missing piece of information in the analysis. <br/> To get around this limitation, we shall first build a new user count prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).
 
 The information on new users on any given date is inherent in *registration_date* in the data.
+
+
 
 ```{r}
 new_users <- dau_data %>%
@@ -140,7 +152,11 @@ lmod <- glm.nb(new_user_count ~ year * bs(week_of_year,4) + month + day_of_week 
 
 ```
 
+
+
 After some experimentation, the model setup to predict future counts of new users is as above. <br/> The counts are assumed Poisson but with a higher variance than normal due to spikes in the data and hence a *negative binomial* model has been used. <br/> It was imperative that we used a *robust* version of GLM to be able to get relatively constant variance of errors, that were being caused due to outliers in user count towards beginning of every year. <br/> The model appears to be doing a satisfactory job of predicting counts of new users and we consider this acceptable for further analysis.
+
+
 
 ```{r}
 #| echo: false
@@ -195,6 +211,8 @@ p1 + p2
 
 ```
 
+
+
 ### Assigning states
 
 There needs to be an assignment of one of the 7 states (mentioned earlier) against each date for a user. This will help identify transitions made between states and populate the Transition matrix. However, the data only consists of records of *active days*, we need to explicitly extend them and include the days when a user was not active. In other words, instead of this table of records:
@@ -219,6 +237,8 @@ And using this table, subsequently estimate *states* using simple rules (mention
 
 The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
 
+
+
 ```{r}
 states <- read_csv('states.csv', show_col_types = FALSE)
 kable(states %>%
@@ -227,6 +247,8 @@ kable(states %>%
         )
 
 ```
+
+
 
 ### Calculating transition matrix
 
@@ -269,6 +291,8 @@ get_transition_matrix <- function(states_slice) {
 ```
 Essentially we seek to calculate a matrix which has *state_from* in its rows *state_to* as its column and fraction of transitions as values. All the values in a row must sum to 1 obeying the fact that from a given state a user will end up in one of the 7 states.
 
+
+
 ```{r}
 
 M = get_transition_matrix(states %>%
@@ -277,6 +301,8 @@ M = get_transition_matrix(states %>%
 kable(M)
 
 ```
+
+
 
 As a sanity check, we can analyse the matrix itself. <br/>
 It makes sense that *current* -> *current* transition value is high. This means that active users tend to continue being active with high probability or otherwise become *at_risk_wau*. <br/>
@@ -288,6 +314,8 @@ Apparantly quite a high proportion of *dormant* users stay *dormant* which could
 
 We start with getting initial state counts for the date on which the dataset ends. This combined with *M* transition matrix should give us new state counts. We will be mindful to update *new_user_count* for all the days we would like to predict on. This is done using the prediction model developed earlier.
 
+
+
 ```{r}
 data_end_date <- prediction_start_date - 1
 state0 <- states %>%
@@ -296,6 +324,8 @@ state0 <- states %>%
             summarise(cnt=n(), .groups='drop')
 
 ```
+
+
 
 We shall define a flexible mechanism to predict DAU, to enable changing prediction horizon. We will also supply a dataframe of *new_users* to this mechanism so that it may use predicted values for appropriate prediction dates.
 
@@ -330,6 +360,8 @@ predict_dau <- function(M, state0, start_date, end_date, new_users_predicted) {
 ```
 
 
+
+
 ```{r}
 
 dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_users_predicted)
@@ -353,6 +385,9 @@ p + geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red', linetype="do
 
 ```
 
+
+
 The prominent contributer to DAU counts are *current* users, who are aided by addition of new users everyday and the fact that *current* users stay active with a probability of 85% (from M matrix). <br/>
 The prediction makes intuitive sense however the magnitude of spike certainly seems quite large. <br/>
 Observing the shape of predicted DAU, it seems quite strongly influenced by predicted new user count from the model earlier. Additionally, some degree of experimentation with the predictions suggest that about 20% decrease in new user counts bring predicted DAU to comparable levels of previous years (dotted line in the plot).
+
