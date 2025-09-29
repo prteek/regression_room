@@ -1,0 +1,393 @@
+---
+title: "Growth clusters in London"
+author: "Prateek"
+date: "2025-09-30"
+categories: [clustering, PCA]
+image: "clusters.jpg"
+toc: true
+bibliography: references.bib
+description: Clusters in Local authorities rent growth
+---
+
+## Introduction
+
+
+
+```{r}
+#| warning: false
+#| echo: false
+library(this.path)
+setwd(here())
+renv::load()
+
+library(knitr)
+library(tidyverse)
+library(DBI)
+library(RAthena)
+library(glue)
+library(patchwork)
+library(assertthat)
+library(mgcv)
+library(sf)
+library(corrplot)
+theme_set(theme_minimal())
+acon <- dbConnect(athena(),
+    workgroup = "primary",
+    schema_name = "default",
+    s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
+    profile_name = "personal",
+    region = "eu-west-1",
+)
+athena_sql <- function(query) {
+    tibble(dbGetQuery(acon, query))
+}
+
+options(width = 400)
+
+```
+
+## Data
+The analysis is based on *buy* price data for *all* asset classes between 2018-01-01 and 2024-12-01. <br/>
+We shall exclude London as it is a market of its own and might unduly create additional clusters that do not generalise to anything outside of London.
+
+```{r}
+#| warning: false
+#| cache: true
+#| echo: false
+
+hpi_lad <- athena_sql("
+select a.*
+from ukre.combined_indices_long a
+        inner join geo.dim_lad b on a.area_name = b.lad_name
+        inner join geo.dim_region c on st_within(st_geometryfromtext(b.lad_centroid_wkt), st_geometryfromtext(c.region_polygon_wkt))
+where area_type = 'lad' and type = 'buy'
+and asset_class= 'all'
+and time_period between cast('2018-01-01' as date) and cast('2024-12-01' as date)
+and region_name = 'london'
+order by area_name, time_period
+")
+
+```
+
+```{r}
+#| echo: false
+ggplot(hpi_lad %>% filter(area_name %in% c("st albans", "hertsmere", "dacorum")), aes(x = time_period, y = price)) +
+    geom_line() +
+    geom_smooth() +
+    facet_wrap(~area_name)
+
+```
+
+## Simplifying timeseries structure
+
+The data needs to be in area_name x time_period shape for Decomposition. <br/>
+Additionally, month on month % change in prices are used instead of raw prices themselves. <br/>
+This allows for variety of characteristics in each local authority and makes PCA effective. <br/>
+This also ensures that the quantity being manipulated is of direct interest. e.g. clustering for higher growth is more meaningful compared to clustering for high price.
+
+```{r}
+#| echo: false
+
+hpi_lad <- hpi_lad %>%
+    mutate(time = as.numeric(interval(as.Date("2018-01-01"), time_period) / months(1))) %>%
+    group_by(area_name) %>%
+    do({
+        gam_model <- gam(price ~ s(time, k = 5), family = gaussian(link = "log"), data = .)
+        predictions <- predict(gam_model, newdata = ., type = "response")
+        scale_value <- summary(gam_model)$scale # Extract scale parameter
+        data.frame(., predicted_smooth = predictions, std_resid = sqrt(scale_value))
+    }) %>%
+    ungroup()
+
+hpi_lad_wide <- hpi_lad %>%
+    mutate(price = predicted_smooth) %>%
+    arrange(area_name, time_period) %>%
+    select(area_name, time_period, price) %>%
+    pivot_wider(
+        id_cols = area_name,
+        names_from = time_period,
+        values_from = price
+    )
+
+
+hpi_price_change_wide <- hpi_lad %>%
+    mutate(price = predicted_smooth) %>%
+    group_by(area_name) %>%
+    arrange(time_period, .by_group = TRUE) %>% # Ensure data is ordered within each group
+    mutate(price_change = (price - lag(price, 1)) / lag(price, 1)) %>%
+    ungroup() %>%
+    filter(!is.na(price_change)) %>%
+    arrange(area_name, time_period) %>%
+    select(area_name, time_period, price_change) %>%
+    pivot_wider(
+        id_cols = area_name,
+        names_from = time_period,
+        values_from = price_change
+    )
+
+
+
+```
+```{r}
+hpi_price_change_wide <- hpi_lad %>%
+    group_by(area_name) %>%
+    arrange(time_period, .by_group = TRUE) %>% # Ensure data is ordered within each group
+    mutate(price_change = price) %>%
+    ungroup() %>%
+    filter(!is.na(price_change)) %>%
+    arrange(area_name, time_period) %>%
+    select(area_name, time_period, price_change) %>%
+    pivot_wider(
+        id_cols = area_name,
+        names_from = time_period,
+        values_from = price_change
+    )
+
+```
+
+### Idea behind PCA
+Dominant pattern identification. It is expected that there are external forces like large scale demand in UK, inflation, shortage of building etc. that largely affect all the areas in UK. <br/>
+This will lead to a situation where areas will have some similarity in how they grow. Even if not all local authrities have a common underlying pattern (due to different direction (east/west)/amenities/connectivity etc.) there are likely a handful of dominant patterns in the data that can be combined in different ways to create growth profiles for all the local authorities. <br/>
+
+
+
+```{r}
+#| warning: false
+#| echo: false
+hpi_price_change_long <- hpi_price_change_wide %>%
+    pivot_longer(-area_name, names_to = "time_period", values_to = "price_change") %>%
+    mutate(time_period = as.Date(time_period))
+
+# Plot 2D histogram (density of prices over months)
+ggplot(hpi_price_change_long, aes(x = time_period, y = price_change * 100)) +
+    geom_bin2d(bins = 50) + # 2D histogram
+    scale_fill_viridis_c() +
+    labs(
+        title = "Density of Local authorities",
+        x = "Date",
+        y = "MoM growth (%)"
+    )
+
+```
+
+#### Correlation matrix
+The heatmap is suggestive of broader themes in the data such that smaller subset of combinations of months can comprehensively represent the growth profiles of local authorities.
+e.g. One of the dominant pattern is contraction in 2020 (from 2019 due to COVID) then revival in 2022 and then low-moderate contraction in growth due to inflation (Visible along first few columns).
+This also supports the hypothesis that PCA may result in a small number of dominant components.
+
+```{r, fig.width=10, fig.height=10, fig.align="center"}
+corrplot(cor(hpi_price_change_wide %>% select(-area_name)), method = "color", col = colorRampPalette(c("blue", "white", "red"))(200), tl.cex = 0.8)
+
+```
+
+### Estimating principal components
+It can be observed that our hypothesis about dominant patterns is supported by results below.<br/>
+Only 4 dominant components mean that there is a much smaller temporal subspace of MoM growth than what is observed in the data (84 months).
+
+```{r}
+#| echo: false
+
+price_changes <- hpi_price_change_wide %>%
+    select(-area_name) %>%
+    as.data.frame()
+
+rownames(price_changes) <- hpi_price_change_wide$area_name
+
+prprice_changes <- prcomp(price_changes, scale = T, center = T, rank = 10)
+
+summary(prprice_changes)
+```
+
+
+The contribution of each month to these 4 patterns reveals definite structures about growth. <br/>
+
+**PC1** represents a patterns which encapsulates steady growth. Not significantly impacted by Covid or inflation. In recent months the growth is still strong.
+
+**PC2** represents pattern that indicates resilience to Covid and growth between 2020-2022 but experiencing sharp decline in prices in over last couple of years.
+
+**PC3** represents a pattern which encapsulates high volatility. Growth falling sharply during Covid, recovering post that.
+
+**PC4** represents sharp decline in growth during Covid and moderate recovery after that. In recent months either no growth or slight decrease in prices.
+
+It is important to note that any given local authority may not have just 1 of these patterns. Every local authority likely has some combination of these with some pattern contributing more than others.
+
+```{r}
+#| echo: false
+rot <- as.data.frame(prprice_changes$rot)
+
+mat <- as.matrix(rot %>% select(PC1, PC2, PC3, PC4))
+matplot(mat, type = "l", xlab = "", ylab = "", xaxt = "n")
+axis(1, at = 1:nrow(mat), labels = format(as.Date(rownames(mat)), "%b %Y"), las = 2)
+legend("topleft", legend = c("PC1", "PC2", "PC3", "PC4"), col = 1:4, lty = c(1, 2, 3, 4), cex = 0.8)
+```
+
+To get an intuition of these patterns and their relationship to prices, manually selecting a desired level of pattern for a local authority and plotting it can be revealing.
+
+```{r}
+#| echo: false
+PC <- as.data.frame(prprice_changes$x) %>%
+    mutate(
+        area_name = rownames(prprice_changes$x)
+    ) %>%
+    tibble()
+
+ggplot(PC, aes(x = PC1, y = PC3)) +
+    geom_point() +
+    geom_text(aes(x = PC1 + 1.5, label = area_name), alpha = 0.3)
+
+```
+
+
+
+```{r}
+par(mfrow = c(1, 2))
+lad <- "cotswold"
+plot(as.Date(rownames(mat)), as.numeric(price_changes[lad, ]), type = "l", main = lad, xlab = "time", ylab = "MoM Growth (%)", frame = FALSE)
+grid()
+lad_series <- hpi_lad %>% filter(area_name == lad)
+plot(lad_series$time_period, lad_series$price, type = "p", main = lad, xlab = "time", ylab = "Price (£)", frame = FALSE)
+lines(as.Date(names(hpi_lad_wide)[-1]), as.numeric(hpi_lad_wide %>% filter(area_name == lad) %>% select(-area_name)))
+grid()
+
+par(mfrow = c(1, 2))
+lad <- "st albans"
+plot(as.Date(rownames(mat)), as.numeric(price_changes[lad, ]), type = "l", main = lad, xlab = "time", ylab = "MoM Growth (%)", frame = FALSE)
+grid()
+lad_series <- hpi_lad %>% filter(area_name == lad)
+plot(lad_series$time_period, lad_series$price, type = "p", main = lad, xlab = "time", ylab = "Price (£)", frame = FALSE)
+lines(as.Date(names(hpi_lad_wide)[-1]), as.numeric(hpi_lad_wide %>% filter(area_name == lad) %>% select(-area_name)))
+grid()
+par(mfrow = c(1, 1))
+
+```
+
+
+## Clustering on principal components
+
+The problem is now reduced to finding clusters of post town in the reduced subspace. That is to say are there clusters of post town that display similar combinations of these patterns ? <br/>
+Additionally, what do these clusters (combinations) reveal about prices/growth ?
+
+Objective of any cluster identification is to get homogenous clusters i.e. members should be as similar as possible. Taking this idea too far results in idealistically having only 1 member per cluster. In essence identifying how many clusters are in the data is a balancing act. <br/>
+In current study, the point of diminishing returns is around 6 clusters. Upon manual inspection with lower/higher number of clusters it becomes clear that having 6 clusters also results in these clusters having some meaningfully explainable characteristics. <br/>
+
+For the time being, 6 clusters are accepted as a design choice.
+
+
+#### Clustering without PCA
+
+It has been empirically verified that without PCA, the results of clustering are identical. i.e. same number of clusters and same growth profile of identified clusters. It may not be necessary to perform PCA in the production version.
+
+
+```{r}
+
+data_matrix <- PC %>% select(PC1:PC4) # Standardize data if needed
+
+# Compute WCSS for different numbers of clusters
+wcss <- sapply(1:10, function(k) {
+    kmeans(data_matrix, centers = k, nstart = 25)$tot.withinss
+})
+
+# Plot Scree Plot (Elbow Method)
+plot(1:10, wcss,
+    type = "b", pch = 19, frame = FALSE,
+    xlab = "Number of Clusters (k)",
+    ylab = "Total Within-Cluster Sum of Squares (WCSS)",
+    main = "Elbow Method for Optimal Clusters"
+)
+abline(v = which.min(diff(diff(wcss))), col = "red", lty = 2) # Approximate elbow
+
+```
+
+
+### Interpreting clusters
+
+The characteristics of these clusters can be interpreted along the similar lines as principal components. <br/>
+`Note`: The loading determination is mathematically a valid operation since both clustering and PCA are linear operators on data.
+
+**Cluster 1** Sectors which have had subdued MoM growth throughout some contraction post Covid. (Un desirable)
+
+**Cluster 2** Sectors which have had very volatile behaviour. Although strongly grown (perhaps more than others) post covid, but growth is slow and possibly <0 in recent months. (Un desirable)
+
+**Cluster 3** Sectors with steady growth overall. Have done well in recent months. (Desirable)
+
+**Cluster 4** Sectors which have had strong growth post Covid and are growing at the highest rate currently (Highly Desirable)
+
+**Cluster 5** Sectors with moderate levels of volatility. They may have had strong growth post covid but their growth has slowed in recent months. (Maybe)
+
+**Cluster 6** Sectors with low volatility and had slow growth pre Covid. Have stalled growth in recent months, indicating that they may be low growth in future and have grown temporarily perhaps. (Un desirable)
+
+```{r}
+set.seed(42)
+nc <- 6
+km_result <- kmeans(data_matrix, centers = nc, nstart = 25)
+
+new_order <- order(c(5, 4, 1, 3, 2, 6))
+cluster_centers <- km_result$centers[new_order, ]
+cluster_labels <- match(km_result$cluster, new_order)
+ordered_cluster_names <- c("subdued growth", "high volatility", "good growth", "great growth", "moderate volatility", "in decline")
+
+# View cluster centers
+print(cluster_centers)
+
+cluster_loads <- as.matrix(rot %>% select(PC1:PC4)) %*% t(cluster_centers) * prprice_changes$scale + prprice_changes$center
+cluster_color_vector <- c("#ffaea6", "#e60101", "#94fea5", "#00e225", "#ddec02", "#ec9d02")
+
+time_labels <- c("Mar 2018", "Mar 2020", "Mar 2022", "Mar 2024") # Marks Covid in March
+date_vector <- as.Date(rownames(cluster_loads))
+grid_positions <- which(format(date_vector, "%b %Y") %in% time_labels)
+
+matplot(cluster_loads, type = "l", xlab = "time", ylab = "MoM growth (frac)", xaxt = "n", frame = FALSE, col = cluster_color_vector, lty = 1)
+abline(v = grid_positions, col = "gray80", lty = 2)
+abline(h = 0, col = "gray50", lty = 2)
+axis(1, at = grid_positions, labels = time_labels)
+
+legend("topleft", legend = ordered_cluster_names, col = cluster_color_vector, lty = 1, cex = 0.8)
+
+```
+
+
+If hypothetically all the clusters started at 1500£ on Jan 2018, their price profiles would look like below.
+
+These can also be considered theoretical price profiles for each cluster.
+
+```{r}
+cumprod_loads <- apply(cluster_loads + 1, 2, cumprod) * 1500
+
+matplot(cumprod_loads, type = "l", xlab = "time", ylab = "Theoretical rent (£)", xaxt = "n", frame = FALSE, col = cluster_color_vector, lty = 1)
+abline(v = grid_positions, col = "gray80", lty = 2)
+axis(1, at = grid_positions, labels = time_labels)
+
+legend("topleft", legend = ordered_cluster_names, col = cluster_color_vector, lty = 1, cex = 0.8)
+
+```
+
+
+
+### Samples from each cluster
+
+```{r}
+#| fig.height: 10
+set.seed(86)
+PC$cluster <- as.factor(cluster_labels)
+PC$cluster_name <- factor(ordered_cluster_names[PC$cluster], levels = ordered_cluster_names)
+
+sample_lads <- PC %>%
+    group_by(cluster) %>%
+    slice_sample(n = 1) %>%
+    ungroup() %>%
+    pull(area_name)
+
+par(mfrow = c(3, 2))
+for (lad in sample_lads) {
+    lad_series <- hpi_lad %>% filter(area_name == lad)
+
+    cluster_n <- PC %>%
+        filter(area_name == lad) %>%
+        pull(cluster_name)
+    plot(lad_series$time_period, lad_series$price, type = "p", main = paste(lad, "\n", "Cluster:", cluster_n), frame = FALSE, xlab = "time", ylab = "Price (£)")
+
+    lines(as.Date(names(hpi_lad_wide)[-1]), as.numeric(hpi_lad_wide %>% filter(area_name == lad) %>% select(-area_name)))
+    grid()
+}
+par(mfrow = c(1, 1))
+```
