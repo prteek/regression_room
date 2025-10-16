@@ -57,7 +57,27 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -194,6 +214,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#effect-of-gender" id="toc-effect-of-gender" class="nav-link" data-scroll-target="#effect-of-gender">Effect of Gender</a></li>
   <li><a href="#effect-of-gender-and-income" id="toc-effect-of-gender-and-income" class="nav-link" data-scroll-target="#effect-of-gender-and-income">Effect of Gender and Income</a></li>
   </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
     </div>
@@ -206,11 +228,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>This analysis aims to understand the factors that influence teenage gambling expenditure. We will explore the relationships between gambling expenditure and various predictors.</p>
+<p>This analysis aims to understand the factors that influence teenage gambling expenditure. We will explore the relationships between gambling expenditure and gender and income. It is our hypothesis that both gender and income should affect gambling expenditure among teenagers. <br></p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>The analysis is based on data from Ide-Smith and Lea (1988) published in the Journal of Gambling Behavior. It comes from a survey that was conducted to study teenage gambling in Britain. <br></p>
+<p>The analysis is based on data from <span class="citation" data-cites="gambling_in_young_adolescents">(<a href="#ref-gambling_in_young_adolescents" role="doc-biblioref">Ide-Smith and Lea 1988</a>)</span> published in the Journal of Gambling Behavior. It comes from a survey that was conducted to study teenage gambling in Britain. <br></p>
 <p>The key variables are:</p>
 <ul>
 <li>sex</li>
@@ -326,7 +348,7 @@ Residuals 44 73.085   1.661
 Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
-<p><strong>Gender seems to have statistically significant association with gambling expenditure</strong>. <br> Anova procedure is equivalent to a t-test with constant variance assumption, which seems fair from the Boxplot above. They test for the same effect and result in identical p-values. <br></p>
+<p><strong>Gender seems to have statistically significant association with gambling expenditure</strong>. <br> Anova procedure is equivalent to a t-test with constant variance assumption <span class="citation" data-cites="lm_with_R_book">(<a href="#ref-lm_with_R_book" role="doc-biblioref">Faraway 2025</a>)</span>, which seems fair from the Boxplot above. They test for the same effect and result in identical p-values. <br></p>
 <p>Before moving to analysing joint effect of Income and Gender, it is imperative to check if the effect of gender is not due to confounding by income. It could well be the case that individuals with higher income spend more on gambling. But then if high income itself is associated with gender, then the above effect of gender may be spurious. We will explore this next.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -404,12 +426,89 @@ F-statistic: 14.59 on 2 and 43 DF,  p-value: 1.46e-05</code></pre>
 </div>
 </div>
 </div>
+<p>Additionally, the residuals do not indicate any obvious pattern with respect to gender.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>From an earlier observation, it was suspected that there could be differential effect of income on expenditure based on gender. The current model (lines) seems to indicate that there might be some difference between how males and females respond to changes in income. <br></p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We shall try to fit an interaction between <em>sex</em> and <em>income</em> to evaluate if this is indeed the case. <br></p>
+<p>It appears as though the interaction does not improve the model fit compared to no interaction model. <br></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: log_gamble ~ sex * income
+Model 2: log_gamble ~ sex + income
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1     42 53.517                           
+2     43 55.676 -1   -2.1582 1.6938 0.2002</code></pre>
+</div>
+</div>
+<p>Additionally, interaction term is not significant and so it is best to remove it and keep the model simple. <br></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex * income, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.1894 -0.9791  0.0763  0.8456  2.0447 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)     0.85855    0.49761   1.725   0.0918 .
+sexmale         0.58832    0.60303   0.976   0.3348  
+income          0.06101    0.10240   0.596   0.5545  
+sexmale:income  0.15114    0.11613   1.301   0.2002  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.129 on 42 degrees of freedom
+Multiple R-squared:  0.4273,    Adjusted R-squared:  0.3864 
+F-statistic: 10.45 on 3 and 42 DF,  p-value: 2.921e-05</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>The analysis indicates that both gender and income are significantly associated with gambling expenditure among teenagers. <br> Males tend to spend 3x more than females on gambling (even at comparable income levels). This effect may be inflated to some degree since boys tended to exaggerate their gambling spend and girls tended to under-report them <span class="citation" data-cites="gambling_in_young_adolescents">(<a href="#ref-gambling_in_young_adolescents" role="doc-biblioref">Ide-Smith and Lea 1988</a>)</span>. <br> A 1£ increase in weekly income is associated with a 19% increase in annual gambling expenditure. <br> The interaction between gender and income was not significant, indicating that the effect of income on gambling expenditure is similar for both genders. <br></p>
+</section>
+<section id="references" class="level2">
+<h2 class="anchored" data-anchor-id="references">References</h2>
+<ul>
+<li>Ide-Smith, M. and Lea, S.E.G. (1988). Teenage gambling in Britain. Journal of Gambling Behavior, 4, 3-15.</li>
+<li>Faraway, J.J. (2004). Linear Models with R. Chapman &amp; Hall/CRC.</li>
+</ul>
+
 
 
 </section>
-</section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-lm_with_R_book" class="csl-entry" role="listitem">
+Faraway, Julian J. 2025. <em>Linear Model with r, Third Edition</em>. CRC Press.
+</div>
+<div id="ref-gambling_in_young_adolescents" class="csl-entry" role="listitem">
+Ide-Smith, Susan G., and Stephen E. G. Lea. 1988. <span>“Gambling in Young Adolescents.”</span>
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
