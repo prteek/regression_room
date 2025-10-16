@@ -4611,6 +4611,12 @@
       "Maintainer": "Kirill Müller <kirill@cynkra.com>",
       "Repository": "CRAN"
     },
+    "tidymodels": {
+      "Package": "tidymodels",
+      "Version": "1.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN"
+    },
     "tidyr": {
       "Package": "tidyr",
       "Version": "1.3.1",
