@@ -8,9 +8,6 @@ toc: true
 description: Analysis of factors affecting teen gambling using regression and ANOVA
 ---
 
-## Introduction
-
-
 ```{r}
 #| warning: false
 #| echo: false
@@ -45,11 +42,11 @@ options(width = 400)
 
 ```
 
-## Objective
-The objective of this analysis is to understand the factors that influence teenage gambling expenditure. We will explore the relationships between gambling expenditure and various predictors.
+## Introduction
+This analysis aims to understand the factors that influence teenage gambling expenditure. We will explore the relationships between gambling expenditure and various predictors.
+
 
 ## Data
-
 The analysis is based on data from Ide-Smith and Lea (1988) published in the Journal of Gambling Behavior. It comes from a survey that was conducted to study teenage gambling in Britain. <br/>
 
 The key variables are:
@@ -197,37 +194,5 @@ income_sex_no_interaction %>% summary()
 par(mfrow = c(2, 2))
 plot(income_sex_no_interaction)
 par(mfrow = c(1, 1))
-
-```
-
-Jensen's inequality dictates that simply taking exponents of predictions will under-predict the expected value of response variable `f(E(X)) <= E(f(X))` , a custom predict method is defined which also corrects for the 1£ offset used in model.
-
-```{r}
-#| echo: false
-
-# Custom predict method
-predict_response <- function(object, newdata, ...) {
-  # Get log-scale prediction
-  log_pred <- predict(object, newdata = newdata, ...)
-  # Get model residual variance
-  sigma2 <- summary(object)$sigma^2
-  # Bias-corrected prediction
-  exp(log_pred + sigma2 / 2) - 1
-}
-
-
-teengamb <- teengamb %>%
-  mutate(
-    .pred = predict_response(income_sex_no_interaction, .) # subtracting 1 to get prediction on original scale of gamble
-  )
-
-teengamb %>%
-  ggplot(aes(gamble, .pred)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(
-    x = "Actual expenditure on gambling (pounds per year)",
-    y = "Predicted expenditure on gambling (pounds per year)"
-  )
 
 ```
