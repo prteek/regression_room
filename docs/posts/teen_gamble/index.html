@@ -23,6 +23,40 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -156,7 +190,11 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#objective" id="toc-objective" class="nav-link" data-scroll-target="#objective">Objective</a></li>
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
-  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a>
+  <ul class="collapse">
+  <li><a href="#effect-of-gender" id="toc-effect-of-gender" class="nav-link" data-scroll-target="#effect-of-gender">Effect of Gender</a></li>
+  <li><a href="#effect-of-gender-and-income" id="toc-effect-of-gender-and-income" class="nav-link" data-scroll-target="#effect-of-gender-and-income">Effect of Gender and Income</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -169,11 +207,6 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>- The project is out-of-sync -- use `renv::status()` for details.</code></pre>
-</div>
-</div>
 </section>
 <section id="objective" class="level2">
 <h2 class="anchored" data-anchor-id="objective">Objective</h2>
@@ -259,7 +292,7 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>There also seems positive association between income and amount spent on gambling (at least for males). This is not very surprising as one would expect that people with higher income would be able to spend more on gambling. <br> From what this plot indicates, it may be worth evaluating if there is a differential effect of income based on sex.</p>
+<p>There also seems positive association between income and amount spent on gambling (at least for males). This is not very surprising as one would expect that individuals with higher income would be able to spend more on gambling. <br> From what this plot indicates, it may be worth evaluating if there is a differential effect of income based on gender.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -272,30 +305,13 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="analysis" class="level2">
 <h2 class="anchored" data-anchor-id="analysis">Analysis</h2>
-<p>Our variable of interest gamble is strictly positive and continuous with a long tail. We consider modelling log of gamble value. This alters the interpretation of model mechanics but it remains sensible, e.g.&nbsp;males spend x% more than females or 1£ increase in income leads to y% increase in expenditure in gambling. <br> Side note: This is different from using GLM with Gaussian family and log link. Because in original scale, variance is non constant and multiplicative effects are expected on original scale of response (as opposed to expected value of response). <br></p>
+<p>Our variable of interest gamble is strictly positive and continuous with a long tail. We consider taking log of gamble value. This alters the interpretation of model mechanics but it remains sensible, e.g.&nbsp;males spend x% more than females or 1£ increase in income leads to y% increase in expenditure in gambling. <br> Side note: This is different from using GLM with Gaussian family and log link. Because in original scale, variance is non constant and multiplicative effects are expected on original scale of response (as opposed to expected value of response). <br></p>
 <p>To be able to take logarithms of cases where 0£ are spent on gambling, 1£ is added to gambling spent for all cases. This value is chosen to ensure 0 for cases where 0£ are spent and values close to 0 for small spends, additionally this does not introduce un necessary -ve outlier values resulting in better fit. <br></p>
+<p>Individual <em>24</em> seems to have spent 156£ on gambling and likely seems an outlier. This seems to be outside the usual range of expenditure and will not inform the study in a general sense. Hence, we remove this point from the analysis.</p>
+<section id="effect-of-gender" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-gender">Effect of Gender</h3>
+<p>It seems plausible that males are spending more on gambling compared to females. This is also indicated by the boxplot below. We will evaluate this hypothesis using a simple linear model with <em>log(gamble + 1)</em> as response and <em>sex</em> as explanatory variable.</p>
 <div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-lm(formula = log(gamble + 1) ~ sex + income, data = teengamb)
-
-Residuals:
-     Min       1Q   Median       3Q      Max 
--2.27059 -0.77305  0.08595  0.84018  2.32870 
-
-Coefficients:
-            Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)  0.31035    0.33082   0.938 0.353298    
-sexmale      1.28432    0.34421   3.731 0.000543 ***
-income       0.19312    0.04808   4.017 0.000227 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-Residual standard error: 1.15 on 44 degrees of freedom
-Multiple R-squared:  0.4357,    Adjusted R-squared:   0.41 
-F-statistic: 16.98 on 2 and 44 DF,  p-value: 3.416e-06</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -303,9 +319,19 @@ F-statistic: 16.98 on 2 and 44 DF,  p-value: 3.416e-06</code></pre>
 </figure>
 </div>
 </div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: log_gamble
+          Df Sum Sq Mean Sq F value   Pr(&gt;F)   
+sex        1 20.365  20.365  12.261 0.001074 **
+Residuals 44 73.085   1.661                    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
-<p>We find that there is no obvious problem with the errors. Additionally, the fit is decent and the coefficients for both Sex (Male) and Income are significant. <br></p>
-<p>Jensen’s inequality dictates that simply taking exponents of predictions will under-predict the expected value of response variable <code>f(E(X)) &lt;= E(f(X))</code> , a custom predict method is defined which also corrects for the 1£ offset used in model.</p>
+</div>
+<p><strong>Gender seems to have statistically significant association with gambling expenditure</strong>. <br> Anova procedure is equivalent to a t-test with constant variance assumption, which seems fair from the Boxplot above. They test for the same effect and result in identical p-values. <br></p>
+<p>Before moving to analysing joint effect of Income and Gender, it is imperative to check if the effect of gender is not due to confounding by income. It could well be the case that individuals with higher income spend more on gambling. But then if high income itself is associated with gender, then the above effect of gender may be spurious. We will explore this next.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -314,9 +340,87 @@ F-statistic: 16.98 on 2 and 44 DF,  p-value: 3.416e-06</code></pre>
 </figure>
 </div>
 </div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: income
+          Df Sum Sq Mean Sq F value Pr(&gt;F)
+sex        1   4.58  4.5754  0.3685 0.5469
+Residuals 44 546.25 12.4149               </code></pre>
+</div>
+</div>
+<p>The above plot and the test indicates that income is not significantly associated with gender and hence does not mask its effect on gambling expenditure. <br></p>
+<p>For the analysis that follows, we shall print the summary of gender only model to show the Estimate value and Std. Error of gender.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gender_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.4630 -1.0616  0.1547  1.0979  2.0478 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   1.1117     0.2957   3.760 0.000498 ***
+sexmale       1.3513     0.3859   3.502 0.001074 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.289 on 44 degrees of freedom
+Multiple R-squared:  0.2179,    Adjusted R-squared:  0.2002 
+F-statistic: 12.26 on 1 and 44 DF,  p-value: 0.001074</code></pre>
+</div>
+</div>
+</section>
+<section id="effect-of-gender-and-income" class="level3">
+<h3 class="anchored" data-anchor-id="effect-of-gender-and-income">Effect of Gender and Income</h3>
+<p>With <em>income</em> variable included alongside <em>sex</em>, the effect of <em>sex</em> remains significant (although is reduced from 1.35 to 1.24 with lower Std. Error). <br> Income itself is significantly associated with gambling expenditure. <br> The intercept is non-significant indicating that for reference class (female), gambling expenditure is likely 0£ if they have close to 0 income and it makes intuitive sense (although for adults and addicts this may not necessarily be true). <br> This model does not include an interaction between <em>sex</em> and <em>income</em> for simplificty, yet fits the data well. Model diagnostics also appear acceptable. <br></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex + income, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.2327 -0.7944  0.1318  0.8419  2.2973 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  0.37092    0.33009   1.124 0.267373    
+sexmale      1.23699    0.34216   3.615 0.000782 ***
+income       0.17852    0.04869   3.667 0.000671 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.138 on 43 degrees of freedom
+Multiple R-squared:  0.4042,    Adjusted R-squared:  0.3765 
+F-statistic: 14.59 on 2 and 43 DF,  p-value: 1.46e-05</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Jensen’s inequality dictates that simply taking exponents of predictions will under-predict the expected value of response variable <code>f(E(X)) &lt;= E(f(X))</code> , a custom predict method is defined which also corrects for the 1£ offset used in model.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
 </div>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->

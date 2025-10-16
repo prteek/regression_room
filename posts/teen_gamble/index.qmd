@@ -87,8 +87,8 @@ teengamb %>%
 
 ```
 
-There also seems positive association between income and amount spent on gambling (at least for males). This is not very surprising as one would expect that people with higher income would be able to spend more on gambling. <br/>
- From what this plot indicates, it may be worth evaluating if there is a differential effect of income based on sex.
+There also seems positive association between income and amount spent on gambling (at least for males). This is not very surprising as one would expect that individuals with higher income would be able to spend more on gambling. <br/>
+ From what this plot indicates, it may be worth evaluating if there is a differential effect of income based on gender.
 
 ```{r}
 #| echo: false
@@ -124,7 +124,7 @@ Individual *24* seems to have spent 156£ on gambling and likely seems an outlie
 
 ### Effect of Gender
 
-It seems plausible that males are spending more on gambling compared to females. This is also indicated by the boxplot below. We will evaluate this hypothesis using a simple linear model with log(gamble + 1) as response and sex as predictor. The procedure is equivalent to a t-test with constant variance assumption.
+It seems plausible that males are spending more on gambling compared to females. This is also indicated by the boxplot below. We will evaluate this hypothesis using a simple linear model with *log(gamble + 1)* as response and *sex* as explanatory variable.
 
 ```{r}
 #| echo: false
@@ -143,18 +143,46 @@ ggplot(teengamb, aes(sex, log_gamble)) +
     y = "Log(Expenditure on gambling + 1)"
   )
 
-gender_model <- anova(lm(log_gamble ~ sex, data = teengamb))
-print(gender_model)
+gender_model <- lm(log_gamble ~ sex, data = teengamb)
+print(anova(gender_model))
 
 ```
 
-Gender seems to be a significant predictor of gambling expenditure (p-value < 0.001).
+**Gender seems to have statistically significant association with gambling expenditure**. <br/>
+Anova procedure is equivalent to a t-test with constant variance assumption, which seems fair from the Boxplot above. They test for the same effect and result in identical p-values. <br/>
+
+Before moving to analysing joint effect of Income and Gender, it is imperative to check if the effect of gender is not due to confounding by income. It could well be the case that individuals with higher income spend more on gambling. But then if high income itself is associated with gender, then the above effect of gender may be spurious. We will explore this next.
 
 ```{r}
+#| echo: false
+
+ggplot(teengamb, aes(sex, income)) +
+  geom_boxplot() +
+  labs(
+    x = "Sex",
+    y = "Income (pounds per week)"
+  )
+
+income_model <- lm(income ~ sex, data = teengamb)
+print(anova(income_model))
 
 ```
 
-### Effect of Sex and Income
+The above plot and the test indicates that income is not significantly associated with gender and hence does not mask its effect on gambling expenditure. <br/>
+
+For the analysis that follows, we shall print the summary of gender only model to show the Estimate value and Std. Error of gender.
+
+```{r}
+summary(gender_model)
+
+```
+
+### Effect of Gender and Income
+
+With *income* variable included alongside *sex*, the effect of *sex* remains significant (although is reduced from 1.35 to 1.24 with lower Std. Error). <br/>
+Income itself is significantly associated with gambling expenditure. <br/>
+The intercept is non-significant indicating that for reference class (female), gambling expenditure is likely 0£ if they have close to 0 income and it makes intuitive sense (although for adults and addicts this may not necessarily be true). <br/>
+This model does not include an interaction between *sex* and *income* for simplificty, yet fits the data well. Model diagnostics also appear acceptable. <br/>
 
 ```{r}
 #| echo: false
@@ -171,8 +199,6 @@ plot(income_sex_no_interaction)
 par(mfrow = c(1, 1))
 
 ```
-
-We find that there is no obvious problem with the errors. Additionally, the fit is decent and the coefficients for both Sex (Male) and Income are significant. The intercept is non-significant indicating that for reference class (female), gambling expenditure is likely 0£ if they have close to 0 income and it makes intuitive sense (although for adults and addicts this may not necessarily be true). <br/>
 
 Jensen's inequality dictates that simply taking exponents of predictions will under-predict the expected value of response variable `f(E(X)) <= E(f(X))` , a custom predict method is defined which also corrects for the 1£ offset used in model.
 
