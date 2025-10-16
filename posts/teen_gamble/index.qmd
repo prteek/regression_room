@@ -3,7 +3,7 @@ title: "Teen gambling analysis"
 author: "Prateek"
 date: "2025-10-16"
 categories: [regression, ANOVA]
-image: "gambling.jpg"
+image: "gambling.jpeg"
 toc: true
 description: Analysis of factors affecting teen gambling using regression and ANOVA
 ---
