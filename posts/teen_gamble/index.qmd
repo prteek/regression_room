@@ -261,7 +261,3 @@ The analysis indicates that both gender and income are significantly associated 
 Males tend to spend 3x more than females on gambling (even at comparable income levels). This effect may be inflated to some degree since boys tended to exaggerate their gambling spend and girls tended to under-report them [@gambling_in_young_adolescents]. <br/>
 A 1£ increase in weekly income is associated with a 19% increase in annual gambling expenditure. <br/>
 The interaction between gender and income was not significant, indicating that the effect of income on gambling expenditure is similar for both genders. <br/>
-
-## References
-- Ide-Smith, M. and Lea, S.E.G. (1988). Teenage gambling in Britain. Journal of Gambling Behavior, 4, 3-15.
-- Faraway, J.J. (2004). Linear Models with R. Chapman & Hall/CRC.
