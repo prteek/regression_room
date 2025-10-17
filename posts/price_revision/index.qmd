@@ -5,6 +5,8 @@ date: "2025-01-08"
 categories: [logistic regression, probability]
 toc: true
 description: Modelling and analysing probability of house sale price reductions
+draft: true
+
 ---
 
 ## Introduction
