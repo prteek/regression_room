@@ -344,6 +344,8 @@ par(mfrow = c(1, 1))
 
 ## Conclusion
 
-We set out to test whether manufacturers differ in city mpg after controlling for other attributes. Accounting for model‑level clustering, year and displacement, we find remaining manufacturer‑level variation in city mpg. In other words, even after controlling for model and engine size, manufacturers differ in typical city mpg.
+We set out to test whether manufacturers differ in city mpg after controlling for other attributes. Accounting for model‑level clustering, year and displacement, we find remaining manufacturer‑level variation in city mpg. In other words, even after controlling for model and engine size, manufacturers differ in typical city mpg. <br/>
+
+The variability among manufacturers is of the order of +/- 6%, which translates to +/-1.2 mpg on average  <br/>
 
 Limitations: this analysis is limited to petrol, front‑wheel‑drive cars in the compact/midsize/subcompact classes. Results should not be generalized beyond these groups without further study. Results are also sensitive to the treatment of manufacturers as random effects due to the sampling design.
