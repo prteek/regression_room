@@ -235,10 +235,13 @@ div.csl-indent {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>The aim of this post is to do a comparative analysis of EPA reported (city) <em>mpg</em> of various manufacturers using linear mixed effects models. The data is taken from the <em>mpg</em> dataset available in R <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">GGplot2 Development Team, n.d.</a>)</span>. <br> The idea is to study a particular configuration (Front wheel drive, compact/midsise/sub-compact petrol variants) of cars and assess how significant is the difference in <em>mpg</em> among manufacturers when controlling for other attributes like engine displacement, transmission type, number of cylinders, model and year. <br></p>
+<p>This post compares EPA city miles per gallon (mpg) across manufacturers using linear mixed‑effects models. The goal is to assess whether manufacturers differ in city mpg after accounting for vehicle attributes such as engine displacement, transmission type, model, and year. The intended audience is a general technical reader with basic familiarity with regression models.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>The data come from the mpg dataset <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">GGplot2 Development Team, n.d.</a>)</span>. We focus on front‑wheel‑drive petrol cars in the compact, midsize, and subcompact classes to keep the comparison balanced. Because models were selected based on having new releases across 1999–2008 (used as a proxy for popularity), manufacturers appear in the sample according to availability rather than a strict experimental design. This affects whether manufacturers are best treated as random or fixed effects.</p>
+<p>On one hand, manufacturers could be treated as random effects because they were not experimentally selected; on the other hand, we are interested in manufacturer‑specific differences, so treating manufacturers as fixed effects would be useful if each manufacturer is well represented. After filtering the data some manufacturers are missing or sparsely represented, so the scope of inference is limited — we can test whether manufacturers differ, but precise fixed‑effect estimates for every manufacturer would be unreliable.</p>
+<p>Models are treated as random and are nested inside manufacturers because the sample contains multiple models per manufacturer and the particular models present are effectively a random sample from all possible models.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -326,7 +329,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>Because of the way the data is collected, (selection of models which had a new release every year between 1999 and 2008 - this was used as a proxy for the popularity of the car), we need to be careful about how manufacturers are treated in the analysis. On one hand it seems only fair to treat manufacturers as also being random, since these were not specifically selected in the design of experiment (like car <em>model</em> these appear randomly in the data based on popularity criteria) <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span>. On the other hand, we are interested in the actual differences between manufacturers, so treating them as fixed effects is desirable. <br> However, to warrant the use of fixed effects for manufacturers, we need to have sufficient data for each manufacturer and post filteration, the data should have all the manufacturers of interest. As can be seen this is not the case. <br></p>
+<p>Because of the way the data is collected, (selection of models which had a new release every year between 1999 and 2008 - this was used as a proxy for the popularity of the car), we need to be careful about how manufacturers are treated in the analysis. On one hand it seems only fair to treat manufacturers as also being random, since these were not specifically selected in the design of experiment (like car <em>model</em> these appear randomly in the data based on popularity criteria) <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span>. On the other hand, we are interested in the actual differences between manufacturers, so treating them as fixed effects is desirable. <br> However, to warrant the use of fixed effects for manufacturers, we need to have sufficient data for each manufacturer and post filtering, the data should have all the manufacturers of interest. As can be seen this is not the case. <br></p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -485,7 +488,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>There’s 2 year worth of data on 15 models. We can treat <em>year</em> as a categorical variable rather than continuous for the remainder of analysis. A sample of which is shown below -</p>
+<p>There are (exactly) two years of data covering 15 models. We treat year as a categorical variable rather than continuous. A short sample for one model is shown below.</p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -584,8 +587,7 @@ div.csl-indent {
 </table>
 </div>
 </div>
-<p>We can see that there are multiple entries for the same model in a year, this is because of different engine displacements and transmission types. <br></p>
-<p>It can also be seen that the dataset only has 3 distinct values for engine cylinder size (4L, 6L, 8L) which can be easily identified if the displacement (displ) is known. <br> Hence, we shall simplify the analysis by excluding <em>cyl</em> variable.</p>
+<p>We observe multiple rows per model/year because of different displacements and transmission types. The data only contain three distinct cylinder sizes (4, 6, 8), which is captured by displacement, so we remove cyl to simplify the analysis.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -595,7 +597,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>Additionally, fuel type (r=regular, p=premium) is simultaneously not a variable of interest in the study and from an engineering point of view does not correlate strongly with fuel efficiency. <br> Consequently, we shall exclude it from the analysis as well.</p>
+<p>Fuel type (regular vs premium) is not central to this study and shows little correlation with city mpg, so we drop the fuel type column as well.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -605,7 +607,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>We can visualise the data to get a sense of how the mpg varies across manufacturers -</p>
+<p>We visualize how mpg varies across manufacturers and by other attributes to get an initial sense of the patterns.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -629,7 +631,7 @@ div.csl-indent {
 </div>
 </div>
 </div>
-<p>The distribution of mpg across different manufacturers has a slightly long tail. We prefer taking logarithm of mpg to make it more symmetric and give the model better interpretability (in terms of variables influencing % mpg rather than raw mpg). <br></p>
+<p>The mpg distribution has a right skew, so we take the logarithm of mpg to stabilize variance and to make regression coefficients interpretable as approximate percentage changes.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -645,7 +647,7 @@ div.csl-indent {
 <h2 class="anchored" data-anchor-id="analysis">Analysis</h2>
 <section id="baseline-model" class="level3">
 <h3 class="anchored" data-anchor-id="baseline-model">Baseline model</h3>
-<p>We shall start with a simple linear model with fixed effects for all predictors including manufacturer. (This is not ideal under current data collection setting but is neverthless useful)</p>
+<p>We start with a simple linear model that includes manufacturer as a fixed effect along with displacement and year. This fixed‑effects model provides a baseline and helps identify which predictors explain the most variation in log(mpg). Transmission and class become less important after accounting for displacement and manufacturer, so we simplify the model accordingly.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Analysis of Variance Table
@@ -696,7 +698,7 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </section>
 <section id="mixed-effects-model" class="level3">
 <h3 class="anchored" data-anchor-id="mixed-effects-model">Mixed effects model</h3>
-<p>It is worth noting that <em>models</em> are nested inside <em>manufacturers</em>, and are essentially a result of random selection made during data collection. <br> This must be taken into account as values for a given model and models from same manufacturer would likely have correlated mpg values. <br></p>
+<p>Because models are nested within manufacturers and the specific models in the data are essentially a random sample, we fit mixed‑effects models that include random intercepts for manufacturer and for model nested within manufacturer. This accounts for the correlation between observations from the same model and between models from the same manufacturer.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>Fixed Effects:
@@ -737,8 +739,8 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-107 message(s): boundary (singular) fit: see help('isSingular')
-1 warning(s): Model failed to converge with max|grad| = 0.00242739 (tol = 0.002, component 1)</code></pre>
+101 message(s): boundary (singular) fit: see help('isSingular')
+1 warning(s): Model failed to converge with max|grad| = 0.00343486 (tol = 0.002, component 1)</code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -752,33 +754,33 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">.sig01</td>
-<td style="text-align: right;">0.0057475</td>
-<td style="text-align: right;">0.0751256</td>
+<td style="text-align: right;">0.0096836</td>
+<td style="text-align: right;">0.0725344</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">.sig02</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.1046703</td>
+<td style="text-align: right;">0.1051658</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">.sigma</td>
-<td style="text-align: right;">0.0442480</td>
-<td style="text-align: right;">0.0626953</td>
+<td style="text-align: right;">0.0446926</td>
+<td style="text-align: right;">0.0624663</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">3.2529315</td>
-<td style="text-align: right;">3.4206651</td>
+<td style="text-align: right;">3.2525055</td>
+<td style="text-align: right;">3.4193343</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">displ</td>
-<td style="text-align: right;">-0.1775308</td>
-<td style="text-align: right;">-0.1250477</td>
+<td style="text-align: right;">-0.1775028</td>
+<td style="text-align: right;">-0.1241781</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">year2008</td>
-<td style="text-align: right;">0.0572179</td>
-<td style="text-align: right;">0.1061334</td>
+<td style="text-align: right;">0.0561202</td>
+<td style="text-align: right;">0.1055414</td>
 </tr>
 </tbody>
 </table>
@@ -786,7 +788,7 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 </div>
 <section id="diagnostics" class="level4">
 <h4 class="anchored" data-anchor-id="diagnostics">Diagnostics</h4>
-<p>Reasonable normality of residuals and constant variance seems to hold.</p>
+<p>Residual diagnostics suggest approximate normality and roughly constant variance. Random‑effect Q–Q plots indicate the manufacturer:model random effects are reasonably close to normal; manufacturer effects are also approximately normal.</p>
 <div class="cell">
 <div class="cell-output-display">
 <div>
@@ -811,9 +813,8 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 </section>
 <section id="conclusion" class="level2">
 <h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
-<p>Given the constraints around data collection methodology, we set out out to answer if manufacturers are more consistent or more different in terms of mpg after controlling for model, year and displacement. <br></p>
-<p>We conclude that there is variation in <em>mpg</em> for different manufacturers despite controlling for different models, year and displacement. <br></p>
-<p>The scope of this analysis is limited to Petrol cars with front wheel drive and compact/midsize/subcompact class. <br></p>
+<p>We set out to test whether manufacturers differ in city mpg after controlling for other attributes. Accounting for model‑level clustering, year and displacement, we find remaining manufacturer‑level variation in city mpg. In other words, even after controlling for model and engine size, manufacturers differ in typical city mpg.</p>
+<p>Limitations: this analysis is limited to petrol, front‑wheel‑drive cars in the compact/midsize/subcompact classes. Results should not be generalized beyond these groups without further study. Results are also sensitive to the treatment of manufacturers as random effects due to the sampling design.</p>
 
 
 
