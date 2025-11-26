@@ -6,8 +6,11 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Prateek">
+<meta name="dcterms.date" content="2025-11-25">
+<meta name="description" content="Junior schools project using multilevel modeling to analyze student performance data">
 
-<title>Regression Room – Blog</title>
+<title>Junior Schools Project – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,29 +23,62 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -70,67 +106,9 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -140,9 +118,9 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
+    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
     </a>
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Blog</span>
     </a>
   </div>
@@ -153,7 +131,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">Prateek</span></a>
   </li>  
   <li class="nav-item compact">
@@ -171,212 +149,169 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Regression Room</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">Junior Schools Project</h1>
+                  <div>
+        <div class="description">
+          Junior schools project using multilevel modeling to analyze student performance data
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">random effects</div>
+                <div class="quarto-category">hierarchical models</div>
+              </div>
+                  </div>
   </div>
     
   
-  <div class="quarto-title-meta column-page-left">
+  <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Prateek </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">November 25, 2025</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(5)</span></div><div class="category" data-category="QU5PVkE=">ANOVA <span class="quarto-category-count">(1)</span></div><div class="category" data-category="Ym9vdHN0cmFw">bootstrap <span class="quarto-category-count">(1)</span></div><div class="category" data-category="ZmlzaGVyJTIwaW5mb3JtYXRpb24=">fisher information <span class="quarto-category-count">(1)</span></div><div class="category" data-category="aGllcmFyY2hpY2FsJTIwbW9kZWxz">hierarchical models <span class="quarto-category-count">(1)</span></div><div class="category" data-category="aHlwb3RoZXNpcyUyMHRlc3Rpbmc=">hypothesis testing <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bGlrZWxpaG9vZA==">likelihood <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bWFya292JTIwY2hhaW4=">markov chain <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bmV3dG9uJTIwcmFwaHNvbg==">newton raphson <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cmFuZG9tJTIwZWZmZWN0cw==">random effects <span class="quarto-category-count">(1)</span></div><div class="category" data-category="cmVncmVzc2lvbg==">regression <span class="quarto-category-count">(2)</span></div><div class="category" data-category="dGltZXNlcmllcw==">timeseries <span class="quarto-category-count">(1)</span></div></div></div>
-<!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
-
-
-
-
-
-
-
-
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="listing-actions-group">
-    <div class="input-group input-group-sm quarto-listing-filter">
-      <span class="input-group-text"><i class="bi bi-search"></i></span>
-      <input type="text" class="search form-control" placeholder="Filter">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#junior-schools-project" id="toc-junior-schools-project" class="nav-link active" data-scroll-target="#junior-schools-project">Junior Schools Project</a></li>
+  </ul>
+</nav>
     </div>
-</div>
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="cmFuZG9tJTIwZWZmZWN0cyUyQ2hpZXJhcmNoaWNhbCUyMG1vZGVscw==" data-listing-date-sort="1764028800000" data-listing-file-modified-sort="1764184771868" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1598">
-<div class="thumbnail"><a href="./posts/miles_per_gallon/index.html" class="no-external">
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
-<img loading="lazy" src="./posts/miles_per_gallon/mpg.avif" class="thumbnail-image">
 
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/miles_per_gallon/index.html" class="no-external">Miles per gallon</a>
-</h3>
-<div class="listing-categories">
 
-<div class="listing-category" onclick="window.quartoListingCategory('cmFuZG9tJTIwZWZmZWN0cw=='); return false;">random effects</div>
 
-<div class="listing-category" onclick="window.quartoListingCategory('aGllcmFyY2hpY2FsJTIwbW9kZWxz'); return false;">hierarchical models</div>
 
+<section id="junior-schools-project" class="level2">
+<h2 class="anchored" data-anchor-id="junior-schools-project">Junior Schools Project</h2>
+<p>The data is from the Junior Schools Project, which investigated the performance of students in different junior schools in inner London (circa 1988). The dataset includes information on :</p>
+<ul>
+<li>school</li>
+<li>class (within school upto 4)</li>
+<li>gender</li>
+<li>social class of father</li>
+<li>raven score (IQ test) taken in year 1</li>
+<li>student id</li>
+<li>english test score (for each year)</li>
+<li>maths test score (for each year)</li>
+<li>year (1,2 and 3)</li>
+</ul>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>jspr <span class="ot">&lt;-</span> jsp <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">year =</span> year <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">3</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">head</span>(jspr))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">school</th>
+<th style="text-align: left;">class</th>
+<th style="text-align: left;">gender</th>
+<th style="text-align: left;">social</th>
+<th style="text-align: right;">raven</th>
+<th style="text-align: left;">id</th>
+<th style="text-align: right;">english</th>
+<th style="text-align: right;">math</th>
+<th style="text-align: right;">year</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">girl</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">boy</td>
+<td style="text-align: left;">2</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">3</td>
+<td style="text-align: right;">83</td>
+<td style="text-align: right;">39</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">boy</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">14</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">girl</td>
+<td style="text-align: left;">4</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">boy</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: right;">31</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">1</td>
+<td style="text-align: left;">girl</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: right;">40</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">3</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="delink listing-description"><a href="./posts/miles_per_gallon/index.html" class="no-external">
-<p>Miles per gallon analysis using linear mixed effects model</p>
-</a></div>
 </div>
-<div class="metadata">
-<a href="./posts/miles_per_gallon/index.html" class="no-external">
-<div class="listing-date">
-Nov 25, 2025
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="cmVncmVzc2lvbiUyQ0FOT1ZB" data-listing-date-sort="1760569200000" data-listing-file-modified-sort="1760647219367" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1271">
-<div class="thumbnail"><a href="./posts/teen_gamble/index.html" class="no-external">
 
-<img loading="lazy" src="./posts/teen_gamble/gambling.jpeg" class="thumbnail-image">
 
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/teen_gamble/index.html" class="no-external">Teen gambling analysis</a>
-</h3>
-<div class="listing-categories">
+</section>
 
-<div class="listing-category" onclick="window.quartoListingCategory('cmVncmVzc2lvbg=='); return false;">regression</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('QU5PVkE='); return false;">ANOVA</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/teen_gamble/index.html" class="no-external">
-<p>Analysis of factors affecting teen gambling using regression and ANOVA</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/teen_gamble/index.html" class="no-external">
-<div class="listing-date">
-Oct 16, 2025
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="bGlrZWxpaG9vZCUyQ2Zpc2hlciUyMGluZm9ybWF0aW9uJTJDbmV3dG9uJTIwcmFwaHNvbg==" data-listing-date-sort="1735344000000" data-listing-file-modified-sort="1736223182422" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1465">
-<div class="thumbnail"><a href="./posts/likelihood_primer/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/likelihood_primer/likelihood.jpg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/likelihood_primer/index.html" class="no-external">Primer on Likelihood</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bGlrZWxpaG9vZA=='); return false;">likelihood</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZmlzaGVyJTIwaW5mb3JtYXRpb24='); return false;">fisher information</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('bmV3dG9uJTIwcmFwaHNvbg=='); return false;">newton raphson</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/likelihood_primer/index.html" class="no-external">
-<p>Applied to parameter estimation</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/likelihood_primer/index.html" class="no-external">
-<div class="listing-date">
-Dec 28, 2024
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="bWFya292JTIwY2hhaW4lMkN0aW1lc2VyaWVz" data-listing-date-sort="1734480000000" data-listing-file-modified-sort="1751282687395" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3178">
-<div class="thumbnail"><a href="./posts/user_behaviour_analysis/index.html" class="no-external">
-
-<p class="card-img-top"><img src="posts/user_behaviour_analysis/states.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external">User behaviour analysis</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWFya292JTIwY2hhaW4='); return false;">markov chain</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('dGltZXNlcmllcw=='); return false;">timeseries</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/user_behaviour_analysis/index.html" class="no-external">
-<em>Duolingo</em> have been making waves with their customer success stories and strong (and growing) user base. They seem to be taking their metrics seriously and have done a great…<span class="citation" data-cites="duolingo_metrics"></span><br><br>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/user_behaviour_analysis/index.html" class="no-external">
-<div class="listing-date">
-Dec 18, 2024
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="4" data-categories="aHlwb3RoZXNpcyUyMHRlc3RpbmclMkNib290c3RyYXAlMkNyZWdyZXNzaW9u" data-listing-date-sort="1689894000000" data-listing-file-modified-sort="1735609235582" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1246">
-<div class="thumbnail"><a href="./posts/movies_getting_longer/index.html" class="no-external">
-
-<img loading="lazy" src="./posts/movies_getting_longer/movie_coupon.jpg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/movies_getting_longer/index.html" class="no-external">Are blockbusters getting (reely) longer ?</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('aHlwb3RoZXNpcyUyMHRlc3Rpbmc='); return false;">hypothesis testing</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Ym9vdHN0cmFw'); return false;">bootstrap</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('cmVncmVzc2lvbg=='); return false;">regression</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/movies_getting_longer/index.html" class="no-external">
-I recently came across an article posing a question:
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/movies_getting_longer/index.html" class="no-external">
-<div class="listing-date">
-Jul 21, 2023
-</div>
-<div class="listing-author">
-Prateek
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

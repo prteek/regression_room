@@ -3,7 +3,7 @@ title: "Miles per gallon"
 author: "Prateek"
 date: "2025-11-25"
 categories: [random effects, hierarchical models]
-image: "likelihood.jpg"
+image: "mpg.avif"
 toc: true
 bibliography: references.bib
 description: "Miles per gallon analysis using linear mixed effects model"
