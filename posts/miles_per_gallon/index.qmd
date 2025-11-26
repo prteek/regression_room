@@ -25,7 +25,7 @@ theme_set(theme_minimal())
 
 ## Introduction
 
-The aim of this post is to do a comparative analysis of mpg of various manufacturers using linear mixed effects models. The data is taken from the *mpg* dataset available in R [@ggplot2]. <br/>
+The aim of this post is to do a comparative analysis of EPA reported (city) *mpg* of various manufacturers using linear mixed effects models. The data is taken from the *mpg* dataset available in R [@ggplot2]. <br/>
 The idea is to study a particular configuration (Front wheel drive, compact/midsise/sub-compact petrol variants) of cars and assess how significant is the difference in *City mpg* (EPA figures) among manufacturers when controlling for other attributes like engine displacement, transmission type, number of cylinders, model and year. <br/>
 
 ## Data
