@@ -5,3 +5,5 @@ _freeze/
 posts/user_behaviour_analysis/states.csv
 *_targets/
 docs/posts/growth_clusters_uk/index_files/
+
+**/*.quarto_ipynb
