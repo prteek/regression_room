@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Prateek">
-<meta name="dcterms.date" content="2025-11-25">
+<meta name="dcterms.date" content="2025-11-23">
 <meta name="description" content="Miles per gallon analysis using linear mixed effects model">
 
 <title>Miles per gallon – Blog</title>
@@ -196,7 +196,7 @@ div.csl-indent {
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 25, 2025</p>
+        <p class="date">November 23, 2025</p>
       </div>
     </div>
     
@@ -728,7 +728,7 @@ deviance = -231.0 </code></pre>
     (p-value based on 10000 simulated values)
 
 data:  
-RLRT = 13.167, p-value = 2e-04</code></pre>
+RLRT = 13.167, p-value = 1e-04</code></pre>
 </div>
 </div>
 <p>So we reject the hypothesis that manufacturer:model nesting effect is not significant. <br></p>
@@ -739,8 +739,8 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-101 message(s): boundary (singular) fit: see help('isSingular')
-1 warning(s): Model failed to converge with max|grad| = 0.00343486 (tol = 0.002, component 1)</code></pre>
+120 message(s): boundary (singular) fit: see help('isSingular')
+1 warning(s): Model failed to converge with max|grad| = 0.0690639 (tol = 0.002, component 1)</code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -754,33 +754,33 @@ RLRT = 13.167, p-value = 2e-04</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">.sig01</td>
-<td style="text-align: right;">0.0096836</td>
-<td style="text-align: right;">0.0725344</td>
+<td style="text-align: right;">0.0058363</td>
+<td style="text-align: right;">0.0706697</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">.sig02</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.1051658</td>
+<td style="text-align: right;">0.1067822</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">.sigma</td>
-<td style="text-align: right;">0.0446926</td>
-<td style="text-align: right;">0.0624663</td>
+<td style="text-align: right;">0.0444852</td>
+<td style="text-align: right;">0.0621811</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">3.2525055</td>
-<td style="text-align: right;">3.4193343</td>
+<td style="text-align: right;">3.2526602</td>
+<td style="text-align: right;">3.4179611</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">displ</td>
-<td style="text-align: right;">-0.1775028</td>
-<td style="text-align: right;">-0.1241781</td>
+<td style="text-align: right;">-0.1773750</td>
+<td style="text-align: right;">-0.1223265</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">year2008</td>
-<td style="text-align: right;">0.0561202</td>
-<td style="text-align: right;">0.1055414</td>
+<td style="text-align: right;">0.0594503</td>
+<td style="text-align: right;">0.1039467</td>
 </tr>
 </tbody>
 </table>
