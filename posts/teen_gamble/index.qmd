@@ -44,19 +44,18 @@ options(width = 400)
 ```
 
 ## Introduction
-This analysis aims to understand the factors that influence teenage gambling expenditure. We will explore the relationships between gambling expenditure and gender and income. It is our hypothesis that both gender and income should affect gambling expenditure among teenagers. <br/>
-
+This analysis examines factors influencing teenage gambling expenditure. We explore the relationships between annual expenditure, gender, and weekly income. Our hypothesis is that both gender and income affect teenagers' gambling expenditure. <br/>
 
 ## Data
-The analysis is based on data from [@gambling_in_young_adolescents] published in the Journal of Gambling Behavior. It comes from a survey that was conducted to study teenage gambling in Britain. <br/>
+The analysis uses data from [@gambling_in_young_adolescents], a survey of teenage gambling behaviour in Britain. <br/>
 
 The key variables are:
 
 - sex
 - status : Socioeconomic status score based on parents' occupation
 - income : Weekly income in pounds
-- verbal : verbal score in words out of 12 correctly defined
-- gamble : expenditure on gambling in pounds per year
+- verbal : Verbal score (number of words defined correctly, out of 12)
+- gamble : Annual expenditure on gambling in pounds
 
 ```{r}
 #| warning: false
@@ -70,7 +69,7 @@ teengamb %>% head() %>% kable()
 
 ```
 
-A cursory look at the data suggests that females likely spend less on gambling compared to males. Additionally that most females do not spend more than approx. 20£ per year on gambling.
+A cursory look at the data suggests that females likely spend less on gambling compared to males. Additionally, most females do not spend more than approximately £20 per year on gambling.
 
 ```{r}
 #| echo: false
@@ -113,12 +112,9 @@ p1 + p2
 
 ## Analysis
 
-Our variable of interest gamble is  strictly positive and continuous with a long tail. We consider taking log of gamble value. This alters the interpretation of model mechanics but it remains sensible, e.g. males spend x% more than females or 1£ increase in income leads to y% increase in expenditure in gambling. <br/>
-Side note: This is different from using GLM with Gaussian family and log link. Because in original scale, variance is non constant and multiplicative effects are expected on original scale of response (as opposed to expected value of response). <br/>
+The response variable gamble is non‑negative and strongly right‑skewed. We therefore model log(gamble + 1). Adding £1 ensures the log is defined for zero spenders, keeps small expenditures near zero on the transformed scale, and avoids introducing artificial extreme negative values. Note this is different from a GLM with a log link: here we model the (logged) response directly, which changes how effects are interpreted on the original scale. <br/>
 
-To be able to take logarithms of cases where 0£ are spent on gambling, 1£ is added to gambling spent for all cases. This value is chosen to ensure 0 for cases where 0£ are spent and values close to 0 for small spends, additionally this does not introduce un necessary -ve outlier values resulting in better fit. <br/>
-
-Individual *24* seems to have spent 156£ on gambling and likely seems an outlier. This seems to be outside the usual range of expenditure and will not inform the study in a general sense. Hence, we remove this point from the analysis.
+Observation 24 (gamble = £156) appears to be an outlier and is removed from the analysis.
 
 ### Effect of Gender
 
@@ -180,7 +176,7 @@ summary(gender_model)
 With *income* variable included alongside *sex*, the effect of *sex* remains significant (although is reduced from 1.35 to 1.24 with lower Std. Error). <br/>
 Income itself is significantly associated with gambling expenditure. <br/>
 The intercept is non-significant indicating that for reference class (female), gambling expenditure is likely 0£ if they have close to 0 income and it makes intuitive sense (although for adults and addicts this may not necessarily be true). <br/>
-This model does not include an interaction between *sex* and *income* for simplificty, yet fits the data well. Model diagnostics also appear acceptable. <br/>
+This model does not include an interaction between *sex* and *income* for simplicity, yet it fits the data well. Model diagnostics appear acceptable. <br/>
 
 ```{r}
 #| echo: false
@@ -220,20 +216,7 @@ teengamb %>%
 
 ```
 
-From an earlier observation, it was suspected that there could be differential effect of income on expenditure based on gender. The current model (lines) seems to indicate that there might be some difference between how males and females respond to changes in income. <br/>
-
-```{r}
-#| echo: false
-
-ggplot(teengamb, aes(x = income, colour = sex)) +
-  geom_point(aes(y = log_gamble)) +
-  geom_line(aes(y = .fitted))
-
-```
-
-We shall try to fit an interaction between *sex* and *income* to evaluate if this is indeed the case. <br/>
-
-It appears as though the interaction does not improve the model fit compared to no interaction model. <br/>
+From earlier plots we suspected a possible differential effect of income by gender. Fitting an interaction did not improve fit and the interaction term is not significant, so the simpler additive model is preferred.
 
 ```{r}
 #| echo: false
@@ -257,7 +240,4 @@ print(income_sex_interaction %>% summary())
 ```
 
 ## Conclusion
-The analysis indicates that both gender and income are significantly associated with gambling expenditure among teenagers. <br/>
-Males tend to spend 3x more than females on gambling (even at comparable income levels). This effect may be inflated to some degree since boys tended to exaggerate their gambling spend and girls tended to under-report them [@gambling_in_young_adolescents]. <br/>
-A 1£ increase in weekly income is associated with a 19% increase in annual gambling expenditure. <br/>
-The interaction between gender and income was not significant, indicating that the effect of income on gambling expenditure is similar for both genders. <br/>
+Both gender and income are significantly associated with teenage gambling expenditure. Males spend about three times more than females on average (note: reporting biases could inflate this effect; boys may over-report and girls may under-report [@gambling_in_young_adolescents]). A £1 increase in weekly income is associated with an approximate 19% increase in annual gambling expenditure on the log scale interpretation. The interaction between gender and income was not significant, suggesting the effect of income is similar across genders. <br/>
