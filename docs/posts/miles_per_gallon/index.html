@@ -235,7 +235,7 @@ div.csl-indent {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>The aim of this post is to do a comparative analysis of mpg of various manufacturers using linear mixed effects models. The data is taken from the <em>mpg</em> dataset available in R <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">GGplot2 Development Team, n.d.</a>)</span>. <br> The idea is to study a particular configuration (Front wheel drive, compact/midsise/sub-compact petrol variants) of cars and assess how significant is the difference in <em>City mpg</em> (EPA figures) among manufacturers when controlling for other attributes like engine displacement, transmission type, number of cylinders, model and year. <br></p>
+<p>The aim of this post is to do a comparative analysis of EPA reported (city) <em>mpg</em> of various manufacturers using linear mixed effects models. The data is taken from the <em>mpg</em> dataset available in R <span class="citation" data-cites="ggplot2">(<a href="#ref-ggplot2" role="doc-biblioref">GGplot2 Development Team, n.d.</a>)</span>. <br> The idea is to study a particular configuration (Front wheel drive, compact/midsise/sub-compact petrol variants) of cars and assess how significant is the difference in <em>mpg</em> among manufacturers when controlling for other attributes like engine displacement, transmission type, number of cylinders, model and year. <br></p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
@@ -726,7 +726,7 @@ deviance = -231.0 </code></pre>
     (p-value based on 10000 simulated values)
 
 data:  
-RLRT = 13.167, p-value = 1e-04</code></pre>
+RLRT = 13.167, p-value = 2e-04</code></pre>
 </div>
 </div>
 <p>So we reject the hypothesis that manufacturer:model nesting effect is not significant. <br></p>
@@ -737,7 +737,8 @@ RLRT = 13.167, p-value = 1e-04</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-104 message(s): boundary (singular) fit: see help('isSingular')</code></pre>
+107 message(s): boundary (singular) fit: see help('isSingular')
+1 warning(s): Model failed to converge with max|grad| = 0.00242739 (tol = 0.002, component 1)</code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -751,33 +752,33 @@ RLRT = 13.167, p-value = 1e-04</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">.sig01</td>
-<td style="text-align: right;">0.0001374</td>
-<td style="text-align: right;">0.0732327</td>
+<td style="text-align: right;">0.0057475</td>
+<td style="text-align: right;">0.0751256</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">.sig02</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.1046379</td>
+<td style="text-align: right;">0.1046703</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">.sigma</td>
-<td style="text-align: right;">0.0455771</td>
-<td style="text-align: right;">0.0629479</td>
+<td style="text-align: right;">0.0442480</td>
+<td style="text-align: right;">0.0626953</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">3.2504018</td>
-<td style="text-align: right;">3.4182635</td>
+<td style="text-align: right;">3.2529315</td>
+<td style="text-align: right;">3.4206651</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">displ</td>
-<td style="text-align: right;">-0.1765836</td>
-<td style="text-align: right;">-0.1252763</td>
+<td style="text-align: right;">-0.1775308</td>
+<td style="text-align: right;">-0.1250477</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">year2008</td>
-<td style="text-align: right;">0.0563250</td>
-<td style="text-align: right;">0.1062256</td>
+<td style="text-align: right;">0.0572179</td>
+<td style="text-align: right;">0.1061334</td>
 </tr>
 </tbody>
 </table>
