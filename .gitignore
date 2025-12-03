@@ -10,3 +10,4 @@ docs/posts/growth_clusters_uk/index_files/
 
 *_cache/
 *.db
+*.duckdb

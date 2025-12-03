@@ -31,7 +31,7 @@ con <- dbConnect(
     here::here(),
     "posts",
     "occupation_impact_on_rentals",
-    "census.db"
+    "census.duckdb"
   )
 )
 
