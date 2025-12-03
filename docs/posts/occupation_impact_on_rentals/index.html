@@ -7,10 +7,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Prateek">
-<meta name="dcterms.date" content="2025-11-25">
-<meta name="description" content="Junior schools project using multilevel modeling to analyze student performance data">
+<meta name="dcterms.date" content="2025-11-30">
+<meta name="description" content="Assessing if (and how) occupations affect local rental market">
 
-<title>Junior Schools Project – Blog</title>
+<title>Impact of occupations on UK rentals – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,42 +23,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
 }
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
 }
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
 }
-</style>
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -150,15 +135,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Junior Schools Project</h1>
+      <h1 class="title">Impact of occupations on UK rentals</h1>
                   <div>
         <div class="description">
-          Junior schools project using multilevel modeling to analyze student performance data
+          Assessing if (and how) occupations affect local rental market
         </div>
       </div>
                           <div class="quarto-categories">
                 <div class="quarto-category">random effects</div>
                 <div class="quarto-category">hierarchical models</div>
+                <div class="quarto-category">glm</div>
+                <div class="quarto-category">binomial</div>
               </div>
                   </div>
   </div>
@@ -176,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div>
       <div class="quarto-title-meta-heading">Published</div>
       <div class="quarto-title-meta-contents">
-        <p class="date">November 25, 2025</p>
+        <p class="date">November 30, 2025</p>
       </div>
     </div>
     
@@ -192,7 +179,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#junior-schools-project" id="toc-junior-schools-project" class="nav-link active" data-scroll-target="#junior-schools-project">Junior Schools Project</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
+  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a>
+  <ul class="collapse">
+  <li><a href="#additional-information" id="toc-additional-information" class="nav-link" data-scroll-target="#additional-information">Additional information</a></li>
+  <li><a href="#subsampling" id="toc-subsampling" class="nav-link" data-scroll-target="#subsampling">Subsampling</a></li>
+  <li><a href="#filtering" id="toc-filtering" class="nav-link" data-scroll-target="#filtering">Filtering</a></li>
+  </ul></li>
+  <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda">EDA</a></li>
+  <li><a href="#modelling" id="toc-modelling" class="nav-link" data-scroll-target="#modelling">Modelling</a></li>
   </ul>
 </nav>
     </div>
@@ -203,115 +198,305 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<section id="junior-schools-project" class="level2">
-<h2 class="anchored" data-anchor-id="junior-schools-project">Junior Schools Project</h2>
-<p>The data is from the Junior Schools Project, which investigated the performance of students in different junior schools in inner London (circa 1988). The dataset includes information on :</p>
-<ul>
-<li>school</li>
-<li>class (within school upto 4)</li>
-<li>gender</li>
-<li>social class of father</li>
-<li>raven score (IQ test) taken in year 1</li>
-<li>student id</li>
-<li>english test score (for each year)</li>
-<li>maths test score (for each year)</li>
-<li>year (1,2 and 3)</li>
-</ul>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Cross tabulated LSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><span>“RM140: Tenure by Occupation - Household Reference Persons”</span> 2023</a>)</span></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>jspr <span class="ot">&lt;-</span> jsp <span class="sc">%&gt;%</span> <span class="fu">as_tibble</span>() <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">year =</span> year <span class="sc">+</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(year <span class="sc">==</span> <span class="dv">3</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(<span class="fu">head</span>(jspr))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 14%">
+<col style="width: 20%">
+<col style="width: 15%">
+<col style="width: 19%">
+<col style="width: 4%">
+</colgroup>
 <thead>
 <tr class="header">
-<th style="text-align: left;">school</th>
-<th style="text-align: left;">class</th>
-<th style="text-align: left;">gender</th>
-<th style="text-align: left;">social</th>
-<th style="text-align: right;">raven</th>
-<th style="text-align: left;">id</th>
-<th style="text-align: right;">english</th>
-<th style="text-align: right;">math</th>
-<th style="text-align: right;">year</th>
+<th style="text-align: left;">Lower layer Super Output Areas Code</th>
+<th style="text-align: left;">Lower layer Super Output Areas</th>
+<th style="text-align: right;">Tenure of household (5 categories) Code</th>
+<th style="text-align: left;">Tenure of household (5 categories)</th>
+<th style="text-align: right;">Occupation (current) (10 categories) Code</th>
+<th style="text-align: left;">Occupation (current) (10 categories)</th>
+<th style="text-align: right;">Observation</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">girl</td>
-<td style="text-align: left;">9</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">39</td>
-<td style="text-align: right;">23</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">boy</td>
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">22</td>
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">83</td>
-<td style="text-align: right;">39</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">boy</td>
-<td style="text-align: left;">9</td>
-<td style="text-align: right;">14</td>
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">12</td>
-<td style="text-align: right;">32</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">girl</td>
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: left;">6</td>
+<td style="text-align: left;">E01004966</td>
+<td style="text-align: left;">Bury 005C</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Rented: Social rented</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: left;">9. Elementary occupations</td>
 <td style="text-align: right;">19</td>
-<td style="text-align: right;">11</td>
-<td style="text-align: right;">3</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">boy</td>
-<td style="text-align: left;">9</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: left;">7</td>
-<td style="text-align: right;">31</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: right;">3</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">1</td>
-<td style="text-align: left;">girl</td>
-<td style="text-align: left;">9</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">28</td>
+<td style="text-align: left;">E01026689</td>
+<td style="text-align: left;">King’s Lynn and West Norfolk 007C</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Owned: Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: left;">6. Caring, leisure and other service occupations</td>
+<td style="text-align: right;">7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E01026502</td>
+<td style="text-align: left;">Broadland 001D</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">Owned: Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: left;">8. Process, plant and machine operatives</td>
+<td style="text-align: right;">18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">E01024194</td>
+<td style="text-align: left;">Dover 011B</td>
+<td style="text-align: right;">-8</td>
+<td style="text-align: left;">Does not apply</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: left;">5. Skilled trades occupations</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">E01015016</td>
+<td style="text-align: left;">South Gloucestershire 006C</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: left;">Owned: Owns outright</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">2. Professional occupations</td>
+<td style="text-align: right;">14</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">E01027609</td>
+<td style="text-align: left;">Hambleton 012D</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: left;">Rented: Social rented</td>
 <td style="text-align: right;">3</td>
+<td style="text-align: left;">3. Associate professional and technical occupations</td>
+<td style="text-align: right;">10</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
+</section>
+<section id="dataset" class="level2">
+<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
+<section id="additional-information" class="level3">
+<h3 class="anchored" data-anchor-id="additional-information">Additional information</h3>
+<p>Local authority for each LSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring LSOAs introducing correlations in their data. <br></p>
+<p>Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each lsoa are added to the dataset.</p>
+</section>
+<section id="subsampling" class="level3">
+<h3 class="anchored" data-anchor-id="subsampling">Subsampling</h3>
+<p>Since, the dataset is very well compiled but is too large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br> The subsampling process does the following: <br></p>
+<ul>
+<li>Randomly sample 10 local authorities from 8 UK wide regions (e.g.&nbsp;West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)</li>
+<li>Within each of the sampled local authorities sample 50 LSOAs at random</li>
+<li>Get all the data in the sampled LSOAs</li>
+</ul>
+<p>The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br> It goes without saying that this step means that Local Authorities and LSOAs need to be treated as random effects down the line (with appropriate heirarchy). <br> The procedure ensures sufficient counts of Local Authorities and LSOAs to be able to reliably capture these random effects.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 15%">
+<col style="width: 18%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 12%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">rows</th>
+<th style="text-align: right;">distinct_tenure</th>
+<th style="text-align: right;">distinct_occupation</th>
+<th style="text-align: right;">max_counts</th>
+<th style="text-align: right;">min_counts</th>
+<th style="text-align: right;">median_counts</th>
+<th style="text-align: right;">distinct_lad</th>
+<th style="text-align: right;">distinct_lsoa</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">144429</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">545</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">80</td>
+<td style="text-align: right;">3837</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="filtering" class="level3">
+<h3 class="anchored" data-anchor-id="filtering">Filtering</h3>
+<p>All the instances where <em>Occupation</em> is <em>does not apply</em> refer to the household reference person (HRP) not in full time employment a week before census. <br> Given the focus of the study on <em>rental</em> tenures, this can possibly correlate with the cases where HRP would be living rent free. This would not be of interest either, so this Occupation code is dropped from the dataset entirely. <br></p>
+<p>Note: <br></p>
+<ul>
+<li>Such an issue does not arise in (for example) 2011 census data because the data itself excludes HRP not in occupation</li>
+<li>Occupation <em>does not apply</em> is the largest category in rental tenure data (~34%) <span class="citation" data-cites="EHS_21-22_PRS_Ch_1_Annex_Tables">(<a href="#ref-EHS_21-22_PRS_Ch_1_Annex_Tables" role="doc-biblioref"><span>“Annex Table 1.5: Employment Status by Tenure,2021-22”</span> 2023</a>)</span>
+<ul>
+<li>part-time work (~11% includes furloughed)</li>
+<li>retired (~7%)</li>
+<li>unemployed (~4%)</li>
+<li>full-time education (~4%)</li>
+<li>other inactive (~8%)</li>
+</ul></li>
+<li>The private rented sector houses the highest proportion of non-UK nationals (74% of HRPs in the private rented sector are from the UK, compared to 92% of social renters and 96% of owner occupiers) <span class="citation" data-cites="english_housing_survey">(<a href="#ref-english_housing_survey" role="doc-biblioref"><span>“English Housing Survey 2021 to 2022: Private Rented Sector”</span> 2023</a>)</span></li>
+</ul>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 30%">
+<col style="width: 24%">
+<col style="width: 12%">
+<col style="width: 15%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">lad_name</th>
+<th style="text-align: left;">lsoa</th>
+<th style="text-align: left;">tenure</th>
+<th style="text-align: left;">occupation</th>
+<th style="text-align: right;">counts_of_hrp</th>
+<th style="text-align: right;">occupation_total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">2. professional occupations</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">360</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">2. professional occupations</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">360</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">9. elementary occupations</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">140</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">9. elementary occupations</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">140</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">9. elementary occupations</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">140</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">gateshead</td>
+<td style="text-align: left;">e01008243</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">9. elementary occupations</td>
+<td style="text-align: right;">11</td>
+<td style="text-align: right;">140</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="eda" class="level2">
+<h2 class="anchored" data-anchor-id="eda">EDA</h2>
+<p>There is still a long tail of population per lsoa. These LSOAs are located in dense Local authorities in cities like Manchester and Newcastle etc. This may lead to overdispersion issues.</p>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value `binwidth`.</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>At the level of LSOA the proportion of rentership can appear quite chaotic and noisy.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The variability in renting due to occupation is visible when looked at in aggregate. This also seems to relate to our intuition where highly skilled and professionals are driving less of the rental market since they may be better placed to afford to buy.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>The observation holds and patterns become more clear when the data is aggregated at Local authority level. This means that a heirarchical consideration of geographies could be a sensible inclusion in the model.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="modelling" class="level2">
+
+
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">Modelling</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-EHS_21-22_PRS_Ch_1_Annex_Tables" class="csl-entry" role="listitem">
+<span>“Annex Table 1.5: Employment Status by Tenure,2021-22.”</span> 2023. Department for Levelling Up, Housing; Communities. <a href="https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods">https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods</a>.
+</div>
+<div id="ref-english_housing_survey" class="csl-entry" role="listitem">
+<span>“English Housing Survey 2021 to 2022: Private Rented Sector.”</span> 2023, July. <a href="https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector">https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector</a>.
+</div>
+<div id="ref-ONS2021RM140" class="csl-entry" role="listitem">
+<span>“RM140: Tenure by Occupation - Household Reference Persons.”</span> 2023. Office for National Statistics. <a href="https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2">https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

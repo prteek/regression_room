@@ -23,41 +23,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 /* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
@@ -245,6 +210,17 @@ div.csl-indent {
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 17%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 17%">
+<col style="width: 10%">
+</colgroup>
 <thead>
 <tr class="header">
 <th style="text-align: left;">manufacturer</th>
@@ -260,21 +236,21 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
-<td style="text-align: right;">1.8</td>
+<td style="text-align: left;">nissan</td>
+<td style="text-align: left;">altima</td>
+<td style="text-align: right;">2.4</td>
 <td style="text-align: left;">1999</td>
 <td style="text-align: right;">4</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: left;">p</td>
+<td style="text-align: right;">21</td>
+<td style="text-align: left;">r</td>
 <td style="text-align: left;">compact</td>
-<td style="text-align: left;">auto</td>
+<td style="text-align: left;">manual</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
-<td style="text-align: right;">1.8</td>
-<td style="text-align: left;">1999</td>
+<td style="text-align: left;">volkswagen</td>
+<td style="text-align: left;">jetta</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: left;">2008</td>
 <td style="text-align: right;">4</td>
 <td style="text-align: right;">21</td>
 <td style="text-align: left;">p</td>
@@ -282,48 +258,92 @@ div.csl-indent {
 <td style="text-align: left;">manual</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
-<td style="text-align: right;">2.0</td>
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">20</td>
-<td style="text-align: left;">p</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">manual</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
-<td style="text-align: right;">2.0</td>
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: left;">p</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">auto</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
+<td style="text-align: left;">volkswagen</td>
+<td style="text-align: left;">passat</td>
 <td style="text-align: right;">2.8</td>
 <td style="text-align: left;">1999</td>
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">16</td>
 <td style="text-align: left;">p</td>
-<td style="text-align: left;">compact</td>
+<td style="text-align: left;">midsize</td>
 <td style="text-align: left;">auto</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">audi</td>
-<td style="text-align: left;">a4</td>
-<td style="text-align: right;">2.8</td>
+<td style="text-align: left;">volkswagen</td>
+<td style="text-align: left;">new beetle</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">subcompact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">nissan</td>
+<td style="text-align: left;">altima</td>
+<td style="text-align: right;">2.5</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">23</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">midsize</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">toyota</td>
+<td style="text-align: left;">corolla</td>
+<td style="text-align: right;">1.8</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">26</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">compact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">nissan</td>
+<td style="text-align: left;">altima</td>
+<td style="text-align: right;">3.5</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: left;">p</td>
+<td style="text-align: left;">midsize</td>
+<td style="text-align: left;">manual</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">chevrolet</td>
+<td style="text-align: left;">malibu</td>
+<td style="text-align: right;">3.1</td>
 <td style="text-align: left;">1999</td>
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">18</td>
-<td style="text-align: left;">p</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">manual</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">midsize</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">honda</td>
+<td style="text-align: left;">civic</td>
+<td style="text-align: right;">1.6</td>
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">subcompact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">pontiac</td>
+<td style="text-align: left;">grand prix</td>
+<td style="text-align: right;">3.8</td>
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">midsize</td>
+<td style="text-align: left;">auto</td>
 </tr>
 </tbody>
 </table>
@@ -342,10 +362,8 @@ div.csl-indent {
 <p>It can be seen that several key manufacturers are missing from the final dataset, consequently we may only be able to answer question like <em>Is the mpg among manufacturers significantly different ?</em> as opposed to <em>What is the average mpg of manufactuers to be able to compare them more directly</em> <br> Of course, the car models are random in the study design, so we will treat them as such. Although these are nested inside manufacturers. <br></p>
 <section id="eda" class="level3">
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
-<p>The data summary is as follows -</p>
-<div class="cell">
-<div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
+<p>Data summary is as follows -</p>
+<table class="caption-top table">
 <colgroup>
 <col style="width: 13%">
 <col style="width: 24%">
@@ -378,13 +396,7 @@ div.csl-indent {
 </tr>
 </tbody>
 </table>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>`summarise()` has grouped output by 'manufacturer'. You can override using the
-`.groups` argument.</code></pre>
-</div>
-<div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
+<table class="caption-top table">
 <thead>
 <tr class="header">
 <th style="text-align: left;">manufacturer</th>
@@ -486,8 +498,7 @@ div.csl-indent {
 </tr>
 </tbody>
 </table>
-</div>
-</div>
+<p><br></p>
 <p>There are (exactly) two years of data covering 15 models. We treat year as a categorical variable rather than continuous. A short sample for one model is shown below.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -620,9 +631,6 @@ div.csl-indent {
 <p>There does seem to be quite a lot variability in the city mpg among manufacturers. <br> Although, it is definitely possible that this is driven by different models and their attributes more than manufacturers themselves. <br></p>
 <p>The plot below suggests (to intuition) that with larger <em>displacement</em> the <em>mpg</em> reduces. Although there is a hint of nonlinearity in the trend, we shall ignore this initially. <br> Midsize cars are slightly less efficient (lower mpg) than compact and subcompact cars. This is expected since these are heavier with higher displacement engines. <br> It is hard to get an accurate read on the effect of transmission and so we shall defer it to the model to figure out.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(df_mpg) <span class="sc">+</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">x =</span> displ, <span class="at">y =</span> mpg, <span class="at">color =</span> class, <span class="at">shape =</span> trans)) <span class="sc">+</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>manufacturer)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -728,7 +736,7 @@ deviance = -231.0 </code></pre>
     (p-value based on 10000 simulated values)
 
 data:  
-RLRT = 13.167, p-value = 1e-04</code></pre>
+RLRT = 13.167, p-value &lt; 2.2e-16</code></pre>
 </div>
 </div>
 <p>So we reject the hypothesis that manufacturer:model nesting effect is not significant. <br></p>
@@ -739,7 +747,7 @@ RLRT = 13.167, p-value = 1e-04</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-99 message(s): boundary (singular) fit: see help('isSingular')</code></pre>
+91 message(s): boundary (singular) fit: see help('isSingular')</code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -753,33 +761,33 @@ RLRT = 13.167, p-value = 1e-04</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">.sig01</td>
-<td style="text-align: right;">0.0103371</td>
-<td style="text-align: right;">0.0735223</td>
+<td style="text-align: right;">0.0080955</td>
+<td style="text-align: right;">0.0726913</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">.sig02</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.1093064</td>
+<td style="text-align: right;">0.1059291</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">.sigma</td>
-<td style="text-align: right;">0.0445437</td>
-<td style="text-align: right;">0.0630524</td>
+<td style="text-align: right;">0.0447055</td>
+<td style="text-align: right;">0.0616913</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">3.2444485</td>
-<td style="text-align: right;">3.4069408</td>
+<td style="text-align: right;">3.2507162</td>
+<td style="text-align: right;">3.4228451</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">displ</td>
-<td style="text-align: right;">-0.1772836</td>
-<td style="text-align: right;">-0.1230765</td>
+<td style="text-align: right;">-0.1759481</td>
+<td style="text-align: right;">-0.1244415</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">year2008</td>
-<td style="text-align: right;">0.0580309</td>
-<td style="text-align: right;">0.1045132</td>
+<td style="text-align: right;">0.0574241</td>
+<td style="text-align: right;">0.1068758</td>
 </tr>
 </tbody>
 </table>
