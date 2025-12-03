@@ -1,0 +1,366 @@
+---
+title: "Impact of occupations on UK rentals"
+author: "Prateek"
+date: "2025-11-30"
+categories: [random effects, hierarchical models, glm, binomial]
+image: "rentals_2021.png"
+toc: true
+bibliography: references.bib
+description: "Assessing if (and how) occupations affect local rental market"
+execute:
+  echo: false
+
+---
+
+```{r}
+#| warning: false
+readRenviron(file.path(here::here(), '.local_credentials'))
+
+renv::load(here::here())
+library(tidyverse)
+library(lme4)
+library(faraway)
+library(DBI)
+library(duckdb)
+library(tidyverse)
+library(RAthena)
+
+con <- dbConnect(
+  drv = duckdb(),
+  dbdir = file.path(
+    here::here(),
+    "posts",
+    "occupation_impact_on_rentals",
+    "census.db"
+  )
+)
+
+acon <- dbConnect(
+  athena(),
+  workgroup = "primary",
+  schema_name = "default",
+  s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
+  profile_name = "personal",
+  region = "eu-west-1",
+)
+athena_sql <- function(query) {
+  tibble(dbGetQuery(acon, query))
+}
+
+sql <- function(query) {
+  tibble(dbGetQuery(con, query))
+}
+
+theme_set(theme_minimal())
+
+```
+
+
+```{sql, connection="con"}
+install httpfs;
+load httpfs;
+
+```
+
+## Data
+
+Cross tabulated LSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140]
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: true
+
+create or replace table raw_data as
+select *
+from 'https://static.ons.gov.uk/datasets/75a5bb04-bfd9-4b5b-9c73-13d006b04c38/RM140-2021-3-filtered-2025-11-28T20:47:07Z.csv'
+
+```
+
+
+```{r}
+sql(
+  "select *
+from raw_data
+order by random()
+limit 10"
+) %>%
+  head() %>%
+  knitr::kable()
+
+```
+
+
+```{r}
+#| cache: true
+#| warning: false
+
+geo_mapping <- athena_sql(
+  "select region
+  , lad
+  , msoa
+  , lsoa
+    from geo.post_town_geo_mapping"
+)
+
+dim_lad <- athena_sql(
+  "
+select lad
+, lad_name
+from geo.dim_lad
+"
+)
+
+dim_region <- athena_sql(
+  "
+select region
+, region_name
+from geo.dim_region
+"
+)
+
+dbWriteTable(con, "geo_mapping", geo_mapping, overwrite = TRUE)
+dbWriteTable(con, "dim_lad", dim_lad, overwrite = TRUE)
+dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
+
+```
+
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: true
+
+create or replace table occupation_by_tenure as (
+select
+lower("Lower layer Super Output Areas Code") as lsoa
+, lower("Tenure of household (5 categories)") as tenure
+, lower("Occupation (current) (10 categories)") as occupation
+, Observation::double as counts_of_hrp
+from raw_data
+where "Tenure of household (5 categories)" <> 'Does not apply' and Observation > 0
+)
+
+```
+
+## Dataset
+
+### Additional information
+
+Local authority for each LSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring LSOAs introducing correlations in their data. <br/>
+
+Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each lsoa are added to the dataset.
+
+### Subsampling
+
+Since, the dataset is very well compiled but is too large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
+The subsampling process does the following: <br/>
+
+* Randomly sample 10 local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
+* Within each of the sampled local authorities sample 50 LSOAs at random
+* Get all the data in the sampled LSOAs
+
+The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
+It goes without saying that this step means that Local Authorities and LSOAs need to be treated as random effects down the line (with appropriate heirarchy). <br/>
+The procedure ensures sufficient counts of Local Authorities and LSOAs to be able to reliably capture these random effects.
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: true
+
+create or replace table subsample_lsoa as (
+    with ranked_geos as (
+        select b.region
+        , a.lad
+        , a.lsoa
+        , a.lsoa_rank
+        , b.lad_rank
+        from ( /* Ranked lsoa per LAD */
+              select distinct
+                    lad,
+                    lsoa,
+                    row_number() over(partition by lad order by random()) as lsoa_rank
+                from geo_mapping) a inner join
+                  (/* ranked LADs per region */
+                  select *
+                  , row_number() over(partition by region order by random()) as lad_rank
+                  from (select distinct
+                              region,
+                              lad
+                        from geo_mapping)
+                  ) b on a.lad = b.lad
+    )
+    select c.lad_name
+    , a.*
+    from occupation_by_tenure a
+            inner join ranked_geos b on a.lsoa = b.lsoa
+            inner join dim_lad c on b.lad = c.lad
+    where b.region <> 'e12000007' -- london
+    and lad_rank <= 10 and lsoa_rank <= 50
+)
+
+```
+
+
+```{r}
+sql("select * from subsample_lsoa") %>%
+  summarise(
+    rows = n(),
+    distinct_tenure = n_distinct(tenure),
+    distinct_occupation = n_distinct(occupation),
+    max_counts = max(counts_of_hrp),
+    min_counts = min(counts_of_hrp),
+    median_counts = median(counts_of_hrp),
+    distinct_lad = n_distinct(lad_name),
+    distinct_lsoa = n_distinct(lsoa),
+    .groups = 'drop'
+  ) %>%
+  knitr::kable()
+
+```
+
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: true
+
+create or replace table dataset as
+    (
+        select *
+        , sum(counts_of_hrp) over (partition by lsoa, occupation) as occupation_total
+        from subsample_lsoa
+    )
+
+
+```
+
+### Filtering
+
+All the instances where *Occupation* is *does not apply* refer to the household reference person (HRP) not in full time employment a week before census. <br/>
+Given the focus of the study on *rental* tenures, this can possibly correlate with the cases where HRP would be living rent free. This would not be of interest either, so this Occupation code is dropped from the dataset entirely. <br/>
+
+Note: <br/>
+
+* Such an issue does not arise in (for example) 2011 census data because the data itself excludes HRP not in occupation
+* Occupation *does not apply* is the largest category in rental tenure data (~34%) [@EHS_21-22_PRS_Ch_1_Annex_Tables]
+    * part-time work (~11% includes furloughed)
+    * retired (~7%)
+    * unemployed (~4%)
+    * full-time education (~4%)
+    * other inactive (~8%)
+* The private rented sector houses the highest proportion of non-UK nationals (74% of HRPs in the private rented sector are from the UK, compared to 92% of social renters and 96% of owner occupiers) [@english_housing_survey]
+
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: true
+
+create or replace table dataset_filtered as
+    (
+        select *
+        from dataset
+        /* following filters will also take care to remove some of living rent free */
+        where tenure = 'private rented or lives rent free' -- renting
+          and occupation <> 'does not apply' -- not in full time occupation
+    )
+
+
+```
+
+
+```{r}
+sql(
+  "select *
+    from dataset_filtered"
+) %>%
+  head() %>%
+  knitr::kable()
+
+```
+
+
+## EDA
+
+There is still a long tail of population per lsoa. These LSOAs are located in dense Local authorities in cities like Manchester and Newcastle etc. This may lead to overdispersion issues.
+
+```{r}
+sql(
+  "
+select lsoa
+, lad_name
+, sum(occupation_total) as lsoa_total
+from dataset_filtered
+group by lsoa, lad_name
+order by 3 desc
+"
+) %>%
+  ggplot() +
+  geom_histogram(aes(x = lsoa_total))
+
+```
+
+
+At the level of LSOA the proportion of rentership can appear quite chaotic and noisy.
+```{r}
+sql(
+  "
+select *
+  , counts_of_hrp/occupation_total as proportion_renting
+  from dataset_filtered
+  where lsoa in (select distinct(lsoa) from dataset_filtered order by random() limit 10)
+"
+) %>%
+  ggplot() +
+  geom_line(aes(
+    x = occupation,
+    y = proportion_renting,
+    colour = lad_name,
+    group = lad_name
+  )) +
+  labs(title = 'Sample LSOA data per local authority') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+
+```
+
+
+The variability in renting due to occupation is visible when looked at in aggregate. This also seems to relate to our intuition where highly skilled and professionals are driving less of the rental market since they may be better placed to afford to buy.
+
+```{r}
+sql(
+  "
+select *
+  , counts_of_hrp/occupation_total as proportion_renting
+  from dataset_filtered
+"
+) %>%
+  ggplot() +
+  geom_boxplot(aes(x = occupation, y = proportion_renting)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(title = 'All LSOA rentership')
+
+```
+
+
+The observation holds and patterns become more clear when the data is aggregated at Local authority level. This means that a heirarchical consideration of geographies could be a sensible inclusion in the model.
+
+```{r}
+sql(
+  "
+select lad_name
+  , occupation
+  , sum(counts_of_hrp)/sum(occupation_total) as proportion_renting
+  from dataset_filtered
+  -- where lad_name in (select distinct(lad_name) from dataset_filtered order by random() limit 10)
+  group by lad_name, occupation
+"
+) %>%
+  ggplot() +
+  geom_boxplot(aes(
+    x = occupation,
+    y = proportion_renting,
+  )) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(title = 'All Local authority rentership')
+
+```
+
+
+## Modelling
