@@ -289,7 +289,15 @@ dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
 ```
 
 It can be possible that age has a confounding effect on Rentership via Occupation. Majority of Professional and Managers may likely be older than associates and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br/>
-Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life.
+Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life. <br/>
+The adjustment is made by including the proportion of full-time employed HRPs in an MSOA engaged in a particular profession falling in one of the following age bands: <br/>
+* aged 15 years and under
+* aged 16 to 24 years
+* aged 25 to 34 years
+* aged 35 to 49 years
+* aged 50 to 64 years
+* aged 65 years and over
+
 
 ```{sql, connection="con"}
 #| warning: false
@@ -492,6 +500,7 @@ or replace table occupation_by_age_long as (
 #| cache: true
 create
 or replace table occupation_by_age as
+with base as (
 select
     msoa,
     occupation,
@@ -538,16 +547,24 @@ select
         else 0
     end as "aged 65 years and over",
     sum(counts_of_hrp) over (
-        partition by
-            msoa
-    ) as total
+            partition by
+                msoa
+        ) as total
 from
-    occupation_by_age_long;
-
-select
-    *
-from
-    occupation_by_age
+    occupation_by_age_long
+)
+select msoa
+, occupation
+, sum("aged 15 years and under") as "aged 15 years and under"
+, sum("aged 16 to 24 years") as "aged 16 to 24 years"
+, sum("aged 25 to 34 years") as "aged 25 to 34 years"
+, sum("aged 35 to 49 years") as "aged 35 to 49 years"
+, sum("aged 50 to 64 years") as "aged 50 to 64 years"
+, sum("aged 65 years and over") as "aged 65 years and over"
+, max(total) as total
+from base
+group by msoa, occupation
+order by msoa, occupation
 
 ```
 
@@ -645,13 +662,12 @@ create or replace table dataset as
 
 ### Filtering
 
-All the instances where *Occupation* is *does not apply* refer to the household reference person (HRP) not in full time employment a week before census. <br/>
-Given the focus of the study on *rental* tenures, this can possibly correlate with the cases where HRP would be living rent free. This would not be of interest either, so this Occupation code is dropped from the dataset entirely. <br/>
+Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br/>
+It would be sensible to drop data if any occupation icluded positive entries in *aged 15 years and under* column.
 
 Note: <br/>
 
-* Such an issue does not arise in (for example) 2011 census data because the data itself excludes HRP not in occupation
-* Occupation *does not apply* is the largest category in rental tenure data (~34%) [@EHS_21-22_PRS_Ch_1_Annex_Tables]
+* ONS rental tenure data includes a large proportion (~34%) of people not under full time employment[@EHS_21-22_PRS_Ch_1_Annex_Tables] (filtered out in current analysis)
     * part-time work (~11% includes furloughed)
     * retired (~7%)
     * unemployed (~4%)
@@ -670,7 +686,7 @@ create or replace table dataset_filtered as
         from dataset
         /* following filters will also take care to remove some of living rent free */
         where tenure = 'private rented or lives rent free' -- renting
-          and occupation <> 'does not apply' -- not in full time occupation
+          and ("aged 15 years and under" = 0)
     )
 
 
