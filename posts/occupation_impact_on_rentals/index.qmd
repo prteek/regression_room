@@ -66,7 +66,8 @@ load httpfs;
 
 ## Data
 
-Cross tabulated MSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140]
+Cross tabulated MSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140] <br/>
+This data will differ from totals of people in full time occupation (e.g. data on occupation by age used in this study). This is because Tenure data refers to a single Household representative person (HRP) as an entry, whereas there may be multiple people in full time occupation in a household.
 
 ```{sql, connection="con"}
 #| warning: false
@@ -291,12 +292,17 @@ dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
 It can be possible that age has a confounding effect on Rentership via Occupation. Majority of Professional and Managers may likely be older than associates and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br/>
 Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life. <br/>
 The adjustment is made by including the proportion of full-time employed HRPs in an MSOA engaged in a particular profession falling in one of the following age bands: <br/>
+
 * aged 15 years and under
 * aged 16 to 24 years
 * aged 25 to 34 years
 * aged 35 to 49 years
 * aged 50 to 64 years
 * aged 65 years and over
+
+**Note:** <br/>
+This adjustment is inexact since the data is available for all people in full time occupation rather than just HRP (which is the unit of measurement of tenure data). This means that likely an HRP would be an older person, the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
+It is neverthless instructive to use this information as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
 
 
 ```{sql, connection="con"}
@@ -665,7 +671,7 @@ create or replace table dataset as
 Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br/>
 It would be sensible to drop data if any occupation icluded positive entries in *aged 15 years and under* column.
 
-Note: <br/>
+**Note:** <br/>
 
 * ONS rental tenure data includes a large proportion (~34%) of people not under full time employment[@EHS_21-22_PRS_Ch_1_Annex_Tables] (filtered out in current analysis)
     * part-time work (~11% includes furloughed)
@@ -706,10 +712,8 @@ sql(
 
 ## EDA
 
-There is still a long tail of population per msoa. These MSOAs are located in dense Local authorities in cities like Manchester and Newcastle etc. This may lead to overdispersion issues.
-
 ```{r}
-sql(
+high_counts <- sql(
   "
 select msoa
 , lad_name
@@ -718,12 +722,16 @@ from dataset_filtered
 group by msoa, lad_name
 order by 3 desc
 "
-) %>%
+)
+
+high_counts %>%
   ggplot() +
   geom_histogram(aes(x = msoa_total))
 
 ```
 
+There is still a long tail of working population per msoa. These MSOAs are located in dense Local authorities like **`r high_counts %>% slice(1:5) %>% pull(lad_name)`**. <br/>
+This may lead to an overdispersion issues.
 
 At the level of MSOA the proportion of rentership can appear quite chaotic and noisy.
 ```{r}
