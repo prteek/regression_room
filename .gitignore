@@ -7,3 +7,6 @@ posts/user_behaviour_analysis/states.csv
 docs/posts/growth_clusters_uk/index_files/
 
 **/*.quarto_ipynb
+
+*_cache/
+*.db
