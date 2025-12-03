@@ -67,7 +67,8 @@ load httpfs;
 ## Data
 
 Cross tabulated MSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140] <br/>
-This data will differ from totals of people in full time occupation (e.g. data on occupation by age used in this study). This is because Tenure data refers to a single Household representative person (HRP) as an entry, whereas there may be multiple people in full time occupation in a household.
+The unit of measurement (i.e. a single count) refers to a Household Representative persion (referred to as HRP henceforth), thus associating a unique occupation to a given household.
+This data will differ from total count of people in full time occupation from any other dataset (e.g. data on occupation by age, as used in this study), because there may be multiple people in full time occupation in a household.
 
 ```{sql, connection="con"}
 #| warning: false
@@ -301,7 +302,7 @@ The adjustment is made by including the proportion of full-time employed HRPs in
 * aged 65 years and over
 
 **Note:** <br/>
-This adjustment is inexact since the data is available for all people in full time occupation rather than just HRP (which is the unit of measurement of tenure data). This means that likely an HRP would be an older person, the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
+This adjustment is inexact since the data is available for all people in full time occupation rather than just HRP (which is the unit of measurement in tenure data). This means that likely an HRP would be an older person, the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
 It is neverthless instructive to use this information as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
 
 
