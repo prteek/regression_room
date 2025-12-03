@@ -72,7 +72,7 @@ Finally, here’s the algorithm outline:
 
 ### Data
 
-We use a simulated dataset based on historical data of a SaaS app. <br/> The data is available [here](https://gitlab.com/prteek/regression_room/-/raw/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
+We use a simulated dataset based on historical data of a SaaS app. <br/> The data is available [here](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
 
 Each record indicates a day when a user was active. <br/>
 
@@ -247,7 +247,7 @@ we’d like to get a table like this:
 
 And using this table, subsequently estimate *states* using simple rules (mentioned in definitions above) for each user_id, corresponding to each day in the data.
 
-The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://gitlab.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
+The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
 
 ```{r}
 states <- read_csv('states.csv', show_col_types = FALSE)
