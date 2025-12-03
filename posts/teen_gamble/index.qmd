@@ -1,5 +1,5 @@
 ---
-title: "Teen gambling analysis"
+title: "Teen gambling"
 author: "Prateek"
 date: "2025-10-16"
 categories: [regression, ANOVA]

@@ -1,12 +1,12 @@
 ---
-title: "Primer on Likelihood"
+title: "Likelihood"
 author: "Prateek"
 date: "2024-12-28"
 categories: [likelihood, fisher information, newton raphson]
 image: "likelihood.jpg"
 toc: true
 bibliography: references.bib
-description: Applied to parameter estimation
+description: "Primer on likelihood with application in parameter estimation"
 ---
 
 ## Introduction
@@ -107,12 +107,22 @@ So, the larger the $n$ (sample size) the greater is Fisher information and lesse
 
 ```{r}
 #| echo: false
-FI <- function(x,n) {n/(x*(1-x))}
-curve(FI(x,n=25), 0,1, lty=1, xlab='p', ylab='Fisher information',
-        main='Fisher information for Binomial distribution')
-curve(FI(x,n=50), 0,1, add=TRUE, lty=2)
+FI <- function(x, n) {
+  n / (x * (1 - x))
+}
+curve(
+  FI(x, n = 25),
+  0,
+  1,
+  lty = 1,
+  xlab = 'p',
+  ylab = 'Fisher information',
+  main = 'Fisher information for Binomial distribution'
+)
+curve(FI(x, n = 50), 0, 1, add = TRUE, lty = 2)
 grid()
-legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
+legend("topright", legend = c("n=25", "n=50"), lty = c(1, 2))
+
 ```
 
 ### Effect of Fisher information on log-likelihood
@@ -120,15 +130,23 @@ We can also illustrate the effect on *score* (log-likelihood) becoming more defi
 Essentially we consider 2 binomial datasets one with $n=25, y=10$ and another with $n=50, y=20$ where $y$ is observed counts of successes.
 
 ```{r}
-loglik <- function(x, y, n) lchoose(n,y) + y*log(x) + (n-y)*log(1-x)
+loglik <- function(x, y, n) lchoose(n, y) + y * log(x) + (n - y) * log(1 - x)
 
-curve(loglik(x,y=10,n=25), 0,1, lty=1, xlab='p', ylab='Log-likelihood',
-        main='Log-likelihood of Binomial distribution')
-curve(loglik(x,y=20,n=50), 0,1, add=TRUE, lty=2)
+curve(
+  loglik(x, y = 10, n = 25),
+  0,
+  1,
+  lty = 1,
+  xlab = 'p',
+  ylab = 'Log-likelihood',
+  main = 'Log-likelihood of Binomial distribution'
+)
+curve(loglik(x, y = 20, n = 50), 0, 1, add = TRUE, lty = 2)
 grid()
-legend("topright", legend = c("n=25", "n=50"), lty = c(1,2))
+legend("topright", legend = c("n=25", "n=50"), lty = c(1, 2))
 
 ```
+
 The maximum can be noticed at $p=0.4$ (equal to $n/y$ in both cases as derived earlier). For larger sample size $n=50$ the curvature of log-likelihood is greater as there is more information available. <br/>
 For our binomial example we maximised the log-likelihood function analytically earlier. It was a convenient exercise, however it is not always possible to analytically maximise log-likelihood and estimate parameters.
 
@@ -182,9 +200,10 @@ Let's now revert back to our Binomial distribution setting. We can perform log-l
 n <- 25
 y <- 10
 f <- function(x) -loglik(x, y, n)
-mle <- nlm(f, 0.5, hessian=TRUE)
+mle <- nlm(f, 0.5, hessian = TRUE)
 
 ```
+
 We use an initial value of $p=0.5$ and set *hessian* to TRUE to be able to calculate standard errors of the estimate using it.
 
 At the MLE  $\hat{\theta}$ , the Hessian  $H(\hat{\theta})$  is often used as an estimate for the Fisher information. (since both are effectively double derivative of log-likelihood). We have
@@ -200,10 +219,12 @@ Hence, the inverse of the *Hessian* at the optimum is equal to the variance of t
 Note: - sign is excluded since we're working with -log-likelihood in *nlm*
 
 ```{r}
+
 cat(paste("Numerical estimate of p:", round(mle$estimate, 2)))
-est <- paste("Estimated variance of p:", round(1/mle$hessian, 4))
-act <- paste("Actual variance variance of p:", round(0.4*(1-0.4)/n, 4))
-cat(paste(est, act, sep='\n'))
+est <- paste("Estimated variance of p:", round(1 / mle$hessian, 4))
+act <- paste("Actual variance variance of p:", round(0.4 * (1 - 0.4) / n, 4))
+cat(paste(est, act, sep = '\n'))
+
 ```
 
 This is a useful toolkit to have when working with estimations and maximum likelihood.

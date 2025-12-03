@@ -1,10 +1,12 @@
 ---
-title: "User behaviour analysis"
+title: "User behaviour"
 author: "Prateek"
 date: "2024-12-18"
 categories: [markov chain, timeseries]
 toc: true
 bibliography: references.bib
+description: "Analysing and modelling state changes in customer journey to better predict DAU"
+
 ---
 
 ## Introduction
@@ -70,7 +72,7 @@ Finally, here’s the algorithm outline:
 
 ### Data
 
-We use a simulated dataset based on historical data of a SaaS app. <br/> The data is available [here](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
+We use a simulated dataset based on historical data of a SaaS app. <br/> The data is available [here](https://gitlab.com/prteek/regression_room/-/raw/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
 
 Each record indicates a day when a user was active. <br/>
 
@@ -108,10 +110,13 @@ This is how DAU timeseries looks
 
 ```{r}
 #| echo: false
-ggplot(dau_data %>%
-        group_by(date) %>%
-        summarise(DAU=n())
-        ) + geom_line(aes(x=date, y=DAU)) + ggtitle('DAU timeseries')
+ggplot(
+  dau_data %>%
+    group_by(date) %>%
+    summarise(DAU = n())
+) +
+  geom_line(aes(x = date, y = DAU)) +
+  ggtitle('DAU timeseries')
 
 ```
 
@@ -123,18 +128,20 @@ The information on new users on any given date is inherent in *registration_date
 
 ```{r}
 new_users <- dau_data %>%
-                filter(date==registration_date) %>%
-                group_by(date) %>%
-                summarise(new_user_count=n()) %>%
-                mutate(
-                    year = year(date),
-                    week_of_year = isoweek(date),  # ISO 8601 week (Monday starts the week)
-                    month = as.factor(month(date, label = TRUE, abbr = TRUE)),  # Month as abbreviated name
-                    day_of_week = wday(date)
+  filter(date == registration_date) %>%
+  group_by(date) %>%
+  summarise(new_user_count = n()) %>%
+  mutate(
+    year = year(date),
+    week_of_year = isoweek(date), # ISO 8601 week (Monday starts the week)
+    month = as.factor(month(date, label = TRUE, abbr = TRUE)), # Month as abbreviated name
+    day_of_week = wday(date)
+  )
 
-                    )
-
-lmod <- glm.nb(new_user_count ~ year * bs(week_of_year,4) + month + day_of_week , data=new_users)
+lmod <- glm.nb(
+  new_user_count ~ year * bs(week_of_year, 4) + month + day_of_week,
+  data = new_users
+)
 
 # summary(lmod)
 
@@ -152,20 +159,27 @@ prediction_end_date <- as.Date("2024-12-01")
 start_date <- as.Date('2022-11-01')
 end_date <- as.Date('2023-10-31')
 
-new_users_predicted <- tibble(date = seq(prediction_start_date, prediction_end_date, by='day')) %>%
-                mutate(
-                    year = year(date),
-                    week_of_year = isoweek(date),  # ISO 8601 week (Monday starts the week)
-                    month = as.factor(month(date, label = TRUE, abbr = TRUE)),  # Month as abbreviated name
-                    day_of_week = wday(date)
-                    )
+new_users_predicted <- tibble(
+  date = seq(prediction_start_date, prediction_end_date, by = 'day')
+) %>%
+  mutate(
+    year = year(date),
+    week_of_year = isoweek(date), # ISO 8601 week (Monday starts the week)
+    month = as.factor(month(date, label = TRUE, abbr = TRUE)), # Month as abbreviated name
+    day_of_week = wday(date)
+  )
 
-predictions <- predict(lmod, newdata=new_users, type = "link", se.fit=TRUE)
+predictions <- predict(lmod, newdata = new_users, type = "link", se.fit = TRUE)
 new_users$predicted <- fitted(lmod)
 new_users$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
 new_users$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
 
-predictions <- predict(lmod, newdata=new_users_predicted, type = "link", se.fit=TRUE)
+predictions <- predict(
+  lmod,
+  newdata = new_users_predicted,
+  type = "link",
+  se.fit = TRUE
+)
 new_users_predicted$predicted <- exp(predictions$fit)
 new_users_predicted$lower_ci <- exp(predictions$fit - 1.96 * predictions$se.fit)
 new_users_predicted$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
@@ -176,20 +190,36 @@ new_users_predicted$upper_ci <- exp(predictions$fit + 1.96 * predictions$se.fit)
 #| echo: false
 
 p1 <- ggplot(new_users) +
-    geom_point(aes(x=date, y=new_user_count), alpha=0.5, size=0.5) +
-    geom_line(aes(x=date, y=predicted), colour='brown', alpha=0.5) +
-    geom_line(data=new_users_predicted, aes(x=date, y=predicted), colour='red', alpha=0.5) +
-    ggtitle('New user count timeseries')
+  geom_point(aes(x = date, y = new_user_count), alpha = 0.5, size = 0.5) +
+  geom_line(aes(x = date, y = predicted), colour = 'brown', alpha = 0.5) +
+  geom_line(
+    data = new_users_predicted,
+    aes(x = date, y = predicted),
+    colour = 'red',
+    alpha = 0.5
+  ) +
+  ggtitle('New user count timeseries')
 
 p2 <- ggplot(new_users %>% filter(date >= as.Date('2023-07-01'))) +
-    geom_point(aes(x=date, y=new_user_count), alpha=0.5, size=0.8) +
-    geom_line(aes(x=date, y=predicted), colour='brown') +
-    geom_ribbon(aes(x=date, ymin=lower_ci, ymax=upper_ci),
-              alpha = 0.3, fill = "black") +  # Confidence interval
-    geom_line(data=new_users_predicted %>% filter(date < as.Date('2024-01-01')) , aes(x=date, y=predicted), colour='red') +
-    geom_ribbon(data=new_users_predicted %>% filter(date < as.Date('2024-01-01')), aes(x=date, ymin=lower_ci, ymax=upper_ci),
-              alpha = 0.3, fill = "black") +
-    ggtitle('Confidence bounds of prediction')
+  geom_point(aes(x = date, y = new_user_count), alpha = 0.5, size = 0.8) +
+  geom_line(aes(x = date, y = predicted), colour = 'brown') +
+  geom_ribbon(
+    aes(x = date, ymin = lower_ci, ymax = upper_ci),
+    alpha = 0.3,
+    fill = "black"
+  ) + # Confidence interval
+  geom_line(
+    data = new_users_predicted %>% filter(date < as.Date('2024-01-01')),
+    aes(x = date, y = predicted),
+    colour = 'red'
+  ) +
+  geom_ribbon(
+    data = new_users_predicted %>% filter(date < as.Date('2024-01-01')),
+    aes(x = date, ymin = lower_ci, ymax = upper_ci),
+    alpha = 0.3,
+    fill = "black"
+  ) +
+  ggtitle('Confidence bounds of prediction')
 
 p1 + p2
 
@@ -217,14 +247,15 @@ we’d like to get a table like this:
 
 And using this table, subsequently estimate *states* using simple rules (mentioned in definitions above) for each user_id, corresponding to each day in the data.
 
-The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
+The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found [here](https://gitlab.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r)
 
 ```{r}
 states <- read_csv('states.csv', show_col_types = FALSE)
-kable(states %>%
-        filter(grepl('269b7f13-a509-5174-85cb', user_id)) %>%
-        filter(between(date, as.Date('2020-10-18'), as.Date('2020-10-30')))
-        )
+kable(
+  states %>%
+    filter(grepl('269b7f13-a509-5174-85cb', user_id)) %>%
+    filter(between(date, as.Date('2020-10-18'), as.Date('2020-10-30')))
+)
 
 ```
 
@@ -271,8 +302,10 @@ Essentially we seek to calculate a matrix which has *state_from* in its rows *st
 
 ```{r}
 
-M = get_transition_matrix(states %>%
-                            filter(between(date, start_date, end_date)))
+M = get_transition_matrix(
+  states %>%
+    filter(between(date, start_date, end_date))
+)
 
 kable(M)
 
@@ -291,9 +324,9 @@ We start with getting initial state counts for the date on which the dataset end
 ```{r}
 data_end_date <- prediction_start_date - 1
 state0 <- states %>%
-            filter(date==data_end_date) %>%
-            group_by(state) %>%
-            summarise(cnt=n(), .groups='drop')
+  filter(date == data_end_date) %>%
+  group_by(state) %>%
+  summarise(cnt = n(), .groups = 'drop')
 
 ```
 
@@ -332,24 +365,42 @@ predict_dau <- function(M, state0, start_date, end_date, new_users_predicted) {
 
 ```{r}
 
-dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_users_predicted)
-
-p <- (ggplot(dau_data %>%
-        group_by(date) %>%
-        summarise(DAU=n())
-        ) +
-geom_line(aes(x=date, y=DAU)) +
-geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red') +
-ggtitle('DAU Predictions')
+dau_predicted <- predict_dau(
+  M,
+  state0,
+  prediction_start_date,
+  prediction_end_date,
+  new_users_predicted
 )
+
+p <- (ggplot(
+  dau_data %>%
+    group_by(date) %>%
+    summarise(DAU = n())
+) +
+  geom_line(aes(x = date, y = DAU)) +
+  geom_line(data = dau_predicted, aes(x = date, y = dau), colour = 'red') +
+  ggtitle('DAU Predictions'))
 
 ```
 
 ```{r}
 #| echo: false
-dau_predicted <- predict_dau(M, state0, prediction_start_date, prediction_end_date, new_users_predicted %>% mutate(predicted=predicted*0.8))
+dau_predicted <- predict_dau(
+  M,
+  state0,
+  prediction_start_date,
+  prediction_end_date,
+  new_users_predicted %>% mutate(predicted = predicted * 0.8)
+)
 
-p + geom_line(data=dau_predicted, aes(x=date, y=dau), colour='red', linetype="dotted")
+p +
+  geom_line(
+    data = dau_predicted,
+    aes(x = date, y = dau),
+    colour = 'red',
+    linetype = "dotted"
+  )
 
 ```
 

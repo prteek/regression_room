@@ -3,11 +3,12 @@ title: "Miles per gallon"
 author: "Prateek"
 date: "2025-11-23"
 categories: [random effects, hierarchical models]
-image: "mpg.avif"
+image: "mpg.jpg"
 toc: true
 bibliography: references.bib
 description: "Miles per gallon analysis using linear mixed effects model"
-
+execute:
+  echo: false
 ---
 
 ```{r}
@@ -58,7 +59,7 @@ df_mpg <- mpg %>%
     trans = trans_recoded
   )
 
-knitr::kable(df_mpg %>% head())
+knitr::kable(df_mpg %>% sample_n(size = 10))
 
 ```
 
@@ -67,15 +68,28 @@ However, to warrant the use of fixed effects for manufacturers, we need to have 
 
 ```{r}
 #| echo: false
-df_plot <- rbind(
-  mpg %>% select(manufacturer) %>% mutate(dataset = 'original dataset'),
-  df_mpg %>% select(manufacturer) %>% mutate(dataset = 'final dataset')
-)
+df_plot <- mpg %>%
+  group_by(manufacturer) %>%
+  summarise(original_dataset = n()) %>%
+  left_join(
+    df_mpg %>%
+      group_by(manufacturer) %>%
+      summarise(final_dataset = n()),
+    by = join_by('manufacturer')
+  ) %>%
+  mutate(
+    final_dataset = if_else(is.na(final_dataset), 0, final_dataset)
+  ) %>%
+  pivot_longer(
+    c(original_dataset, final_dataset),
+    names_to = 'source',
+    values_to = 'count'
+  )
 
 ggplot(df_plot) +
   geom_bar(
-    aes(x = manufacturer, fill = dataset),
-    stat = 'count',
+    aes(x = manufacturer, y = count, fill = source),
+    stat = 'identity',
     position = 'dodge'
   ) +
   coord_flip()
@@ -88,8 +102,9 @@ Of course, the car models are random in the study design, so we will treat them 
 
 ### EDA
 
-The data summary is as follows -
-```{r}
+Data summary is as follows -
+
+```{r, results = 'asis'}
 #| echo: false
 
 df_mpg %>%
@@ -106,10 +121,12 @@ df_mpg %>%
 
 df_mpg %>%
   group_by(manufacturer, model) %>%
-  summarise(counts = n(), mean_mpg = round(mean(mpg), 1)) %>%
+  summarise(counts = n(), mean_mpg = round(mean(mpg), 1), .groups = 'drop') %>%
   knitr::kable()
 
 ```
+
+<br/>
 
 There are (exactly) two years of data covering 15 models. We treat year as a categorical variable rather than continuous. A short sample for one model is shown below.
 
@@ -124,7 +141,12 @@ We observe multiple rows per model/year because of different displacements and t
 
 ```{r}
 #| echo: false
-print(ggplot(df_mpg) + geom_point(aes(x = cyl, y = displ)))
+print(
+  ggplot(
+    df_mpg %>% mutate(cyl = jitter(cyl, 0.2), displ = jitter(displ, 0.2))
+  ) +
+    geom_point(aes(x = cyl, y = displ), alpha = 0.5)
+)
 df_mpg <- df_mpg %>% select(-cyl)
 ```
 

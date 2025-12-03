@@ -20,10 +20,10 @@ A better understanding of factors associated with price reductions can help driv
 The analysis also extends to prediction of probability of price reduction based on most informative inputs, to be able to have a mechanism where operations teams can prioritise negotiations and due diligence for such properties to benefit from the possibility of their weaker market demand.
 
 ## Data
-The [data](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/terminal_revisions.csv) is derived using 2 different data files [listings.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/listings.csv) and [revisions.csv](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/price_revision/revisions.csv). <br/>
+The [data](https://gitlab.com/prteek/regression_room/-/raw/main/posts/price_revision/terminal_revisions.csv) is derived using 2 different data files [listings.csv](https://gitlab.com/prteek/regression_room/-/raw/main/posts/price_revision/listings.csv) and [revisions.csv](https://gitlab.com/prteek/regression_room/-/raw/main/posts/price_revision/revisions.csv). <br/>
 These files individually contain basic attributes of properties and revised prices (both increased in decreased).
 
-These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://github.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
+These are cleaned up for sensible choices of attributes in listing data and price revisions. There are no missing values and the data values are checked for the suitability of application. The script to cleanup and prepare data can be found [here](https://gitlab.com/prteek/regression_room/blob/main/posts/price_revision/data_cleanup.R).
 
 ```{r}
 #| echo: false
