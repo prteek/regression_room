@@ -24,6 +24,7 @@ library(DBI)
 library(duckdb)
 library(tidyverse)
 library(RAthena)
+library(tidymodels)
 
 data_dir <- file.path(
   here::here(),
@@ -274,24 +275,67 @@ order by 3 desc
 
 ## Modelling
 
-### Fixed effects baseline model with aggregated data at LAD level
+### Baseline Model: Fixed effects with data aggregated at LAD level
+
+We refer back to data aggregated at LAD level previously. The variability at each occupation level is quite modest and for the sake of simplification LAD variable is ignored in the baseline. It is expected that this may not be systematically related to other variables like age and occupation. <br/>
+Since the data is further aggregated, entire dataset can be used disregarding the need to subsample. Further, *Elementary occupations* are treated as a reference category and effects of other categories are in contrast to this. <br/>
+*Occupation* variable appears to be significantly related to probability of renting when controlled for *age*.
 
 ```{r}
 lad_dataset <- sql(
   "
 select lad_name
   , occupation
-  , sum(counts_of_hrp)/sum(occupation_total) as proportion_renting
+  , sum(counts_of_hrp) as renting_total
+  , sum(occupation_total) as occupation_total
   , sum(\"aged 15 years and under\" * all_ages_total)/sum(all_ages_total) as \"aged 15 years and under\"
   , sum(\"aged 16 to 24 years\" * all_ages_total)/sum(all_ages_total) as \"aged 16 to 24 years\"
   , sum(\"aged 25 to 34 years\" * all_ages_total)/sum(all_ages_total) as \"aged 25 to 34 years\"
   , sum(\"aged 35 to 49 years\" * all_ages_total)/sum(all_ages_total) as \"aged 35 to 49 years\"
   , sum(\"aged 50 to 64 years\" * all_ages_total)/sum(all_ages_total) as \"aged 50 to 64 years\"
   , sum(\"aged 65 years and over\" * all_ages_total)/sum(all_ages_total) as \"aged 65 years and over\"
-  from dataset_filtered
+  from dataset
+  where tenure = 'private rented or lives rent free'
   group by lad_name, occupation
 "
+) %>%
+  mutate(
+    occupation = relevel(
+      factor(occupation),
+      ref = '9. elementary occupations'
+    )
+  )
+
+glmod_lad <- glm(
+  cbind(renting_total, occupation_total) ~
+    occupation +
+    `aged 25 to 34 years` +
+    `aged 35 to 49 years` +
+    `aged 50 to 64 years` +
+    `aged 65 years and over`,
+  lad_dataset,
+  family = binomial
 )
+
+glmod_lad_no_oc <- glm(
+  cbind(renting_total, occupation_total) ~
+    `aged 25 to 34 years` +
+    `aged 35 to 49 years` +
+    `aged 50 to 64 years` +
+    `aged 65 years and over`,
+  lad_dataset,
+  family = binomial
+)
+
+print(anova(glmod_lad_no_oc, glmod_lad, test = 'Chi'))
+
+```
+
+Additionally, the coefficients make intuitive sense, each occupation category is likely to have less association with renting compared to *elementary occupations*. <br/>
+Concretely in the *16-24 age group* (reference), people in *professional occupations* are **~50% less likely** (exp(-0.70)-1) to rent compared to people in *elementary occupations*. <br/>
+
+```{r}
+tidy(glmod_lad) %>% filter(str_detect(term, 'occupation'))
 
 ```
 
