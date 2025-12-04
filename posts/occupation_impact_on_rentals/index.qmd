@@ -102,39 +102,8 @@ It is neverthless instructive to use this information as the downsides due to ex
 
 Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each MSOA are added to the dataset.
 
-### Subsampling
 
-Since, the dataset is very well compiled but is large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
-The subsampling process does the following: <br/>
-
-* Randomly sample 10 local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
-* Within each of the sampled local authorities sample 50 MSOAs at random
-* Get all the data in the sampled MSOAs
-
-The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
-It goes without saying that this step means that Local Authorities and MSOAs need to be treated as random effects down the line (with appropriate heirarchy). <br/>
-The procedure ensures sufficient counts of Local Authorities and MSOAs to be able to reliably capture these random effects.
-
-
-```{r}
-sql("select * from subsample_msoa") %>%
-  summarise(
-    rows = n(),
-    distinct_tenure = n_distinct(tenure),
-    distinct_occupation = n_distinct(occupation),
-    max_counts = max(counts_of_hrp),
-    min_counts = min(counts_of_hrp),
-    median_counts = median(counts_of_hrp),
-    distinct_lad = n_distinct(lad_name),
-    distinct_msoa = n_distinct(msoa),
-    .groups = 'drop'
-  ) %>%
-  knitr::kable()
-
-```
-
-
-### Filtering
+### Filter
 
 Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br/>
 It would be sensible to drop data if any occupation icluded positive entries in *aged 15 years and under* column.
@@ -153,7 +122,7 @@ It would be sensible to drop data if any occupation icluded positive entries in 
 ```{r}
 sql(
   "select *
-    from dataset_filtered
+    from filtered_dataset
     order by random()
     "
 ) %>%
@@ -162,6 +131,37 @@ sql(
 
 ```
 
+
+### Subsample
+
+Since, the dataset is very well compiled but is large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
+The subsampling process does the following: <br/>
+
+* Randomly sample 10 local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
+* Within each of the sampled local authorities sample 50 MSOAs at random
+* Get all the data in the sampled MSOAs
+
+The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
+It goes without saying that this step means that Local Authorities and MSOAs need to be treated as random effects down the line (with appropriate heirarchy). <br/>
+The procedure ensures sufficient counts of Local Authorities and MSOAs to be able to reliably capture these random effects.
+
+
+```{r}
+sql("select * from dataset_sample") %>%
+  summarise(
+    rows = n(),
+    distinct_tenure = n_distinct(tenure),
+    distinct_occupation = n_distinct(occupation),
+    max_counts = max(counts_of_hrp),
+    min_counts = min(counts_of_hrp),
+    median_counts = median(counts_of_hrp),
+    distinct_lad = n_distinct(lad_name),
+    distinct_msoa = n_distinct(msoa),
+    .groups = 'drop'
+  ) %>%
+  knitr::kable()
+
+```
 
 ## EDA
 
@@ -276,6 +276,24 @@ order by 3 desc
 
 ### Fixed effects baseline model with aggregated data at LAD level
 
+```{r}
+lad_dataset <- sql(
+  "
+select lad_name
+  , occupation
+  , sum(counts_of_hrp)/sum(occupation_total) as proportion_renting
+  , sum(\"aged 15 years and under\" * all_ages_total)/sum(all_ages_total) as \"aged 15 years and under\"
+  , sum(\"aged 16 to 24 years\" * all_ages_total)/sum(all_ages_total) as \"aged 16 to 24 years\"
+  , sum(\"aged 25 to 34 years\" * all_ages_total)/sum(all_ages_total) as \"aged 25 to 34 years\"
+  , sum(\"aged 35 to 49 years\" * all_ages_total)/sum(all_ages_total) as \"aged 35 to 49 years\"
+  , sum(\"aged 50 to 64 years\" * all_ages_total)/sum(all_ages_total) as \"aged 50 to 64 years\"
+  , sum(\"aged 65 years and over\" * all_ages_total)/sum(all_ages_total) as \"aged 65 years and over\"
+  from dataset_filtered
+  group by lad_name, occupation
+"
+)
+
+```
 
 ### Heirarchical Binomial model at MSOA level with
 

@@ -540,15 +540,68 @@ order by msoa, occupation
 
 ```
 
-
-## Subsampled data
+## Dataset
 
 
 ```{sql, connection="con"}
 #| warning: false
 #| cache: false
 
-create or replace table subsample_msoa as (
+create or replace table dataset as
+    (
+        select a.*
+        , sum(a.counts_of_hrp) over (partition by a.msoa, a.occupation) as occupation_total
+        , "aged 15 years and under"
+        , "aged 16 to 24 years"
+        , "aged 25 to 34 years"
+        , "aged 35 to 49 years"
+        , "aged 50 to 64 years"
+        , "aged 65 years and over"
+        , b.total as all_ages_total
+        , c.region
+        , d.lad_name
+        , c.msoa
+        from occupation_by_tenure a inner join occupation_by_age b
+            on a.msoa = b.msoa and a.occupation = b.occupation inner join
+            (
+                select distinct
+                region
+                , lad
+                , msoa
+                from geo_mapping
+            ) c on a.msoa = c.msoa inner join dim_lad d on c.lad = d.lad
+    )
+
+```
+
+
+
+### Filtered
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: false
+
+create or replace table filtered_dataset as
+    (
+        select *
+        from dataset
+        /* following filters will also take care to remove some of living rent free */
+        where tenure = 'private rented or lives rent free' -- renting
+          and ("aged 15 years and under" = 0)
+    )
+
+```
+
+
+### Subsampled
+
+
+```{sql, connection="con"}
+#| warning: false
+#| cache: false
+
+create or replace table dataset_sample as (
     with ranked_geos as (
         select b.region
         , a.lad
@@ -574,56 +627,11 @@ create or replace table subsample_msoa as (
                         from geo_mapping)
                   ) b on a.lad = b.lad
     )
-    select c.lad_name
-    , a.*
-    from occupation_by_tenure a
+    select a.*
+    from filtered_dataset a
             left join ranked_geos b on a.msoa = b.msoa
-            left join dim_lad c on b.lad = c.lad
     where b.region <> 'e12000007' -- london
-    and lad_rank <= 10 and msoa_rank <= 50
+    and b.lad_rank <= 10 and b.msoa_rank <= 50
 )
-
-```
-
-## Dataset
-
-
-```{sql, connection="con"}
-#| warning: false
-#| cache: false
-
-create or replace table dataset as
-    (
-        select a.*
-        , sum(a.counts_of_hrp) over (partition by a.msoa, a.occupation) as occupation_total
-        , "aged 15 years and under"
-        , "aged 16 to 24 years"
-        , "aged 25 to 34 years"
-        , "aged 35 to 49 years"
-        , "aged 50 to 64 years"
-        , "aged 65 years and over"
-        , b.total as all_ages_total
-        from subsample_msoa a inner join occupation_by_age b
-            on a.msoa = b.msoa and a.occupation = b.occupation
-    )
-
-```
-
-### Filtered
-
-
-```{sql, connection="con"}
-#| warning: false
-#| cache: false
-
-create or replace table dataset_filtered as
-    (
-        select *
-        from dataset
-        /* following filters will also take care to remove some of living rent free */
-        where tenure = 'private rented or lives rent free' -- renting
-          and ("aged 15 years and under" = 0)
-    )
-
 
 ```
