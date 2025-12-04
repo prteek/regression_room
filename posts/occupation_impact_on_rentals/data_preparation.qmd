@@ -570,6 +570,7 @@ create or replace table dataset as
                 , msoa
                 from geo_mapping
             ) c on a.msoa = c.msoa inner join dim_lad d on c.lad = d.lad
+        where c.region <> 'e12000007' -- london
     )
 
 ```
@@ -630,8 +631,7 @@ create or replace table dataset_sample as (
     select a.*
     from filtered_dataset a
             left join ranked_geos b on a.msoa = b.msoa
-    where b.region <> 'e12000007' -- london
-    and b.lad_rank <= 10 and b.msoa_rank <= 50
+    where b.lad_rank <= 10 and b.msoa_rank <= 50
 )
 
 ```
