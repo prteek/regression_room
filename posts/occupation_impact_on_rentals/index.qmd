@@ -58,80 +58,11 @@ theme_set(theme_minimal())
 ```
 
 
-```{sql, connection="con"}
-install httpfs;
-load httpfs;
-
-```
-
 ## Data
 
 Cross tabulated MSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140] <br/>
 The unit of measurement (i.e. a single count) refers to a Household Representative persion (referred to as HRP henceforth), thus associating a unique occupation to a given household.
 This data will differ from total count of people in full time occupation from any other dataset (e.g. data on occupation by age, as used in this study), because there may be multiple people in full time occupation in a household.
-
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create or replace table msoa_tenure_occupation as
-(
-    select
-        *,
-        'Owns outright' as "Tenure of household"
-    from
-        read_csv_auto (
-            'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_tenure_occupation.csv',
-            skip = 7296,
-            null_padding = true
-        )
-    LIMIT
-        7264
-)
-union all
-(
-    select
-        *,
-        'Owns with a mortgage or loan or shared ownership' as "Tenure of household"
-    from
-        read_csv_auto (
-            'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_tenure_occupation.csv',
-            skip = 14585,
-            null_padding = true
-        )
-    LIMIT
-        7264
-)
-union all
-(
-    select
-        *,
-        'Social rented' as "Tenure of household"
-    from
-        read_csv_auto (
-            'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_tenure_occupation.csv',
-            skip = 21873,
-            null_padding = true
-        )
-    LIMIT
-        7264
-)
-union all
-(
-    select
-        *,
-        'Private rented or lives rent free' as "Tenure of household"
-    from
-        read_csv_auto (
-            'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_tenure_occupation.csv',
-            skip = 29161,
-            null_padding = true
-        )
-    LIMIT
-        7264
-)
-
-```
 
 
 ```{r}
@@ -146,149 +77,12 @@ limit 10"
 
 ```
 
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create
-or replace table occupation_by_tenure as (
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('1. Managers, directors and senior officials') as occupation,
-        "1. Managers, directors and senior officials"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('2. Professional occupations') as occupation,
-        "2. Professional occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower(
-            '3. Associate professional and technical occupations'
-        ) as occupation,
-        "3. Associate professional and technical occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('4. Administrative and secretarial occupations') as occupation,
-        "4. Administrative and secretarial occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('5. Skilled trades occupations') as occupation,
-        "5. Skilled trades occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower(
-            '6. Caring, leisure and other service occupations'
-        ) as occupation,
-        "6. Caring, leisure and other service occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('7. Sales and customer service occupations') as occupation,
-        "7. Sales and customer service occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('8. Process, plant and machine operatives') as occupation,
-        "8. Process, plant and machine operatives"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Tenure of household") as tenure,
-        lower('9. Elementary occupations') as occupation,
-        "9. Elementary occupations"::double as counts_of_hrp
-    from
-        msoa_tenure_occupation
-)
-
-```
-
 ## Dataset
 
 ### Additional information
 
 Local authority for each MSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring MSOAs introducing correlations in their data. <br/>
 
-
-```{r}
-#| cache: true
-#| warning: false
-
-geo_mapping <- athena_sql(
-  "select region
-  , lad
-  , msoa
-  , lsoa
-    from geo.post_town_geo_mapping"
-)
-
-dim_lad <- athena_sql(
-  "
-select lad
-, lad_name
-from geo.dim_lad
-"
-)
-
-dim_region <- athena_sql(
-  "
-select region
-, region_name
-from geo.dim_region
-"
-)
-
-dbWriteTable(con, "geo_mapping", geo_mapping, overwrite = TRUE)
-dbWriteTable(con, "dim_lad", dim_lad, overwrite = TRUE)
-dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
-
-```
 
 It can be possible that age has a confounding effect on Rentership via Occupation. Majority of Professional and Managers may likely be older than associates and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br/>
 Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life. <br/>
@@ -306,281 +100,11 @@ This adjustment is inexact since the data is available for all people in full ti
 It is neverthless instructive to use this information as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
 
 
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create
-or replace table msoa_occupation_age as (
-    (
-        select
-            *,
-            'Aged 15 years and under' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 7296,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-    union all
-    (
-        select
-            *,
-            'Aged 16 to 24 years' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 14585,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-    union all
-    (
-        select
-            *,
-            'Aged 25 to 34 years' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 21873,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-    union all
-    (
-        select
-            *,
-            'Aged 35 to 49 years' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 29161,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-    union all
-    (
-        select
-            *,
-            'Aged 50 to 64 years' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 36449,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-    union all
-    (
-        select
-            *,
-            'Aged 65 years and over' as "Age"
-        from
-            read_csv_auto (
-                'https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/occupation_impact_on_rentals/data/msoa_occupation_age.csv',
-                skip = 43737,
-                null_padding = true
-            )
-        LIMIT
-            7264
-    )
-)
-
-```
-
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create
-or replace table occupation_by_age_long as (
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('1. Managers, directors and senior officials') as occupation,
-        "1. Managers, directors and senior officials"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('2. Professional occupations') as occupation,
-        "2. Professional occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower(
-            '3. Associate professional and technical occupations'
-        ) as occupation,
-        "3. Associate professional and technical occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('4. Administrative and secretarial occupations') as occupation,
-        "4. Administrative and secretarial occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('5. Skilled trades occupations') as occupation,
-        "5. Skilled trades occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower(
-            '6. Caring, leisure and other service occupations'
-        ) as occupation,
-        "6. Caring, leisure and other service occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('7. Sales and customer service occupations') as occupation,
-        "7. Sales and customer service occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('8. Process, plant and machine operatives') as occupation,
-        "8. Process, plant and machine operatives"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-    union all
-    select
-        lower(
-            trim(split_part("2021 super output area - middle layer", ':', 1))
-        ) as msoa,
-        lower("Age") as age,
-        lower('9. Elementary occupations') as occupation,
-        "9. Elementary occupations"::double as counts_of_hrp
-    from
-        msoa_occupation_age
-)
-
-```
-
-```{sql, connection = "con"}
-#| warning: false
-#| cache: true
-create
-or replace table occupation_by_age as
-with base as (
-select
-    msoa,
-    occupation,
-    case
-        when age = 'aged 15 years and under' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 15 years and under",
-    case
-        when age = 'aged 16 to 24 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 16 to 24 years",
-    case
-        when age = 'aged 25 to 34 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 25 to 34 years",
-    case
-        when age = 'aged 35 to 49 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 35 to 49 years",
-    case
-        when age = 'aged 50 to 64 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 50 to 64 years",
-    case
-        when age = 'aged 65 years and over' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa
-        )
-        else 0
-    end as "aged 65 years and over",
-    sum(counts_of_hrp) over (
-            partition by
-                msoa
-        ) as total
-from
-    occupation_by_age_long
-)
-select msoa
-, occupation
-, sum("aged 15 years and under") as "aged 15 years and under"
-, sum("aged 16 to 24 years") as "aged 16 to 24 years"
-, sum("aged 25 to 34 years") as "aged 25 to 34 years"
-, sum("aged 35 to 49 years") as "aged 35 to 49 years"
-, sum("aged 50 to 64 years") as "aged 50 to 64 years"
-, sum("aged 65 years and over") as "aged 65 years and over"
-, max(total) as total
-from base
-group by msoa, occupation
-order by msoa, occupation
-
-```
-
-
 Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each MSOA are added to the dataset.
 
 ### Subsampling
 
-Since, the dataset is very well compiled but is too large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
+Since, the dataset is very well compiled but is large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
 The subsampling process does the following: <br/>
 
 * Randomly sample 10 local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
@@ -590,47 +114,6 @@ The subsampling process does the following: <br/>
 The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
 It goes without saying that this step means that Local Authorities and MSOAs need to be treated as random effects down the line (with appropriate heirarchy). <br/>
 The procedure ensures sufficient counts of Local Authorities and MSOAs to be able to reliably capture these random effects.
-
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create or replace table subsample_msoa as (
-    with ranked_geos as (
-        select b.region
-        , a.lad
-        , a.msoa
-        , a.msoa_rank
-        , b.lad_rank
-        from ( /* Ranked msoa per LAD */
-              select *,
-                    row_number() over(partition by lad order by random()) as msoa_rank
-                from  (select distinct
-                            lad,
-                            msoa
-                        from
-                            geo_mapping
-                    )
-                ) a inner join
-                  (/* ranked LADs per region */
-                  select *
-                  , row_number() over(partition by region order by random()) as lad_rank
-                  from (select distinct
-                              region,
-                              lad
-                        from geo_mapping)
-                  ) b on a.lad = b.lad
-    )
-    select c.lad_name
-    , a.*
-    from occupation_by_tenure a
-            left join ranked_geos b on a.msoa = b.msoa
-            left join dim_lad c on b.lad = c.lad
-    where b.region <> 'e12000007' -- london
-    and lad_rank <= 10 and msoa_rank <= 50
-)
-
-```
 
 
 ```{r}
@@ -651,26 +134,6 @@ sql("select * from subsample_msoa") %>%
 ```
 
 
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create or replace table dataset as
-    (
-        select a.*
-        , sum(a.counts_of_hrp) over (partition by a.msoa, a.occupation) as occupation_total
-        , "aged 15 years and under"
-        , "aged 16 to 24 years"
-        , "aged 25 to 34 years"
-        , "aged 35 to 49 years"
-        , "aged 50 to 64 years"
-        , "aged 65 years and over"
-        from subsample_msoa a inner join occupation_by_age b
-            on a.msoa = b.msoa and a.occupation = b.occupation
-    )
-
-```
-
 ### Filtering
 
 Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br/>
@@ -687,27 +150,12 @@ It would be sensible to drop data if any occupation icluded positive entries in 
 * The private rented sector houses the highest proportion of non-UK nationals (74% of HRPs in the private rented sector are from the UK, compared to 92% of social renters and 96% of owner occupiers) [@english_housing_survey]
 
 
-```{sql, connection="con"}
-#| warning: false
-#| cache: true
-
-create or replace table dataset_filtered as
-    (
-        select *
-        from dataset
-        /* following filters will also take care to remove some of living rent free */
-        where tenure = 'private rented or lives rent free' -- renting
-          and ("aged 15 years and under" = 0)
-    )
-
-
-```
-
-
 ```{r}
 sql(
   "select *
-    from dataset_filtered"
+    from dataset_filtered
+    order by random()
+    "
 ) %>%
   head() %>%
   knitr::kable()
@@ -716,27 +164,6 @@ sql(
 
 
 ## EDA
-
-```{r}
-high_counts <- sql(
-  "
-select msoa
-, lad_name
-, sum(occupation_total) as msoa_total
-from dataset_filtered
-group by msoa, lad_name
-order by 3 desc
-"
-)
-
-high_counts %>%
-  ggplot() +
-  geom_histogram(aes(x = msoa_total))
-
-```
-
-There is still a long tail of working population per msoa. These MSOAs are located in dense Local authorities like **`r high_counts %>% slice(1:5) %>% pull(lad_name)`**. <br/>
-This may lead to an overdispersion issues.
 
 At the level of MSOA the proportion of rentership can appear quite chaotic and noisy.
 ```{r}
@@ -801,6 +228,45 @@ select lad_name
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
   ylim(0, 0.5) +
   labs(title = 'All Local authority rentership')
+
+```
+
+
+```{r}
+high_counts <- sql(
+  "
+select msoa
+, lad_name
+, sum(occupation_total) as msoa_total
+from dataset_filtered
+group by msoa, lad_name
+order by 3 desc
+"
+)
+
+high_counts %>%
+  ggplot() +
+  geom_density(aes(x = msoa_total))
+
+```
+
+There is a slightly long tail of working population per msoa. <br/>
+
+Looking at the msoa where the greatest proportion of working population is renting, a few key dense local authority areas are highlighted
+
+```{r}
+sql(
+  "
+select lad_name
+, msoa
+, round(sum(counts_of_hrp)/sum(occupation_total),3) as aggregate_proportion_renting
+  from dataset_filtered
+group by lad_name, msoa
+order by 3 desc
+"
+) %>%
+  head() %>%
+  knitr::kable()
 
 ```
 
