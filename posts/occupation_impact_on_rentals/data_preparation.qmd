@@ -62,7 +62,7 @@ load httpfs;
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create or replace table msoa_tenure_occupation as
 (
@@ -126,7 +126,7 @@ union all
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create
 or replace table occupation_by_tenure as (
@@ -233,7 +233,7 @@ or replace table occupation_by_tenure as (
 ### Geo data
 
 ```{r}
-#| cache: true
+#| cache: false
 #| warning: false
 
 geo_mapping <- athena_sql(
@@ -273,7 +273,7 @@ dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create
 or replace table msoa_occupation_age as (
@@ -366,7 +366,7 @@ or replace table msoa_occupation_age as (
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create
 or replace table occupation_by_age_long as (
@@ -469,7 +469,7 @@ or replace table occupation_by_age_long as (
 
 ```{sql, connection = "con"}
 #| warning: false
-#| cache: true
+#| cache: false
 create
 or replace table occupation_by_age as
 with base as (
@@ -546,7 +546,7 @@ order by msoa, occupation
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create or replace table subsample_msoa as (
     with ranked_geos as (
@@ -590,7 +590,7 @@ create or replace table subsample_msoa as (
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create or replace table dataset as
     (
@@ -614,7 +614,7 @@ create or replace table dataset as
 
 ```{sql, connection="con"}
 #| warning: false
-#| cache: true
+#| cache: false
 
 create or replace table dataset_filtered as
     (
