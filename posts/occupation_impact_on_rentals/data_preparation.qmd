@@ -602,6 +602,7 @@ create or replace table dataset as
         , "aged 35 to 49 years"
         , "aged 50 to 64 years"
         , "aged 65 years and over"
+        , b.total as all_ages_total
         from subsample_msoa a inner join occupation_by_age b
             on a.msoa = b.msoa and a.occupation = b.occupation
     )
