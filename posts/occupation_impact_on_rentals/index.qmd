@@ -273,3 +273,14 @@ order by 3 desc
 
 
 ## Modelling
+
+### Fixed effects baseline model with aggregated data at LAD level
+
+
+### Heirarchical Binomial model at MSOA level with
+
+TODO
+
+### Alternate formulation with Poission rentership and Housholds as exposure
+
+TODO
