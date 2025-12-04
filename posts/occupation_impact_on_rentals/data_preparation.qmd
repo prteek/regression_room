@@ -560,7 +560,6 @@ create or replace table dataset as
         , b.total as all_ages_total
         , c.region
         , d.lad_name
-        , c.msoa
         from occupation_by_tenure a inner join occupation_by_age b
             on a.msoa = b.msoa and a.occupation = b.occupation inner join
             (
@@ -588,8 +587,9 @@ create or replace table filtered_dataset as
         select *
         from dataset
         /* following filters will also take care to remove some of living rent free */
-        where tenure = 'private rented or lives rent free' -- renting
-          and ("aged 15 years and under" = 0)
+        where "aged 15 years and under" = 0
+        and a.tenure = 'private rented or lives rent free'
+
     )
 
 ```
