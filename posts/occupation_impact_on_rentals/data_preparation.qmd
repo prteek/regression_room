@@ -580,7 +580,7 @@ create or replace table subsample_msoa as (
             left join ranked_geos b on a.msoa = b.msoa
             left join dim_lad c on b.lad = c.lad
     where b.region <> 'e12000007' -- london
-    -- and lad_rank <= 10 and msoa_rank <= 50
+    and lad_rank <= 10 and msoa_rank <= 50
 )
 
 ```
