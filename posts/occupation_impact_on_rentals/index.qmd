@@ -246,7 +246,7 @@ order by 3 desc
 
 high_counts %>%
   ggplot() +
-  geom_density(aes(x = msoa_total))
+  geom_histogram(aes(x = msoa_total))
 
 ```
 
@@ -260,12 +260,13 @@ sql(
 select lad_name
 , msoa
 , round(sum(counts_of_hrp)/sum(occupation_total),3) as aggregate_proportion_renting
+, sum(occupation_total) as total_working_population
   from dataset_filtered
 group by lad_name, msoa
 order by 3 desc
 "
 ) %>%
-  head() %>%
+  head(10) %>%
   knitr::kable()
 
 ```
