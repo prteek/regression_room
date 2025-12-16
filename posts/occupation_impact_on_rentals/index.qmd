@@ -279,7 +279,7 @@ order by 3 desc
 
 We refer back to data aggregated at LAD level previously. The variability at each occupation level is quite modest and for the sake of simplification LAD variable is ignored in the baseline. It is expected that this may not be systematically related to other variables like age and occupation. <br/>
 Since the data is further aggregated, entire dataset can be used disregarding the need to subsample. Further, *Elementary occupations* are treated as a reference category and effects of other categories are in contrast to this. <br/>
-*Occupation* variable appears to be significantly related to probability of renting when controlled for *age*.
+*Occupation* variable appears to be significantly related to probability of renting when controlled for *age*. <br/>
 
 ```{r}
 lad_dataset <- sql(
@@ -329,15 +329,19 @@ glmod_lad_no_oc <- glm(
 
 print(anova(glmod_lad_no_oc, glmod_lad, test = 'Chi'))
 
+```
+
+The diagnostics do not look too bad and we can retain the model for comparison with more detailed models. <br/>
+
+```{r}
 par(mfrow = c(2, 2))
 plot(glmod_lad)
 par(mfrow = c(1, 1))
 
 ```
 
-The diagnostics do not look too bad and we can retain the model for comparison with more detailed models. <br/>
 Additionally, the coefficients make intuitive sense, each occupation category is likely to have less association with renting compared to *elementary occupations*. <br/>
-Concretely in the *16-24 age group* (reference), people in *professional occupations* are **~50% less likely** (exp(-0.70)-1) to rent compared to people in *elementary occupations*. <br/>
+Concretely, people in *professional occupations* are **~50% less likely** (exp(-0.70)-1) to rent compared to people in *elementary occupations*. <br/>
 
 ```{r}
 occupation_coefs <- tidy(glmod_lad) %>%
@@ -345,7 +349,7 @@ occupation_coefs <- tidy(glmod_lad) %>%
   mutate(term = sub("^occupation", "", term), estimate = exp(estimate)) %>%
   select(term, estimate)
 
-# We do not discuss effect of age since age cannot be varied independently without affecting occupation. Though tis does not mean that they have interaction effect on rentership
+# We do not discuss effect of age since age cannot be varied independently without affecting occupation. Though this does not mean that they have interaction effect on rentership
 
 age_coefs <- tidy(glmod_lad) %>%
   filter(str_detect(term, 'aged')) %>%
