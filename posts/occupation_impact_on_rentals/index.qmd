@@ -329,19 +329,44 @@ glmod_lad_no_oc <- glm(
 
 print(anova(glmod_lad_no_oc, glmod_lad, test = 'Chi'))
 
+par(mfrow = c(2, 2))
+plot(glmod_lad)
+par(mfrow = c(1, 1))
+
 ```
 
+The diagnostics do not look too bad and we can retain the model for comparison with more detailed models. <br/>
 Additionally, the coefficients make intuitive sense, each occupation category is likely to have less association with renting compared to *elementary occupations*. <br/>
 Concretely in the *16-24 age group* (reference), people in *professional occupations* are **~50% less likely** (exp(-0.70)-1) to rent compared to people in *elementary occupations*. <br/>
 
 ```{r}
-tidy(glmod_lad) %>% filter(str_detect(term, 'occupation'))
+occupation_coefs <- tidy(glmod_lad) %>%
+  filter(str_detect(term, 'occupation')) %>%
+  mutate(term = sub("^occupation", "", term), estimate = exp(estimate)) %>%
+  select(term, estimate)
+
+# We do not discuss effect of age since age cannot be varied independently without affecting occupation. Though tis does not mean that they have interaction effect on rentership
+
+age_coefs <- tidy(glmod_lad) %>%
+  filter(str_detect(term, 'aged')) %>%
+  mutate(estimate = exp(estimate * 0.1)) %>%
+  select(term, estimate)
+
+ggplot(occupation_coefs) +
+  geom_bar(aes(x = term, y = estimate - 1), stat = 'identity') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(
+    title = 'Effect of Occupations w.r.t. Elementary Occupations',
+    y = 'Reduction in Odds of Renting [%]'
+  )
 
 ```
 
 ### Heirarchical Binomial model at MSOA level with
 
-TODO
+```{r}
+
+```
 
 ### Alternate formulation with Poission rentership and Housholds as exposure
 
