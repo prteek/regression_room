@@ -589,7 +589,7 @@ create or replace table filtered_dataset as
         from dataset
         /* following filters will also take care to remove some of living rent free */
         where "aged 15 years and under" = 0
-        and a.tenure = 'private rented or lives rent free'
+        and tenure = 'private rented or lives rent free'
 
     )
 
