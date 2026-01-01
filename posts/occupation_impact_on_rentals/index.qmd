@@ -22,9 +22,9 @@ library(lme4)
 library(faraway)
 library(DBI)
 library(duckdb)
-library(tidyverse)
 library(RAthena)
 library(tidymodels)
+library(patchwork)
 
 data_dir <- file.path(
   here::here(),
