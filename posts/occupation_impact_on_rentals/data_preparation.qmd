@@ -480,48 +480,48 @@ select
     case
         when age = 'aged 15 years and under' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 15 years and under",
     case
         when age = 'aged 16 to 24 years' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 16 to 24 years",
     case
         when age = 'aged 25 to 34 years' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 25 to 34 years",
     case
         when age = 'aged 35 to 49 years' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 35 to 49 years",
     case
         when age = 'aged 50 to 64 years' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 50 to 64 years",
     case
         when age = 'aged 65 years and over' then counts_of_hrp / sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         )
         else 0
     end as "aged 65 years and over",
     sum(counts_of_hrp) over (
             partition by
-                msoa
+                msoa, occupation
         ) as total
 from
     occupation_by_age_long
