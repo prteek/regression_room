@@ -61,10 +61,9 @@ theme_set(theme_minimal())
 
 ## Data
 
-Cross tabulated MSOA level data on Tenure by Occupation, from ONS 2021 Census can be found from Nomisweb API [@ONS2021RM140] <br/>
-The unit of measurement (i.e. a single count) refers to a Household Representative persion (referred to as HRP henceforth), thus associating a unique occupation to a given household.
-This data will differ from total count of people in full time occupation from any other dataset (e.g. data on occupation by age, as used in this study), because there may be multiple people in full time occupation in a household.
-
+We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level [@ONS2021RM140]. <br/>
+MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br/>
+This differs from datasets that count all workers (for example, occupation‑by‑age used later), because a household can contain more than one person in full‑time work.
 
 ```{r}
 sql(
@@ -99,7 +98,6 @@ The adjustment is made by including the proportion of full-time employed HRPs in
 **Note:** <br/>
 This adjustment is inexact since the data is available for all people in full time occupation rather than just HRP (which is the unit of measurement in tenure data). This means that likely an HRP would be an older person, the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
 It is neverthless instructive to use this information as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
-
 
 Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each MSOA are added to the dataset.
 
@@ -188,8 +186,7 @@ select *
 
 ```
 
-
-The variability in renting due to occupation is visible when looked at in aggregate. This also seems to relate to our intuition where highly skilled and professionals are driving less of the rental market since they may be better placed to afford to buy.
+Aggregated data shows clear differences in renting by occupation. Highly skilled and professional workers rent less, likely because they can more easily afford to buy.
 
 ```{r}
 sql(
@@ -275,28 +272,26 @@ order by 3 desc
 
 ## Modelling
 
-### Baseline Model: Fixed effects with data aggregated at LAD level
+### Baseline Model: Fixed effects without location information
 
-We refer back to data aggregated at LAD level previously. The variability at each occupation level is quite modest and for the sake of simplification LAD variable is ignored in the baseline. It is expected that this may not be systematically related to other variables like age and occupation. <br/>
-Since the data is further aggregated, entire dataset can be used disregarding the need to subsample. Further, *Elementary occupations* are treated as a reference category and effects of other categories are in contrast to this. <br/>
-*Occupation* variable appears to be significantly related to probability of renting when controlled for *age*. <br/>
+We refer to data at MSOA level for modelling. For the baseline model, MSOA variable is excluded and *Elementary occupations* are treated as a reference category for *Occupation* variable. *aged 15 years and under* variable is dropped as it is irrelevant for this study. It is immediately obvious that occupation has significant association with proportion of people renting. <br/>
 
 ```{r}
-lad_dataset <- sql(
+dataset <- sql(
   "
 select lad_name
+  , msoa
   , occupation
-  , sum(counts_of_hrp) as renting_total
-  , sum(occupation_total) as occupation_total
-  , sum(\"aged 15 years and under\" * all_ages_total)/sum(all_ages_total) as \"aged 15 years and under\"
-  , sum(\"aged 16 to 24 years\" * all_ages_total)/sum(all_ages_total) as \"aged 16 to 24 years\"
-  , sum(\"aged 25 to 34 years\" * all_ages_total)/sum(all_ages_total) as \"aged 25 to 34 years\"
-  , sum(\"aged 35 to 49 years\" * all_ages_total)/sum(all_ages_total) as \"aged 35 to 49 years\"
-  , sum(\"aged 50 to 64 years\" * all_ages_total)/sum(all_ages_total) as \"aged 50 to 64 years\"
-  , sum(\"aged 65 years and over\" * all_ages_total)/sum(all_ages_total) as \"aged 65 years and over\"
-  from dataset
+  , counts_of_hrp as renting_total
+  , occupation_total
+  , \"aged 16 to 24 years\" as age_16_24
+  , \"aged 25 to 34 years\" as age_25_34
+  , \"aged 35 to 49 years\" as age_35_49
+  , \"aged 50 to 64 years\" as age_50_64
+  , \"aged 65 years and over\" as age_over_65
+  from dataset_sample
   where tenure = 'private rented or lives rent free'
-  group by lad_name, occupation
+  order by msoa, occupation
 "
 ) %>%
   mutate(
@@ -306,72 +301,159 @@ select lad_name
     )
   )
 
-glmod_lad <- glm(
-  cbind(renting_total, occupation_total) ~
+glmod_base <- glm(
+  cbind(renting_total, occupation_total - renting_total) ~
     occupation +
-    `aged 25 to 34 years` +
-    `aged 35 to 49 years` +
-    `aged 50 to 64 years` +
-    `aged 65 years and over`,
-  lad_dataset,
+    age_25_34 +
+    age_35_49 +
+    age_50_64 +
+    age_over_65,
+  data = dataset,
   family = binomial
 )
 
-glmod_lad_no_oc <- glm(
-  cbind(renting_total, occupation_total) ~
-    `aged 25 to 34 years` +
-    `aged 35 to 49 years` +
-    `aged 50 to 64 years` +
-    `aged 65 years and over`,
-  lad_dataset,
-  family = binomial
-)
-
-print(anova(glmod_lad_no_oc, glmod_lad, test = 'Chi'))
+print(anova(glmod_base, test = 'Chisq'))
 
 ```
 
-The diagnostics do not look too bad and we can retain the model for comparison with more detailed models. <br/>
+The diagnostics look assuring and at this point, outliers do not appear to be significantly harmful.
 
 ```{r}
 par(mfrow = c(2, 2))
-plot(glmod_lad)
+plot(glmod_base)
 par(mfrow = c(1, 1))
 
 ```
 
-Additionally, the coefficients make intuitive sense, each occupation category is likely to have less association with renting compared to *elementary occupations*. <br/>
-Concretely, people in *professional occupations* are **~50% less likely** (exp(-0.70)-1) to rent compared to people in *elementary occupations*. <br/>
+It can be investigated to see which data points are causing this. <br/>
+Manual inspection can be aided by geographic location data [MSOA Map](https://geoportal.statistics.gov.uk/datasets/12baf1e6a44441208ffe5ba5ed063a68_0/explore?location=52.735111%2C-2.489483%2C6.76)
+
+* e02002991 : Is in the middle of Bath town Center and has much higher proportion of Professionals than what model predicts.
+* e02006841 : Is a high leverage point. Is in the center of Gateshead, which has slightly higher proportion of Professionals than what model predicts. High leverage comes from 61% Professionals falling in age_25_34 bracket. But the residuals indicate that the influence of this data point is not high
+* e02007095: Dinnington, has a very low proportion of rentership (6%), which causes a high value of residuals. This is an affluent, semi-rural village with many of the houses been bought under right to buy legislation [@dinnington].
+* e02005775: Harrogate, rentership is severly underpredicted due to 27% Professionals falling in 50-64 age bracket, leading to a high residual.
 
 ```{r}
-occupation_coefs <- tidy(glmod_lad) %>%
-  filter(str_detect(term, 'occupation')) %>%
-  mutate(term = sub("^occupation", "", term), estimate = exp(estimate)) %>%
-  select(term, estimate)
+dataset %>%
+  augment(glmod_base, .) %>%
+  select(
+    msoa,
+    lad_name,
+    occupation,
+    starts_with('age'),
+    renting_total,
+    occupation_total,
+    .resid
+  ) %>%
+  mutate(
+    actual_renting_proportion = renting_total / occupation_total,
+    predicted_proportion = predict(glmod_base, ., type = 'response')
+  ) %>%
+  slice(c(8057, 17867, 18452, 15446)) %>%
+  select(starts_with('age')) %>%
+  knitr::kable()
 
-# We do not discuss effect of age since age cannot be varied independently without affecting occupation. Though this does not mean that they have interaction effect on rentership
+```
 
-age_coefs <- tidy(glmod_lad) %>%
-  filter(str_detect(term, 'aged')) %>%
-  mutate(estimate = exp(estimate * 0.1)) %>%
-  select(term, estimate)
+### Using location information in the model
 
-ggplot(occupation_coefs) +
-  geom_bar(aes(x = term, y = estimate - 1), stat = 'identity') +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+ Each MSOA can have its own level of rentership that needs to be accounted for (and town centers can be very different from suburbs). <br/>
+ This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA and LAD are randomly chosen and that MSOA are nested inside LAD.
+
+```{r}
+glmermod <- glmer(
+  cbind(renting_total, occupation_total - renting_total) ~
+    occupation +
+    age_25_34 +
+    age_35_49 +
+    age_50_64 +
+    age_over_65 +
+    (1 | lad_name) +
+    (1 | lad_name:msoa),
+  data = dataset,
+  family = binomial
+)
+
+```
+
+Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. This is also confirmed in the ANOVA output.
+
+```{r}
+df_plot <- fortify.merMod(glmermod, dataset)
+
+par(mfrow = c(1, 2))
+plot(.resid ~ .fitted, df_plot)
+abline(h = 0, lty = 2)
+lines(lowess(df_plot$.fitted, df_plot$.resid), col = "blue", lwd = 2)
+halfnorm(df_plot$.resid)
+lines(c(0, 6), c(0, 6), lty = 2)
+par(mfrow = c(1, 1))
+
+anova(glmermod, glmod_base, test = "Chisq")
+
+```
+
+Random effects of LAD appear reasonably normally distributed. <br/>
+MSOA nested inside LAD are slighly more dispersed and have longer tails.
+The worst residual point lies in Catterick Garrison, which is a small town with a large army base and unusually high rentership of *Associate professionals* in that area.
+
+```{r}
+par(mfrow = c(1, 2))
+qqnorm(
+  ranef(glmermod)$lad_name[[1]],
+  main = "LAD RE"
+)
+qqline(ranef(glmermod)$lad_name[[1]], col = "red")
+
+qqnorm(
+  ranef(glmermod)$`lad_name:msoa`[[1]],
+  main = "LAD:MSOA RE"
+)
+qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
+
+par(mfrow = c(1, 1))
+
+```
+
+Before moving to inference using this model, it is important to check how it fits. ChiSq GoF test suggests p-value `{r} deviance(glmermod) |> pchisq(df.residual(glmermod), lower.tail = F) |> round(2)`, which indicates that there is still quite a lot of variance in data that isn't explained by the current model. <br/>
+
+The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that dispersion is not too extreme and we chose not to address this.
+
+Looking at the coefficients of Occupation types, since *Elementary Occupations* was reference class, the odds for any Occupation are relative to it. <br/>
+In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 40% less likely (0.6x) to rent.
+
+```{r}
+df_coef <- glmermod %>%
+  fixef() %>%
+  tidy() %>%
+  rename(coefficient = x) %>%
+  mutate(occupation = str_remove(names, "^occupation\\d+\\.\\s*"))
+
+ggplot(df_coef %>% filter(str_detect(names, 'occupation'))) +
+  geom_bar(aes(x = occupation, y = exp(coefficient)), stat = 'identity') +
   labs(
-    title = 'Effect of Occupations w.r.t. Elementary Occupations',
-    y = 'Reduction in Odds of Renting [%]'
-  )
+    subtitle = 'Odds of renting compared to Elementary Occupations',
+    y = 'Odds of Renting'
+  ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
 
-### Heirarchical Binomial model at MSOA level with
+Age plays a key role in likelihood of renting too. Highest rentership can be observed in 25-34 year olds. This is almost 4x more (300% more) compared to 16-24 year olds. <br/>
+This is likely because young adults aged 16-24 rarely act as HRPs for rented homes; instead, they are typically dependent residents in owner-occupied parental households.
 
 ```{r}
+df_coef <- glmermod %>%
+  fixef() %>%
+  tidy() %>%
+  rename(coefficient = x, age_band = names)
 
-```
+ggplot(df_coef %>% filter(str_detect(age_band, 'age_'))) +
+  geom_bar(aes(x = age_band, y = exp(coefficient)), stat = 'identity') +
+  labs(
+    subtitle = 'Odds of renting compared to 16-24 year olds',
+    y = 'Odds of Renting'
+  ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-### Alternate formulation with Poission rentership and Housholds as exposure
-
-TODO
+```rec
