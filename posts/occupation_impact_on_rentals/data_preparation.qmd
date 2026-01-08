@@ -11,7 +11,7 @@ draft: true
 
 ```{r}
 #| warning: false
-readRenviron(file.path(here::here(), '.local_credentials'))
+readRenviron(file.path(here::here(), ".local_credentials"))
 
 renv::load(here::here())
 library(tidyverse)
@@ -21,31 +21,31 @@ library(tidyverse)
 library(RAthena)
 
 data_dir <- file.path(
-  here::here(),
-  "posts",
-  "occupation_impact_on_rentals",
-  "data"
+    here::here(),
+    "posts",
+    "occupation_impact_on_rentals",
+    "data"
 )
 
 con <- dbConnect(
-  drv = duckdb(),
-  dbdir = file.path(data_dir, "lab.duckdb")
+    drv = duckdb(),
+    dbdir = file.path(data_dir, "lab.duckdb")
 )
 
 acon <- dbConnect(
-  athena(),
-  workgroup = "primary",
-  schema_name = "default",
-  s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
-  profile_name = "personal",
-  region = "eu-west-1",
+    athena(),
+    workgroup = "primary",
+    schema_name = "default",
+    s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
+    profile_name = "personal",
+    region = "eu-west-1",
 )
 athena_sql <- function(query) {
-  tibble(dbGetQuery(acon, query))
+    tibble(dbGetQuery(acon, query))
 }
 
 sql <- function(query) {
-  tibble(dbGetQuery(con, query))
+    tibble(dbGetQuery(con, query))
 }
 
 theme_set(theme_minimal())
@@ -238,7 +238,7 @@ or replace table occupation_by_tenure as (
 #| warning: false
 
 geo_mapping <- athena_sql(
-  "select region
+    "select region
   , lad
   , msoa
   , lsoa
@@ -246,7 +246,7 @@ geo_mapping <- athena_sql(
 )
 
 dim_lad <- athena_sql(
-  "
+    "
 select lad
 , lad_name
 from geo.dim_lad
@@ -254,7 +254,7 @@ from geo.dim_lad
 )
 
 dim_region <- athena_sql(
-  "
+    "
 select region
 , region_name
 from geo.dim_region
