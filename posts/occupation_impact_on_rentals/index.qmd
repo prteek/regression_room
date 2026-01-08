@@ -2,13 +2,28 @@
 title: "Impact of occupations on UK rentals"
 author: "Prateek"
 date: "2025-11-30"
+bibliography: references.bib
 categories: [random effects, hierarchical models, glm, binomial]
 image: "rentals_2021.png"
 toc: true
-bibliography: references.bib
-description: "Assessing if (and how) occupations affect local rental market"
 execute:
   echo: false
+abstract:
+  Using 2021 ONS Census cross-tabulations at the MSOA level, this article
+  quantifies how occupation and age shape private rentership in the UK. We
+  construct a dataset linking housing tenure to the household reference
+  person’s occupation, augment it with local authority identifiers, and apply
+  binomial GLMs and hierarchical mixed-effects models with random intercepts for
+  local authorities and nested MSOAs. Age-band composition is included to adjust
+  for confounding between occupation and life stage. After subsampling to ensure
+  balanced coverage across regions (excluding London), results show markedly
+  lower odds of renting for higher-skilled groups—Professionals are about 40%
+  less likely to rent than Elementary occupations—while rentership peaks among
+  25–34 year olds relative to 16–24 year olds. Including geographic random
+  effects improves fit and reduces residuals, highlighting spatial heterogeneity
+  in rental markets. Limitations include using occupation-by-age data for all
+  workers rather than HRPs. Findings support modeling rental demand with both
+  occupational structure and local context.
 
 ---
 
@@ -456,4 +471,4 @@ ggplot(df_coef %>% filter(str_detect(age_band, 'age_'))) +
   ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
-```rec
+```
