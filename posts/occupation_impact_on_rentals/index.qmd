@@ -376,6 +376,8 @@ dataset %>%
  This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA and LAD are randomly chosen and that MSOA are nested inside LAD.
 
 ```{r}
+#| cache: true
+
 glmermod <- glmer(
   cbind(renting_total, occupation_total - renting_total) ~
     occupation +
