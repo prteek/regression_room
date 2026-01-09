@@ -8,9 +8,8 @@
 
 <meta name="author" content="Prateek">
 <meta name="dcterms.date" content="2025-10-16">
-<meta name="description" content="Analysis of factors affecting teen gambling using regression and ANOVA">
 
-<title>Teen gambling – Blog</title>
+<title>gambling spend ~ gender, analysis – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,41 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 /* CSS for citations */
 div.csl-bib-body { }
@@ -170,13 +134,8 @@ div.csl-indent {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Teen gambling</h1>
-                  <div>
-        <div class="description">
-          Analysis of factors affecting teen gambling using regression and ANOVA
-        </div>
-      </div>
-                          <div class="quarto-categories">
+      <h1 class="title">gambling spend ~ gender, analysis</h1>
+                                <div class="quarto-categories">
                 <div class="quarto-category">regression</div>
                 <div class="quarto-category">ANOVA</div>
               </div>
@@ -203,6 +162,12 @@ div.csl-indent {
       
     </div>
     
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>This post examines factors associated with teenage gambling expenditure in Britain using survey data on adolescents. We analyze annual spending on a log scale to accommodate many zero/low spenders and a few very high values, and remove one clear outlier. Simple and multiple linear models assess associations with gender and weekly income. Results indicate that males spend substantially more on gambling than females (around three times, on average), and that higher weekly income is linked to higher annual gambling expenditure. We find no evidence that the income effect differs by gender. These conclusions are robust to standard diagnostic checks. While the analysis is observational and self-reports may be biased, the evidence suggests that both gender and access to money play important roles in teenage gambling behaviour.</p>
+    </div>
+  </div>
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
@@ -232,7 +197,13 @@ div.csl-indent {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>This analysis examines factors influencing teenage gambling expenditure. We explore the relationships between annual expenditure, gender, and weekly income. Our hypothesis is that both gender and income affect teenagers’ gambling expenditure. <br></p>
+<p>Teenage gambling can take many forms—scratch cards, sports bets, online games—and even small amounts can add up over a year. Understanding who spends and why can help families, schools, and policymakers support young people.</p>
+<p>This post analyses gambling spending in a British survey of adolescents. We focus on two simple questions: <br></p>
+<ul>
+<li>Do boys and girls spend different amounts on gambling?</li>
+<li>Is having more weekly spending money linked to higher annual gambling?</li>
+</ul>
+<p>We keep things straightforward: we describe the data, compare boys and girls, and account for weekly income so the comparison is fair. Because many teenagers report little or no gambling while a few report much higher amounts, we analyze a gently transformed version of annual spending that handles zeros (no spend) and very large spend values sensibly. We also set aside one unusual observation so it does not distort the findings, and we run basic checks to make sure the results are not driven by modeling quirks. The analysis is descriptive and it looks for patterns, not proof of cause and effect.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
@@ -373,7 +344,6 @@ Residuals 44 546.25 12.4149               </code></pre>
 <p>The above plot and the test indicates that income is not significantly associated with gender and hence does not mask its effect on gambling expenditure. <br></p>
 <p>For the analysis that follows, we shall print the summary of gender only model to show the Estimate value and Std. Error of gender.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(gender_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:

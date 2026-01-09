@@ -1,12 +1,16 @@
 ---
-title: "Teen gambling"
+title: gambling spend ~ gender, analysis
 author: "Prateek"
 date: "2025-10-16"
 categories: [regression, ANOVA]
 image: "gambling.jpeg"
 toc: true
 bibliography: references.bib
-description: Analysis of factors affecting teen gambling using regression and ANOVA
+abstract: |
+  This post examines factors associated with teenage gambling expenditure in Britain using survey data on adolescents. We analyze annual spending on a log scale to accommodate many zero/low spenders and a few very high values, and remove one clear outlier. Simple and multiple linear models assess associations with gender and weekly income. Results indicate that males spend substantially more on gambling than females (around three times, on average), and that higher weekly income is linked to higher annual gambling expenditure. We find no evidence that the income effect differs by gender. These conclusions are robust to standard diagnostic checks. While the analysis is observational and self-reports may be biased, the evidence suggests that both gender and access to money play important roles in teenage gambling behaviour.
+execute:
+  echo: false
+  warning: false
 ---
 
 ```{r}
@@ -44,7 +48,15 @@ options(width = 400)
 ```
 
 ## Introduction
-This analysis examines factors influencing teenage gambling expenditure. We explore the relationships between annual expenditure, gender, and weekly income. Our hypothesis is that both gender and income affect teenagers' gambling expenditure. <br/>
+
+Teenage gambling can take many forms—scratch cards, sports bets, online games—and even small amounts can add up over a year. Understanding who spends and why can help families, schools, and policymakers support young people.
+
+This post analyses gambling spending in a British survey of adolescents. We focus on two simple questions: <br/>
+
+- Do boys and girls spend different amounts on gambling?
+- Is having more weekly spending money linked to higher annual gambling?
+
+We keep things straightforward: we describe the data, compare boys and girls, and account for weekly income so the comparison is fair. Because many teenagers report little or no gambling while a few report much higher amounts, we analyze a gently transformed version of annual spending that handles zeros (no spend) and very large spend values sensibly. We also set aside one unusual observation so it does not distort the findings, and we run basic checks to make sure the results are not driven by modeling quirks. The analysis is descriptive and it looks for patterns, not proof of cause and effect.
 
 ## Data
 The analysis uses data from [@gambling_in_young_adolescents], a survey of teenage gambling behaviour in Britain. <br/>
