@@ -221,10 +221,9 @@ Note: - sign is excluded since we're working with -log-likelihood in *nlm*
 
 ```{r}
 
-cat(paste("Numerical estimate of p:", round(mle$estimate, 2)))
-est <- paste("Estimated variance of p:", round(1 / mle$hessian, 4))
-act <- paste("Actual variance variance of p:", round(0.4 * (1 - 0.4) / n, 4))
-cat(paste(est, act, sep = '\n'))
+print(paste("Numerical estimate of p:", round(mle$estimate, 2)))
+print(paste("Estimated variance of p:", round(1 / mle$hessian, 4)))
+print(paste("Actual variance variance of p:", round(0.4 * (1 - 0.4) / n, 4)))
 
 ```
 
