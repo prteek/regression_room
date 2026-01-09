@@ -8,9 +8,8 @@
 
 <meta name="author" content="Prateek">
 <meta name="dcterms.date" content="2024-12-18">
-<meta name="description" content="Analysing and modelling state changes in customer journey to better predict DAU">
 
-<title>User behaviour – Blog</title>
+<title>Probabilistic model of User journey – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -170,13 +169,8 @@ div.csl-indent {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">User behaviour</h1>
-                  <div>
-        <div class="description">
-          Analysing and modelling state changes in customer journey to better predict DAU
-        </div>
-      </div>
-                          <div class="quarto-categories">
+      <h1 class="title">Probabilistic model of User journey</h1>
+                                <div class="quarto-categories">
                 <div class="quarto-category">markov chain</div>
                 <div class="quarto-category">timeseries</div>
               </div>
@@ -203,6 +197,12 @@ div.csl-indent {
       
     </div>
     
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>This post explains a simple, practical way to forecast how many people will use an app each day, week, and month. We describe users with a handful of common-sense states (new, active, at risk, dormant) and model how they move between these states over time. Using a transition-based approach (a Markov chain) together with a modest model for estimating future new users, we simulate the app’s activity and explore how changes like reminders or reward campaigns might affect results. The goal is to give product teams a transparent, data-backed framework for planning growth and retention, without heavy math or jargon.</p>
+    </div>
+  </div>
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
@@ -214,9 +214,9 @@ div.csl-indent {
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
   <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">Methodology</a></li>
-  <li><a href="#implementation" id="toc-implementation" class="nav-link" data-scroll-target="#implementation">Implementation</a>
-  <ul class="collapse">
   <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
+  <ul class="collapse">
   <li><a href="#future-new-user-count-model" id="toc-future-new-user-count-model" class="nav-link" data-scroll-target="#future-new-user-count-model">Future new user count model</a></li>
   <li><a href="#assigning-states" id="toc-assigning-states" class="nav-link" data-scroll-target="#assigning-states">Assigning states</a></li>
   <li><a href="#calculating-transition-matrix" id="toc-calculating-transition-matrix" class="nav-link" data-scroll-target="#calculating-transition-matrix">Calculating transition matrix</a></li>
@@ -292,15 +292,11 @@ div.csl-indent {
 <li>Calculate DAU, WAU, and MAU for each prediction day t = 1, …, T.</li>
 </ol>
 </section>
-<section id="implementation" class="level2">
-<h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
-<section id="data" class="level3">
-<h3 class="anchored" data-anchor-id="data">Data</h3>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>We use a simulated dataset based on historical data of a SaaS app. <br> The data is available <a href="https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv">here</a> and contains three columns: <strong>user_id, date, and registration_date</strong>.</p>
 <p>Each record indicates a day when a user was active. <br></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dau_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"dau_data.csv"</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(dau_data))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <thead>
@@ -364,29 +360,12 @@ div.csl-indent {
 </div>
 </div>
 </section>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
 <section id="future-new-user-count-model" class="level3">
 <h3 class="anchored" data-anchor-id="future-new-user-count-model">Future new user count model</h3>
 <p>To even begin thinking about transitions on a future date, we first need to acknowledge the fact that new user counts will be a significant missing piece of information in the analysis. <br> To get around this limitation, we shall first build a new user count prediction model that need not be very accurate (since in a realistic setting new user counts can also be a parameter that can be changed).</p>
 <p>The information on new users on any given date is inherent in <em>registration_date</em> in the data.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>new_users <span class="ot">&lt;-</span> dau_data <span class="sc">%&gt;%</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">==</span> registration_date) <span class="sc">%&gt;%</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date) <span class="sc">%&gt;%</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">new_user_count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">year =</span> <span class="fu">year</span>(date),</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">week_of_year =</span> <span class="fu">isoweek</span>(date), <span class="co"># ISO 8601 week (Monday starts the week)</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">month =</span> <span class="fu">as.factor</span>(<span class="fu">month</span>(date, <span class="at">label =</span> <span class="cn">TRUE</span>, <span class="at">abbr =</span> <span class="cn">TRUE</span>)), <span class="co"># Month as abbreviated name</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">day_of_week =</span> <span class="fu">wday</span>(date)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>lmod <span class="ot">&lt;-</span> <span class="fu">glm.nb</span>(</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  new_user_count <span class="sc">~</span> year <span class="sc">*</span> <span class="fu">bs</span>(week_of_year, <span class="dv">4</span>) <span class="sc">+</span> month <span class="sc">+</span> day_of_week,</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> new_users</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># summary(lmod)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 <p>After some experimentation, the model setup to predict future counts of new users is as above. <br> The counts are assumed Poisson but with a higher variance than normal due to spikes in the data and hence a <em>negative binomial</em> model has been used. <br> It was imperative that we used a <em>robust</em> version of GLM to be able to get relatively constant variance of errors, that were being caused due to outliers in user count towards beginning of every year. <br> The model appears to be doing a satisfactory job of predicting counts of new users and we consider this acceptable for further analysis.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -474,12 +453,6 @@ div.csl-indent {
 <p>And using this table, subsequently estimate <em>states</em> using simple rules (mentioned in definitions above) for each user_id, corresponding to each day in the data.</p>
 <p>The volume of data at our disposal makes this a challenging task to run conveniently on a small machine, so the state determination is performed offline and the code to do it can be found <a href="https://github.com/prteek/regression_room/blob/main/posts/user_behaviour_analysis/prepare_states.r">here</a></p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>states <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">'states.csv'</span>, <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  states <span class="sc">%&gt;%</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">grepl</span>(<span class="st">'269b7f13-a509-5174-85cb'</span>, user_id)) <span class="sc">%&gt;%</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">between</span>(date, <span class="fu">as.Date</span>(<span class="st">'2020-10-18'</span>), <span class="fu">as.Date</span>(<span class="st">'2020-10-30'</span>)))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -598,46 +571,40 @@ div.csl-indent {
 <section id="calculating-transition-matrix" class="level3">
 <h3 class="anchored" data-anchor-id="calculating-transition-matrix">Calculating transition matrix</h3>
 <p>We need a flexible approach to calculate transition matrix over any arbitrary period of time. This is because it is likely that transition matrix changes over time as user preferences and product itself evolves. <br></p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>get_transition_matrix <span class="ot">&lt;-</span> <span class="cf">function</span>(states_slice) {</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        M <span class="ot">&lt;-</span> states_slice <span class="sc">%&gt;%</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(user_id) <span class="sc">%&gt;%</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">arrange</span>(date) <span class="sc">%&gt;%</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">state_to =</span> <span class="fu">lead</span>(state),</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">state_from =</span> state</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">%&gt;%</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Remove the last row since user doesn't transition to anywhere from that</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(state_to)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Count transitions per user to avoid counting transitions across users</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(user_id, state_from, state_to) <span class="sc">%&gt;%</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sum all the transitions over all users</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(state_from, state_to) <span class="sc">%&gt;%</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">sum</span>(transition_count)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Generates a wide form matrix from long form</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>            <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> state_to, <span class="at">values_from =</span> transition_count, <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">transition_count =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Normalizes matrix of counts so that rows sum to 1</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="at">row_sum =</span> <span class="fu">rowSums</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(., <span class="sc">-</span>state_from))) <span class="sc">%&gt;%</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>state_from, <span class="sc">~</span> . <span class="sc">/</span> row_sum)) <span class="sc">%&gt;%</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>            dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>row_sum) <span class="sc">%&gt;%</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Generates ordered matrix where row and column name orders match</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="at">new =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="co"># To get consistent matrix since 'new' is missing from state_to</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>            <span class="fu">column_to_rownames</span>(<span class="st">"state_from"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>            .[<span class="fu">order</span>(<span class="fu">rownames</span>(.)), <span class="fu">order</span>(<span class="fu">colnames</span>(.))]</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(M)</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>get_transition_matrix <span class="ot">&lt;-</span> <span class="cf">function</span>(states_slice) {</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        M <span class="ot">&lt;-</span> states_slice <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(user_id) <span class="sc">%&gt;%</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            <span class="fu">arrange</span>(date) <span class="sc">%&gt;%</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                <span class="at">state_to =</span> <span class="fu">lead</span>(state),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>                <span class="at">state_from =</span> state</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            ) <span class="sc">%&gt;%</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Remove the last row since user doesn't transition to anywhere from that</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(state_to)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Count transitions per user to avoid counting transitions across users</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(user_id, state_from, state_to) <span class="sc">%&gt;%</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">n</span>()) <span class="sc">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Sum all the transitions over all users</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="fu">group_by</span>(state_from, state_to) <span class="sc">%&gt;%</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="fu">summarise</span>(<span class="at">transition_count =</span> <span class="fu">sum</span>(transition_count)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Generates a wide form matrix from long form</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> state_to, <span class="at">values_from =</span> transition_count, <span class="at">values_fill =</span> <span class="fu">list</span>(<span class="at">transition_count =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Normalizes matrix of counts so that rows sum to 1</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="at">row_sum =</span> <span class="fu">rowSums</span>(dplyr<span class="sc">::</span><span class="fu">select</span>(., <span class="sc">-</span>state_from))) <span class="sc">%&gt;%</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="fu">across</span>(<span class="sc">-</span>state_from, <span class="sc">~</span> . <span class="sc">/</span> row_sum)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>            dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="sc">-</span>row_sum) <span class="sc">%&gt;%</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Generates ordered matrix where row and column name orders match</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>            <span class="fu">mutate</span>(<span class="at">new =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span> <span class="co"># To get consistent matrix since 'new' is missing from state_to</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>            <span class="fu">column_to_rownames</span>(<span class="st">"state_from"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>            .[<span class="fu">order</span>(<span class="fu">rownames</span>(.)), <span class="fu">order</span>(<span class="fu">colnames</span>(.))]</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(M)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Essentially we seek to calculate a matrix which has <em>state_from</em> in its rows <em>state_to</em> as its column and fraction of transitions as values. All the values in a row must sum to 1 obeying the fact that from a given state a user will end up in one of the 7 states.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>M <span class="ot">=</span> <span class="fu">get_transition_matrix</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  states <span class="sc">%&gt;%</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="fu">between</span>(date, start_date, end_date))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(M)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -742,58 +709,33 @@ div.csl-indent {
 <section id="predicting-dau" class="level3">
 <h3 class="anchored" data-anchor-id="predicting-dau">Predicting DAU</h3>
 <p>We start with getting initial state counts for the date on which the dataset ends. This combined with <em>M</em> transition matrix should give us new state counts. We will be mindful to update <em>new_user_count</em> for all the days we would like to predict on. This is done using the prediction model developed earlier.</p>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data_end_date <span class="ot">&lt;-</span> prediction_start_date <span class="sc">-</span> <span class="dv">1</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>state0 <span class="ot">&lt;-</span> states <span class="sc">%&gt;%</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">==</span> data_end_date) <span class="sc">%&gt;%</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(state) <span class="sc">%&gt;%</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">cnt =</span> <span class="fu">n</span>(), <span class="at">.groups =</span> <span class="st">'drop'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 <p>We shall define a flexible mechanism to predict DAU, to enable changing prediction horizon. We will also supply a dataframe of <em>new_users</em> to this mechanism so that it may use predicted values for appropriate prediction dates.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>predict_dau <span class="ot">&lt;-</span> <span class="cf">function</span>(M, state0, start_date, end_date, new_users_predicted) {</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(start_date), <span class="fu">as.Date</span>(end_date), <span class="at">by =</span> <span class="st">"day"</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Align state0 name order with transition Matrix name order</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    new_dau <span class="ot">&lt;-</span> state0[<span class="fu">match</span>(state0<span class="sc">$</span>state, <span class="fu">rownames</span>(M)), ]<span class="sc">$</span>cnt</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    dau_pred <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (dt <span class="cf">in</span> dates) {</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        new_dau <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">t</span>(M) <span class="sc">%*%</span> new_dau) <span class="co"># Transitions</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        new_users_today <span class="ot">&lt;-</span> new_users_predicted <span class="sc">%&gt;%</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(date <span class="sc">==</span> dt) <span class="sc">%&gt;%</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">pull</span>(predicted) <span class="sc">%&gt;%</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            <span class="fu">as.integer</span>()</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        new_dau[<span class="dv">5</span>] <span class="ot">&lt;-</span> new_users_today <span class="co"># Today's new users get transitioned next day</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        dau_pred <span class="ot">&lt;-</span> <span class="fu">append</span>(dau_pred, <span class="fu">list</span>(new_dau))</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">do.call</span>(rbind, dau_pred))</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(df) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(M)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>date <span class="ot">&lt;-</span> dates</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>dau <span class="ot">&lt;-</span> df<span class="sc">$</span>new <span class="sc">+</span> df<span class="sc">$</span>current <span class="sc">+</span> df<span class="sc">$</span>reactivated <span class="sc">+</span> df<span class="sc">$</span>resurrected</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>wau <span class="ot">&lt;-</span> df<span class="sc">$</span>dau <span class="sc">+</span> df<span class="sc">$</span>at_risk_wau</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>mau <span class="ot">&lt;-</span> df<span class="sc">$</span>dau <span class="sc">+</span> df<span class="sc">$</span>at_risk_wau <span class="sc">+</span> df<span class="sc">$</span>at_risk_mau</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">tibble</span>(df))</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>dau_predicted <span class="ot">&lt;-</span> <span class="fu">predict_dau</span>(</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  M,</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  state0,</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  prediction_start_date,</span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  prediction_end_date,</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  new_users_predicted</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> (<span class="fu">ggplot</span>(</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  dau_data <span class="sc">%&gt;%</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">group_by</span>(date) <span class="sc">%&gt;%</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">summarise</span>(<span class="at">DAU =</span> <span class="fu">n</span>())</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> DAU)) <span class="sc">+</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> dau_predicted, <span class="fu">aes</span>(<span class="at">x =</span> date, <span class="at">y =</span> dau), <span class="at">colour =</span> <span class="st">'red'</span>) <span class="sc">+</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">'DAU Predictions'</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>predict_dau <span class="ot">&lt;-</span> <span class="cf">function</span>(M, state0, start_date, end_date, new_users_predicted) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    dates <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">as.Date</span>(start_date), <span class="fu">as.Date</span>(end_date), <span class="at">by =</span> <span class="st">"day"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Align state0 name order with transition Matrix name order</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    new_dau <span class="ot">&lt;-</span> state0[<span class="fu">match</span>(state0<span class="sc">$</span>state, <span class="fu">rownames</span>(M)), ]<span class="sc">$</span>cnt</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    dau_pred <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (dt <span class="cf">in</span> dates) {</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        new_dau <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">t</span>(M) <span class="sc">%*%</span> new_dau) <span class="co"># Transitions</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        new_users_today <span class="ot">&lt;-</span> new_users_predicted <span class="sc">%&gt;%</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            <span class="fu">filter</span>(date <span class="sc">==</span> dt) <span class="sc">%&gt;%</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            <span class="fu">pull</span>(predicted) <span class="sc">%&gt;%</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            <span class="fu">as.integer</span>()</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        new_dau[<span class="dv">5</span>] <span class="ot">&lt;-</span> new_users_today <span class="co"># Today's new users get transitioned next day</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        dau_pred <span class="ot">&lt;-</span> <span class="fu">append</span>(dau_pred, <span class="fu">list</span>(new_dau))</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    df <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="fu">do.call</span>(rbind, dau_pred))</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">colnames</span>(df) <span class="ot">&lt;-</span> <span class="fu">rownames</span>(M)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>date <span class="ot">&lt;-</span> dates</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>dau <span class="ot">&lt;-</span> df<span class="sc">$</span>new <span class="sc">+</span> df<span class="sc">$</span>current <span class="sc">+</span> df<span class="sc">$</span>reactivated <span class="sc">+</span> df<span class="sc">$</span>resurrected</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>wau <span class="ot">&lt;-</span> df<span class="sc">$</span>dau <span class="sc">+</span> df<span class="sc">$</span>at_risk_wau</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    df<span class="sc">$</span>mau <span class="ot">&lt;-</span> df<span class="sc">$</span>dau <span class="sc">+</span> df<span class="sc">$</span>at_risk_wau <span class="sc">+</span> df<span class="sc">$</span>at_risk_mau</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">return</span>(<span class="fu">tibble</span>(df))</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell">
 <div class="cell-output-display">
 <div>

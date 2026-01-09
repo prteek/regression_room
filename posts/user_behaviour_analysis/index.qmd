@@ -1,12 +1,15 @@
 ---
-title: "User behaviour"
+title: "Probabilistic model of User journey"
 author: "Prateek"
 date: "2024-12-18"
 categories: [markov chain, timeseries]
 toc: true
+execute:
+  echo: false
+  warning: false
 bibliography: references.bib
-description: "Analysing and modelling state changes in customer journey to better predict DAU"
-
+abstract: |
+  This post explains a simple, practical way to forecast how many people will use an app each day, week, and month. We describe users with a handful of common-sense states (new, active, at risk, dormant) and model how they move between these states over time. Using a transition-based approach (a Markov chain) together with a modest model for estimating future new users, we simulate the app’s activity and explore how changes like reminders or reward campaigns might affect results. The goal is to give product teams a transparent, data-backed framework for planning growth and retention, without heavy math or jargon.
 ---
 
 ## Introduction
@@ -68,9 +71,7 @@ Finally, here’s the algorithm outline:
 5.  Recursively calculate u\_{t+1} = M\^t \* u_0.
 6.  Calculate DAU, WAU, and MAU for each prediction day t = 1, …, T.
 
-## Implementation
-
-### Data
+## Data
 
 We use a simulated dataset based on historical data of a SaaS app. <br/> The data is available [here](https://raw.githubusercontent.com/prteek/regression_room/refs/heads/main/posts/user_behaviour_analysis/dau_data.csv) and contains three columns: **user_id, date, and registration_date**.
 
@@ -119,6 +120,8 @@ ggplot(
   ggtitle('DAU timeseries')
 
 ```
+
+## Model
 
 ### Future new user count model
 
