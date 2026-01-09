@@ -167,7 +167,7 @@ div.csl-indent {
   <div>
     <div class="abstract">
       <div class="block-title">Abstract</div>
-      Using 2021 ONS Census data for neighbourhoods across the UK (MSOAs), this article examines how occupation and age relate to private renting. We link housing tenure for the household reference person to occupation and add local authority information to account for location specific behaviours. We then fit statistical models that account for age mix and geography. To balance coverage across regions, we analyse a sample that excludes London. Key findings are, higher‑skilled groups rent less. Professionals are about 40% less likely to rent than Elementary occupations, and rentership is highest among 25–34 year olds. Accounting for local authority and neighbourhood effects improves model fit, revealing meaningful spatial variation in rental markets. A key limitation is that age‑by‑occupation data refer to all workers rather than HRPs. Overall, the findings indicate that rental demand is shaped by both occupational structure and local context.
+      Using 2021 ONS Census data for neighbourhoods across the UK (MSOAs), this article examines how occupation and age relate to private renting. We link housing tenure for the household reference person to occupation and add local authority information to account for location specific behaviours. We then fit statistical models that account for age mix and geography. We use a balanced data sample across local authorities and MSOAs and excludes London since it is an outlier rental market. Key findings are, higher‑skilled groups rent less. Professionals are about 40% less likely to rent than Elementary occupations, and rentership is highest among 25–34 year olds. Accounting for local authority and neighbourhood effects improves model fit, revealing meaningful spatial variation in rental markets. A key limitation is that age‑by‑occupation data refer to all workers rather than HRPs. Overall, the findings indicate that rental demand is shaped by both occupational structure and local context.
     </div>
   </div>
   
@@ -215,7 +215,7 @@ div.csl-indent {
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><span>“RM140: Tenure by Occupation - Household Reference Persons”</span> 2023</a>)</span>. <br> MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br> This differs from datasets that count all workers (for example, occupation‑by‑age used later), because a household can contain more than one person in full‑time work.</p>
+<p>We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><span>“RM140: Tenure by Occupation - Household Reference Persons”</span> 2023</a>)</span>. <br> MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br> These are different from the counts of all workers (used in occupation‑by‑age data introduced later in the study), because a household can contain more than one person in full‑time work but only one HRP. <br></p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -251,88 +251,88 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">E02003139 : Plymouth 018</td>
-<td style="text-align: left;">380</td>
-<td style="text-align: left;">61</td>
-<td style="text-align: left;">59</td>
-<td style="text-align: left;">46</td>
-<td style="text-align: left;">43</td>
-<td style="text-align: left;">61</td>
-<td style="text-align: left;">25</td>
-<td style="text-align: left;">25</td>
-<td style="text-align: left;">31</td>
-<td style="text-align: left;">29</td>
+<td style="text-align: left;">E02001646 : Sheffield 036</td>
+<td style="text-align: left;">264</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">121</td>
+<td style="text-align: left;">48</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">8</td>
 <td style="text-align: left;">Owns outright</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02006978 : Chelmsford 022</td>
-<td style="text-align: left;">853</td>
-<td style="text-align: left;">158</td>
-<td style="text-align: left;">352</td>
-<td style="text-align: left;">169</td>
-<td style="text-align: left;">73</td>
-<td style="text-align: left;">44</td>
-<td style="text-align: left;">18</td>
+<td style="text-align: left;">E02006775 : Wyre Forest 009</td>
+<td style="text-align: left;">230</td>
+<td style="text-align: left;">20</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">35</td>
 <td style="text-align: left;">17</td>
-<td style="text-align: left;">13</td>
-<td style="text-align: left;">9</td>
-<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">25</td>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">39</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">Owns outright</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">W02000422 : Cardiff 048</td>
-<td style="text-align: left;">2087</td>
-<td style="text-align: left;">263</td>
-<td style="text-align: left;">790</td>
-<td style="text-align: left;">387</td>
-<td style="text-align: left;">170</td>
-<td style="text-align: left;">93</td>
-<td style="text-align: left;">83</td>
-<td style="text-align: left;">157</td>
-<td style="text-align: left;">56</td>
-<td style="text-align: left;">88</td>
-<td style="text-align: left;">Private rented or lives rent free</td>
+<td style="text-align: left;">E02001315 : Wigan 029</td>
+<td style="text-align: left;">1748</td>
+<td style="text-align: left;">333</td>
+<td style="text-align: left;">447</td>
+<td style="text-align: left;">293</td>
+<td style="text-align: left;">154</td>
+<td style="text-align: left;">216</td>
+<td style="text-align: left;">79</td>
+<td style="text-align: left;">68</td>
+<td style="text-align: left;">94</td>
+<td style="text-align: left;">64</td>
+<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02005516 : Breckland 014</td>
-<td style="text-align: left;">799</td>
-<td style="text-align: left;">174</td>
-<td style="text-align: left;">186</td>
-<td style="text-align: left;">107</td>
-<td style="text-align: left;">50</td>
-<td style="text-align: left;">140</td>
-<td style="text-align: left;">35</td>
-<td style="text-align: left;">21</td>
-<td style="text-align: left;">59</td>
-<td style="text-align: left;">27</td>
-<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: left;">E02005184 : Burnley 009</td>
+<td style="text-align: left;">168</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">31</td>
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">32</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">19</td>
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">Private rented or lives rent free</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">E02003821 : Cheshire East 032</td>
-<td style="text-align: left;">157</td>
-<td style="text-align: left;">13</td>
+<td style="text-align: left;">E02004723 : Eastleigh 012</td>
+<td style="text-align: left;">89</td>
+<td style="text-align: left;">9</td>
 <td style="text-align: left;">7</td>
-<td style="text-align: left;">11</td>
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">21</td>
-<td style="text-align: left;">18</td>
-<td style="text-align: left;">21</td>
-<td style="text-align: left;">22</td>
-<td style="text-align: left;">34</td>
+<td style="text-align: left;">7</td>
+<td style="text-align: left;">8</td>
+<td style="text-align: left;">9</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">13</td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">5</td>
 <td style="text-align: left;">Social rented</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02004997 : Ashford 002</td>
-<td style="text-align: left;">1011</td>
-<td style="text-align: left;">319</td>
-<td style="text-align: left;">249</td>
-<td style="text-align: left;">152</td>
-<td style="text-align: left;">46</td>
-<td style="text-align: left;">106</td>
-<td style="text-align: left;">42</td>
-<td style="text-align: left;">32</td>
-<td style="text-align: left;">41</td>
-<td style="text-align: left;">24</td>
-<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: left;">E02004460 : Braintree 015</td>
+<td style="text-align: left;">305</td>
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">49</td>
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">23</td>
+<td style="text-align: left;">49</td>
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">16</td>
+<td style="text-align: left;">31</td>
+<td style="text-align: left;">35</td>
+<td style="text-align: left;">Private rented or lives rent free</td>
 </tr>
 </tbody>
 </table>
@@ -374,7 +374,7 @@ div.csl-indent {
 <colgroup>
 <col style="width: 3%">
 <col style="width: 11%">
-<col style="width: 15%">
+<col style="width: 17%">
 <col style="width: 4%">
 <col style="width: 5%">
 <col style="width: 8%">
@@ -385,7 +385,7 @@ div.csl-indent {
 <col style="width: 7%">
 <col style="width: 5%">
 <col style="width: 3%">
-<col style="width: 6%">
+<col style="width: 5%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -407,100 +407,100 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">e02006660</td>
+<td style="text-align: left;">e02002354</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">4. administrative and secretarial occupations</td>
-<td style="text-align: right;">65</td>
-<td style="text-align: right;">320</td>
+<td style="text-align: left;">1. managers, directors and senior officials</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">306</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0666667</td>
-<td style="text-align: right;">0.2237037</td>
-<td style="text-align: right;">0.3022222</td>
-<td style="text-align: right;">0.3570370</td>
-<td style="text-align: right;">0.0503704</td>
-<td style="text-align: right;">675</td>
-<td style="text-align: left;">e12000009</td>
-<td style="text-align: left;">wiltshire</td>
+<td style="text-align: right;">0.0140000</td>
+<td style="text-align: right;">0.1980000</td>
+<td style="text-align: right;">0.5140000</td>
+<td style="text-align: right;">0.2420000</td>
+<td style="text-align: right;">0.0320000</td>
+<td style="text-align: right;">500</td>
+<td style="text-align: left;">e12000003</td>
+<td style="text-align: left;">leeds</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02005068</td>
+<td style="text-align: left;">e02006262</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">9. elementary occupations</td>
-<td style="text-align: right;">16</td>
-<td style="text-align: right;">79</td>
+<td style="text-align: left;">6. caring, leisure and other service occupations</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">110</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.2324561</td>
-<td style="text-align: right;">0.1754386</td>
-<td style="text-align: right;">0.1973684</td>
-<td style="text-align: right;">0.3070175</td>
-<td style="text-align: right;">0.0877193</td>
-<td style="text-align: right;">228</td>
-<td style="text-align: left;">e12000008</td>
-<td style="text-align: left;">maidstone</td>
+<td style="text-align: right;">0.1194969</td>
+<td style="text-align: right;">0.2201258</td>
+<td style="text-align: right;">0.2515723</td>
+<td style="text-align: right;">0.3522013</td>
+<td style="text-align: right;">0.0566038</td>
+<td style="text-align: right;">318</td>
+<td style="text-align: left;">e12000006</td>
+<td style="text-align: left;">south norfolk</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">e02002023</td>
+<td style="text-align: left;">e02006592</td>
 <td style="text-align: left;">private rented or lives rent free</td>
 <td style="text-align: left;">5. skilled trades occupations</td>
-<td style="text-align: right;">28</td>
-<td style="text-align: right;">253</td>
+<td style="text-align: right;">41</td>
+<td style="text-align: right;">207</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.1239669</td>
-<td style="text-align: right;">0.2369146</td>
-<td style="text-align: right;">0.3057851</td>
-<td style="text-align: right;">0.3057851</td>
-<td style="text-align: right;">0.0275482</td>
-<td style="text-align: right;">363</td>
-<td style="text-align: left;">e12000005</td>
-<td style="text-align: left;">south staffordshire</td>
+<td style="text-align: right;">0.0984615</td>
+<td style="text-align: right;">0.1969231</td>
+<td style="text-align: right;">0.3076923</td>
+<td style="text-align: right;">0.3107692</td>
+<td style="text-align: right;">0.0861538</td>
+<td style="text-align: right;">325</td>
+<td style="text-align: left;">e12000008</td>
+<td style="text-align: left;">horsham</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02001882</td>
+<td style="text-align: left;">e02003703</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">8. process, plant and machine operatives</td>
-<td style="text-align: right;">69</td>
-<td style="text-align: right;">290</td>
+<td style="text-align: left;">2. professional occupations</td>
+<td style="text-align: right;">189</td>
+<td style="text-align: right;">695</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0649038</td>
-<td style="text-align: right;">0.2163462</td>
-<td style="text-align: right;">0.3437500</td>
-<td style="text-align: right;">0.3221154</td>
-<td style="text-align: right;">0.0528846</td>
-<td style="text-align: right;">416</td>
-<td style="text-align: left;">e12000005</td>
-<td style="text-align: left;">birmingham</td>
+<td style="text-align: right;">0.0579345</td>
+<td style="text-align: right;">0.2644836</td>
+<td style="text-align: right;">0.3828715</td>
+<td style="text-align: right;">0.2628044</td>
+<td style="text-align: right;">0.0319060</td>
+<td style="text-align: right;">1191</td>
+<td style="text-align: left;">e12000008</td>
+<td style="text-align: left;">buckinghamshire</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">e02001086</td>
+<td style="text-align: left;">e02001607</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">7. sales and customer service occupations</td>
-<td style="text-align: right;">33</td>
-<td style="text-align: right;">98</td>
+<td style="text-align: left;">3. associate professional and technical occupations</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">245</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.2311321</td>
-<td style="text-align: right;">0.2877358</td>
-<td style="text-align: right;">0.2594340</td>
-<td style="text-align: right;">0.1933962</td>
-<td style="text-align: right;">0.0283019</td>
-<td style="text-align: right;">212</td>
-<td style="text-align: left;">e12000002</td>
-<td style="text-align: left;">salford</td>
+<td style="text-align: right;">0.1045752</td>
+<td style="text-align: right;">0.2352941</td>
+<td style="text-align: right;">0.3703704</td>
+<td style="text-align: right;">0.2614379</td>
+<td style="text-align: right;">0.0283224</td>
+<td style="text-align: right;">459</td>
+<td style="text-align: left;">e12000003</td>
+<td style="text-align: left;">sheffield</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02001349</td>
+<td style="text-align: left;">e02003627</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">7. sales and customer service occupations</td>
-<td style="text-align: right;">64</td>
-<td style="text-align: right;">142</td>
+<td style="text-align: left;">5. skilled trades occupations</td>
+<td style="text-align: right;">178</td>
+<td style="text-align: right;">317</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.2247839</td>
-<td style="text-align: right;">0.2622478</td>
-<td style="text-align: right;">0.2334294</td>
-<td style="text-align: right;">0.2651297</td>
-<td style="text-align: right;">0.0144092</td>
-<td style="text-align: right;">347</td>
-<td style="text-align: left;">e12000002</td>
-<td style="text-align: left;">liverpool</td>
+<td style="text-align: right;">0.1146497</td>
+<td style="text-align: right;">0.2866242</td>
+<td style="text-align: right;">0.3312102</td>
+<td style="text-align: right;">0.2377919</td>
+<td style="text-align: right;">0.0297240</td>
+<td style="text-align: right;">471</td>
+<td style="text-align: left;">e12000006</td>
+<td style="text-align: left;">bedford</td>
 </tr>
 </tbody>
 </table>

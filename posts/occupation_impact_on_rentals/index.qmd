@@ -15,7 +15,7 @@ abstract:
   housing tenure for the household reference person to occupation and add local
   authority information to account for location specific behaviours. We then fit
   statistical models that account for age mix and geography.
-  To balance coverage across regions, we analyse a sample that excludes London.
+  We use a balanced data sample across local authorities and MSOAs and excludes London since it is an outlier rental market.
   Key findings are, higher‑skilled groups rent less.
   Professionals are about 40% less likely to rent than Elementary occupations, and rentership is highest among 25–34 year olds.
   Accounting for local authority and neighbourhood effects improves model fit, revealing meaningful spatial variation in rental markets.
@@ -85,7 +85,7 @@ The study is descriptive and subject to measurement constraints: age composition
 
 We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level [@ONS2021RM140]. <br/>
 MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br/>
-This differs from datasets that count all workers (for example, occupation‑by‑age used later), because a household can contain more than one person in full‑time work.
+These are different from the counts of all workers (used in occupation‑by‑age data introduced later in the study), because a household can contain more than one person in full‑time work but only one HRP. <br/>
 
 ```{r}
 sql(
