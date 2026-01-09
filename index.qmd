@@ -4,7 +4,8 @@ listing:
   contents: posts
   sort: "date desc"
   type: default
-  categories: true
+  categories: cloud
+  fields: [image, date, title, author, categories, reading-time]
   sort-ui: false
   filter-ui: true
 page-layout: full
