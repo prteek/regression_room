@@ -1,5 +1,5 @@
 ---
-title: "Impact of occupations on UK rentals"
+title: "rentership ~ occupation, analysis"
 author: "Prateek"
 date: "2025-11-30"
 bibliography: references.bib
@@ -8,6 +8,7 @@ image: "rentals_2021.png"
 toc: true
 execute:
   echo: false
+  warning: false
 abstract:
   Using 2021 ONS Census cross-tabulations at the MSOA level, this article
   quantifies how occupation and age shape private rentership in the UK. We
