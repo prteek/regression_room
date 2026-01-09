@@ -10,21 +10,16 @@ execute:
   echo: false
   warning: false
 abstract:
-  Using 2021 ONS Census cross-tabulations at the MSOA level, this article
-  quantifies how occupation and age shape private rentership in the UK. We
-  construct a dataset linking housing tenure to the household reference
-  person’s occupation, augment it with local authority identifiers, and apply
-  binomial GLMs and hierarchical mixed-effects models with random intercepts for
-  local authorities and nested MSOAs. Age-band composition is included to adjust
-  for confounding between occupation and life stage. After subsampling to ensure
-  balanced coverage across regions (excluding London), results show markedly
-  lower odds of renting for higher-skilled groups—Professionals are about 40%
-  less likely to rent than Elementary occupations—while rentership peaks among
-  25–34 year olds relative to 16–24 year olds. Including geographic random
-  effects improves fit and reduces residuals, highlighting spatial heterogeneity
-  in rental markets. Limitations include using occupation-by-age data for all
-  workers rather than HRPs. Findings support modeling rental demand with both
-  occupational structure and local context.
+  Using 2021 ONS Census data for neighbourhoods across the UK (MSOAs), this
+  article examines how occupation and age relate to private renting. We link
+  housing tenure for the household reference person to occupation and add local
+  authority information to account for location specific behaviours. We then fit
+  statistical models that account for age mix and geography.
+  To balance coverage across regions, we analyse a sample that excludes London.
+  Key findings are, higher‑skilled groups rent less.
+  Professionals are about 40% less likely to rent than Elementary occupations, and rentership is highest among 25–34 year olds.
+  Accounting for local authority and neighbourhood effects improves model fit, revealing meaningful spatial variation in rental markets.
+  A key limitation is that age‑by‑occupation data refer to all workers rather than HRPs. Overall, the findings indicate that rental demand is shaped by both occupational structure and local context.
 
 ---
 
@@ -375,7 +370,6 @@ dataset %>%
     predicted_proportion = predict(glmod_base, ., type = 'response')
   ) %>%
   slice(c(8057, 17867, 18452, 15446)) %>%
-  select(starts_with('age')) %>%
   knitr::kable()
 
 ```
