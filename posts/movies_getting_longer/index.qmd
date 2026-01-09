@@ -1,11 +1,23 @@
 ---
-title: "Movie runtimes"
+title: "Movie runtimes analysis"
 author: "Prateek"
 date: "2023-07-21"
 categories: [hypothesis testing, bootstrap, regression]
 image: "movie_coupon.jpg"
 toc: true
-description: "Are blockbusters getting (reely) longer ?"
+abstract: |
+  Are blockbuster movies getting longer? Using top-grossing titles from 1990–2023,
+  this analysis finds runtimes have increased over time. Differences between recent
+  (2013–2023) and older (1990–2000) releases are estimated with bootstrap resampling
+  to capture uncertainty, and a simple linear regression quantifies the trend at
+  about 0.38 minutes per year. Model diagnostics address non-normality and potential
+  autocorrelation, with results robust to these checks. The takeaway is a modest,
+  steady increase—roughly 8–10 minutes over two decades—while noting limits from
+  sample choice and model simplicity.
+
+execute:
+  echo: false
+  warning: false
 ---
 
 ## Introduction

@@ -8,9 +8,8 @@
 
 <meta name="author" content="Prateek">
 <meta name="dcterms.date" content="2023-07-21">
-<meta name="description" content="Are blockbusters getting (reely) longer ?">
 
-<title>Movie runtimes – Blog</title>
+<title>Movie runtimes analysis – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,41 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -150,13 +114,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">Movie runtimes</h1>
-                  <div>
-        <div class="description">
-          Are blockbusters getting (reely) longer ?
-        </div>
-      </div>
-                          <div class="quarto-categories">
+      <h1 class="title">Movie runtimes analysis</h1>
+                                <div class="quarto-categories">
                 <div class="quarto-category">hypothesis testing</div>
                 <div class="quarto-category">bootstrap</div>
                 <div class="quarto-category">regression</div>
@@ -184,6 +143,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       
     </div>
     
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>Are blockbuster movies getting longer? Using top-grossing titles from 1990–2023, this analysis finds runtimes have increased over time. Differences between recent (2013–2023) and older (1990–2000) releases are estimated with bootstrap resampling to capture uncertainty, and a simple linear regression quantifies the trend at about 0.38 minutes per year. Model diagnostics address non-normality and potential autocorrelation, with results robust to these checks. The takeaway is a modest, steady increase—roughly 8–10 minutes over two decades—while noting limits from sample choice and model simplicity.</p>
+    </div>
+  </div>
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
@@ -225,17 +190,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'ggplot2' was built under R version 4.4.3</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning: package 'readr' was built under R version 4.4.3</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>yearly_top_movies <span class="ot">=</span> <span class="fu">read_delim</span>(<span class="st">'movies_dataset.csv'</span>,</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> <span class="at">show_col_types =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(yearly_top_movies)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code># A tibble: 6 × 3
   release_year runtime_mins title                       
@@ -249,14 +203,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Scatterplot of movie runtime over time</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(yearly_top_movies, <span class="fu">aes</span>(<span class="at">x =</span> release_year, <span class="at">y =</span> runtime_mins)) <span class="sc">+</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span> <span class="co"># Scatter points for movie runtimes</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> annotations, <span class="fu">aes</span>(<span class="at">label =</span> title), <span class="at">color =</span> <span class="st">"red"</span>, <span class="at">nudge_y =</span> <span class="dv">5</span>) <span class="sc">+</span> <span class="co"># Annotate specific movies</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>(<span class="at">data =</span> mean_df, <span class="fu">aes</span>(<span class="at">y =</span> runtime_mins), <span class="at">color =</span> <span class="st">"brown"</span>) <span class="sc">+</span> <span class="co"># Line for yearly mean runtimes</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggtitle</span>(<span class="st">"Top Grossing Movies per Year"</span>) <span class="sc">+</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">"Release Year"</span>) <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">"Runtime (mins)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -272,15 +218,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="comparing-recent-vs-old-movies">Comparing recent vs old movies</h3>
 <p>To simplify the analysis we can consider more recent releases (2013-2023) and compare them to releases from much older timeframe (1990-2000). <br> The runtime distributions for movies in these 2 categories is different although not significantly (visually).</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>testset <span class="ot">&lt;-</span> yearly_top_movies <span class="sc">%&gt;%</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">label =</span> <span class="fu">case_when</span>(</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>      release_year <span class="sc">&gt;=</span> <span class="dv">2013</span> <span class="sc">~</span> <span class="st">"recent"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>      release_year <span class="sc">&lt;=</span> <span class="dv">2000</span> <span class="sc">~</span> <span class="st">"old"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"other"</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    )) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(label <span class="sc">!=</span> <span class="st">"other"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(testset, <span class="fu">aes</span>(<span class="at">x=</span>runtime_mins, <span class="at">fill=</span>label)) <span class="sc">+</span> <span class="fu">geom_density</span>(<span class="at">alpha=</span><span class="fl">0.3</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -293,26 +230,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>Additionally, the cutoff chosen for <em>old</em> (&lt;= 2000) and <em>recent</em> (&gt;=2013) are arbitrary. We would ideally want a more comprehensive statement about movie runtimes increasing over the years. <br></p>
 <p>Neverthless, as a preliminary (and simple) analysis we can use bootstrap to compare means of runtimes in the above groups.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Define a function to calculate the difference of means</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>diff_mean <span class="ot">&lt;-</span> <span class="cf">function</span>(data, indices) {</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Resample the data</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  resampled_data <span class="ot">&lt;-</span> data[indices, ]</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Calculate means for each group</span></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  mean_group1 <span class="ot">&lt;-</span> <span class="fu">mean</span>(resampled_data<span class="sc">$</span>runtime_mins[resampled_data<span class="sc">$</span>label <span class="sc">==</span> <span class="st">"old"</span>])</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  mean_group2 <span class="ot">&lt;-</span> <span class="fu">mean</span>(resampled_data<span class="sc">$</span>runtime_mins[resampled_data<span class="sc">$</span>label <span class="sc">==</span> <span class="st">"recent"</span>])</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Return the difference of means</span></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(mean_group2 <span class="sc">-</span> mean_group1)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>bootstrap_results <span class="ot">&lt;-</span> <span class="fu">boot</span>(<span class="at">data =</span> testset, <span class="at">statistic =</span> diff_mean, <span class="at">R =</span> <span class="dv">1000</span>)</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Print bootstrap results</span></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(bootstrap_results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 ORDINARY NONPARAMETRIC BOOTSTRAP
@@ -326,8 +243,6 @@ Bootstrap Statistics :
     original     bias    std. error
 t1* 9.697248 0.06394496    3.174053</code></pre>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot bootstrap distribution</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(bootstrap_results)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -335,9 +250,6 @@ t1* 9.697248 0.06394496    3.174053</code></pre>
 </figure>
 </div>
 </div>
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Calculate confidence interval for the difference of means</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>ci <span class="ot">&lt;-</span> <span class="fu">boot.ci</span>(bootstrap_results, <span class="at">type =</span> <span class="st">"perc"</span>)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(ci)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>BOOTSTRAP CONFIDENCE INTERVAL CALCULATIONS
 Based on 1000 bootstrap replicates
@@ -358,9 +270,6 @@ Calculations and Intervals on Original Scale</code></pre>
 <h3 class="anchored" data-anchor-id="estimating-effect-of-time">Estimating effect of time</h3>
 <p>In the want of better precision in identifying the effect of time on movie runtimes, we can formulate a regression problem and estimate the effect of year.</p>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
-</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -371,8 +280,6 @@ Calculations and Intervals on Original Scale</code></pre>
 </div>
 <p>The plot above partly confirms our intuition about the increasing trend of runtime.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>lmod <span class="ot">&lt;-</span> <span class="fu">lm</span>(runtime_mins <span class="sc">~</span> release_year, yearly_top_movies)</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(lmod)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Call:
@@ -407,8 +314,6 @@ F-statistic: 7.852 on 1 and 335 DF,  p-value: 0.005372</code></pre>
 </div>
 <p>The <em>residuals</em> appear to have no pattern with fitted values and also have fairly constant variance. There are no significantly high leverage points or outliers. <br> However, the errors are not quite normally distributed. <br> This can be ignored by relying on large sample size and the fact that other diagnostics are fine. <br> But, we shall check if just in case any transformation of <em>runtime_mins</em> may help.</p>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">suppressPackageStartupMessages</span>(<span class="fu">library</span>(MASS))</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">boxcox</span>(lmod, <span class="at">lambda=</span><span class="fu">seq</span>(<span class="sc">-</span><span class="dv">1</span>,<span class="dv">1</span>,<span class="at">by=</span><span class="fl">0.1</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
