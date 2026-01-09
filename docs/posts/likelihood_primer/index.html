@@ -8,7 +8,6 @@
 
 <meta name="author" content="Prateek">
 <meta name="dcterms.date" content="2024-12-28">
-<meta name="description" content="Primer on likelihood with application in parameter estimation">
 
 <title>Likelihood – Blog</title>
 <style>
@@ -200,12 +199,7 @@ window.Quarto = {
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
       <h1 class="title">Likelihood</h1>
-                  <div>
-        <div class="description">
-          Primer on likelihood with application in parameter estimation
-        </div>
-      </div>
-                          <div class="quarto-categories">
+                                <div class="quarto-categories">
                 <div class="quarto-category">likelihood</div>
                 <div class="quarto-category">fisher information</div>
                 <div class="quarto-category">newton raphson</div>
@@ -233,6 +227,12 @@ window.Quarto = {
       
     </div>
     
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>Likelihood provides a simple way to judge how well model parameters explain observed data. This primer introduces the idea in plain language, connects it to probability, and uses a binomial example to show how maximum likelihood estimation finds the best‑fitting parameter. It explains uncertainty through Fisher information, why more data leads to sharper, more confident estimates and visualizes these effects. Additionally, practical numerical methods (Newton–Raphson) are demonstrated with R code example.</p>
+    </div>
+  </div>
   
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
@@ -272,7 +272,7 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br> In this post, I’ll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br> The concepts discussed are deeply inspired by <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span> and <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span>. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.</p>
+<p>Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br> In this post, we’ll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br> The concepts discussed are deeply inspired by <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span> and <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span>. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.</p>
 </section>
 <section id="likelihood" class="level2">
 <h2 class="anchored" data-anchor-id="likelihood">Likelihood</h2>

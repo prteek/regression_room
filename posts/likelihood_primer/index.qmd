@@ -6,12 +6,13 @@ categories: [likelihood, fisher information, newton raphson]
 image: "likelihood.jpg"
 toc: true
 bibliography: references.bib
-description: "Primer on likelihood with application in parameter estimation"
+abstract: |
+  Likelihood provides a simple way to judge how well model parameters explain observed data. This primer introduces the idea in plain language, connects it to probability, and uses a binomial example to show how maximum likelihood estimation finds the best‑fitting parameter. It explains uncertainty through Fisher information, why more data leads to sharper, more confident estimates and visualizes these effects. Additionally, practical numerical methods (Newton–Raphson) are demonstrated with R code example.
 ---
 
 ## Introduction
 
-Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br/> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br/> In this post, I'll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br/> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br/>
+Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br/> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br/> In this post, we'll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br/> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br/>
 The concepts discussed are deeply inspired by [@extending_lm_with_R_book] and [@statistical_inference]. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.
 
 ## Likelihood
