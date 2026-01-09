@@ -21,31 +21,31 @@ library(tidyverse)
 library(RAthena)
 
 data_dir <- file.path(
-    here::here(),
-    "posts",
-    "occupation_impact_on_rentals",
-    "data"
+  here::here(),
+  "posts",
+  "occupation_impact_on_rentals",
+  "data"
 )
 
 con <- dbConnect(
-    drv = duckdb(),
-    dbdir = file.path(data_dir, "lab.duckdb")
+  drv = duckdb(),
+  dbdir = file.path(data_dir, "lab.duckdb")
 )
 
 acon <- dbConnect(
-    athena(),
-    workgroup = "primary",
-    schema_name = "default",
-    s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
-    profile_name = "personal",
-    region = "eu-west-1",
+  athena(),
+  workgroup = "primary",
+  schema_name = "default",
+  s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
+  profile_name = "personal",
+  region = "eu-west-1",
 )
 athena_sql <- function(query) {
-    tibble(dbGetQuery(acon, query))
+  tibble(dbGetQuery(acon, query))
 }
 
 sql <- function(query) {
-    tibble(dbGetQuery(con, query))
+  tibble(dbGetQuery(con, query))
 }
 
 theme_set(theme_minimal())
@@ -238,7 +238,7 @@ or replace table occupation_by_tenure as (
 #| warning: false
 
 geo_mapping <- athena_sql(
-    "select region
+  "select region
   , lad
   , msoa
   , lsoa
@@ -246,7 +246,7 @@ geo_mapping <- athena_sql(
 )
 
 dim_lad <- athena_sql(
-    "
+  "
 select lad
 , lad_name
 from geo.dim_lad
@@ -254,7 +254,7 @@ from geo.dim_lad
 )
 
 dim_region <- athena_sql(
-    "
+  "
 select region
 , region_name
 from geo.dim_region
@@ -377,7 +377,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('1. Managers, directors and senior officials') as occupation,
-        "1. Managers, directors and senior officials"::double as counts_of_hrp
+        "1. Managers, directors and senior officials"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -387,7 +387,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('2. Professional occupations') as occupation,
-        "2. Professional occupations"::double as counts_of_hrp
+        "2. Professional occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -399,7 +399,7 @@ or replace table occupation_by_age_long as (
         lower(
             '3. Associate professional and technical occupations'
         ) as occupation,
-        "3. Associate professional and technical occupations"::double as counts_of_hrp
+        "3. Associate professional and technical occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -409,7 +409,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('4. Administrative and secretarial occupations') as occupation,
-        "4. Administrative and secretarial occupations"::double as counts_of_hrp
+        "4. Administrative and secretarial occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -419,7 +419,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('5. Skilled trades occupations') as occupation,
-        "5. Skilled trades occupations"::double as counts_of_hrp
+        "5. Skilled trades occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -431,7 +431,7 @@ or replace table occupation_by_age_long as (
         lower(
             '6. Caring, leisure and other service occupations'
         ) as occupation,
-        "6. Caring, leisure and other service occupations"::double as counts_of_hrp
+        "6. Caring, leisure and other service occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -441,7 +441,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('7. Sales and customer service occupations') as occupation,
-        "7. Sales and customer service occupations"::double as counts_of_hrp
+        "7. Sales and customer service occupations"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -451,7 +451,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('8. Process, plant and machine operatives') as occupation,
-        "8. Process, plant and machine operatives"::double as counts_of_hrp
+        "8. Process, plant and machine operatives"::double as counts_of_residents
     from
         msoa_occupation_age
     union all
@@ -461,7 +461,7 @@ or replace table occupation_by_age_long as (
         ) as msoa,
         lower("Age") as age,
         lower('9. Elementary occupations') as occupation,
-        "9. Elementary occupations"::double as counts_of_hrp
+        "9. Elementary occupations"::double as counts_of_residents
     from
         msoa_occupation_age
 )
@@ -478,48 +478,30 @@ select
     msoa,
     occupation,
     case
-        when age = 'aged 15 years and under' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 15 years and under' then counts_of_residents
         else 0
     end as "aged 15 years and under",
     case
-        when age = 'aged 16 to 24 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 16 to 24 years' then counts_of_residents
         else 0
     end as "aged 16 to 24 years",
     case
-        when age = 'aged 25 to 34 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 25 to 34 years' then counts_of_residents
         else 0
     end as "aged 25 to 34 years",
     case
-        when age = 'aged 35 to 49 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 35 to 49 years' then counts_of_residents
         else 0
     end as "aged 35 to 49 years",
     case
-        when age = 'aged 50 to 64 years' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 50 to 64 years' then counts_of_residents
         else 0
     end as "aged 50 to 64 years",
     case
-        when age = 'aged 65 years and over' then counts_of_hrp / sum(counts_of_hrp) over (
-            partition by
-                msoa, occupation
-        )
+        when age = 'aged 65 years and over' then counts_of_residents
         else 0
     end as "aged 65 years and over",
-    sum(counts_of_hrp) over (
+    sum(counts_of_residents) over (
             partition by
                 msoa, occupation
         ) as total
@@ -587,10 +569,7 @@ create or replace table filtered_dataset as
     (
         select *
         from dataset
-        /* following filters will also take care to remove some of living rent free */
-        where "aged 15 years and under" = 0
-        and tenure = 'private rented or lives rent free'
-
+        where tenure = 'private rented or lives rent free'
     )
 
 ```
