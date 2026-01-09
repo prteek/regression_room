@@ -565,7 +565,7 @@ create or replace table dataset as
 #| warning: false
 #| cache: false
 
-create or replace table filtered_dataset as
+create or replace table dataset_filtered as
     (
         select *
         from dataset
@@ -609,7 +609,7 @@ create or replace table dataset_sample as (
                   ) b on a.lad = b.lad
     )
     select a.*
-    from filtered_dataset a
+    from dataset_filtered a
             left join ranked_geos b on a.msoa = b.msoa
     where b.lad_rank <= 10 and b.msoa_rank <= 50
 )

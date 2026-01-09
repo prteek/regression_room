@@ -104,9 +104,11 @@ limit 10"
 Local authority for each MSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring MSOAs introducing correlations in their data. <br/>
 
 
-It can be possible that age has a confounding effect on Rentership via Occupation. Majority of Professional and Managers may likely be older than associates and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br/>
+It may be the case that age has a confounding effect on Rentership via Occupation. *Professional and Managers* may likely be older than for e.g. *Associates* and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br/>
 Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life. <br/>
-The adjustment is made by including the proportion of full-time employed HRPs in an MSOA engaged in a particular profession falling in one of the following age bands: <br/>
+The adjustment can be made (ideally) by including the counts of full-time employed HRPs in an MSOA engaged in a particular profession.
+
+We have cross tabulated data [@ONS2021RM102] for counts of *usual residents aged 16 years and over in employment the week before the census* per occupation, falling in one of the following age bands: <br/>
 
 * aged 15 years and under
 * aged 16 to 24 years
@@ -116,16 +118,15 @@ The adjustment is made by including the proportion of full-time employed HRPs in
 * aged 65 years and over
 
 **Note:** <br/>
-This adjustment is inexact since the data is available for all people in full time occupation rather than just HRP (which is the unit of measurement in tenure data). This means that likely an HRP would be an older person, the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
-It is neverthless instructive to use this information as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
+Using this data gives an inexact adjustment since this data is available for *all residents aged 16 years and over in employment* rather than just *HRP* (which is the unit of measurement in tenure data). This means that an HRP could be a singular older person, whereas the counts in age dataset include other members of the household which are possibly younger, creating a slight disconnect between the 2 datasets. <br/>
+It is neverthless instructive to use this data as the downsides due to excluding this information outweigh downsided due to (incorrectly) including it.
 
-Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each MSOA are added to the dataset.
-
+Since, the interest lies in proportion of rentership for each occupation, per occupation totals for each MSOA are added to the dataset, setting us up for a Binomial counts of Success-Failures type of model. <br/>
 
 ### Filter
 
 Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br/>
-It would be sensible to drop data if any occupation icluded positive entries in *aged 15 years and under* column.
+London is also filtered out as it is a very different rental market compared to the rest of UK and may skew results when mixed with other regions. <br/>
 
 **Note:** <br/>
 
@@ -141,7 +142,7 @@ It would be sensible to drop data if any occupation icluded positive entries in 
 ```{r}
 sql(
   "select *
-    from filtered_dataset
+    from dataset_filtered
     order by random()
     "
 ) %>%
@@ -156,7 +157,7 @@ sql(
 Since, the dataset is very well compiled but is large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
 The subsampling process does the following: <br/>
 
-* Randomly sample 10 local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
+* Randomly sample 10 local authorities per 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
 * Within each of the sampled local authorities sample 50 MSOAs at random
 * Get all the data in the sampled MSOAs
 
@@ -171,9 +172,9 @@ sql("select * from dataset_sample") %>%
     rows = n(),
     distinct_tenure = n_distinct(tenure),
     distinct_occupation = n_distinct(occupation),
-    max_counts = max(counts_of_hrp),
-    min_counts = min(counts_of_hrp),
-    median_counts = median(counts_of_hrp),
+    max_hrp_counts = max(counts_of_hrp),
+    min_hrp_counts = min(counts_of_hrp),
+    median_hrp_counts = median(counts_of_hrp),
     distinct_lad = n_distinct(lad_name),
     distinct_msoa = n_distinct(msoa),
     .groups = 'drop'
@@ -255,7 +256,8 @@ high_counts <- sql(
   "
 select msoa
 , lad_name
-, sum(occupation_total) as msoa_total
+, sum(occupation_total) as counts_of_hrp
+, round(sum(counts_of_hrp)/sum(occupation_total),3) as aggregate_proportion_renting
 from dataset_filtered
 group by msoa, lad_name
 order by 3 desc
@@ -264,7 +266,7 @@ order by 3 desc
 
 high_counts %>%
   ggplot() +
-  geom_histogram(aes(x = msoa_total))
+  geom_histogram(aes(x = counts_of_hrp))
 
 ```
 
@@ -273,19 +275,25 @@ There is a slightly long tail of working population per msoa. <br/>
 Looking at the msoa where the greatest proportion of working population is renting, a few key dense local authority areas are highlighted
 
 ```{r}
-sql(
-  "
-select lad_name
-, msoa
-, round(sum(counts_of_hrp)/sum(occupation_total),3) as aggregate_proportion_renting
-, sum(occupation_total) as total_working_population
-  from dataset_filtered
-group by lad_name, msoa
-order by 3 desc
-"
-) %>%
+high_counts %>%
   head(10) %>%
   knitr::kable()
+
+```
+
+```{r}
+
+sql(
+  "select *
+  from dataset_filtered
+"
+) %>%
+  select(lad_name, msoa, occupation, starts_with('aged')) %>%
+  pivot_longer(
+    cols = starts_with("aged"),
+    names_to = "age_band",
+    values_to = "counts_of_hrp_age_band"
+  )
 
 ```
 
