@@ -74,6 +74,17 @@ theme_set(theme_minimal())
 
 ```
 
+## Introduction
+
+Private renting has expanded across the UK, yet the propensity to rent varies widely across occupations and life stages. This study quantifies how occupation and age relate to private rentership using 2021 ONS Census cross‑tabulations at the MSOA (neighbourhood‑scale) level. Housing tenure for household reference persons is linked to occupational categories and augmented with local authority identifiers to capture geographic context.
+
+The analysis addresses three questions: <br/>
+
+* Do higher‑skilled occupations rent less than lower‑skilled groups after accounting for age composition?
+* How does rentership vary across life stages (age) ?
+* To what extent do local authorities and neighbourhoods moderate these relationships?
+
+The study is descriptive and subject to measurement constraints: age composition is observed for all workers rather than HRPs, and the focus is on full‑time employment. Despite these limitations, the findings provide a transparent baseline on how occupational structure and local context shape rental demand and motivate future work with richer microdata and dynamic market indicators.
 
 ## Data
 
@@ -92,8 +103,6 @@ limit 10"
   knitr::kable()
 
 ```
-
-## Dataset
 
 ### Additional information
 
@@ -178,7 +187,7 @@ sql("select * from dataset_sample") %>%
 
 ```
 
-## EDA
+### EDA
 
 At the level of MSOA the proportion of rentership can appear quite chaotic and noisy.
 ```{r}
@@ -286,7 +295,7 @@ order by 3 desc
 ```
 
 
-## Modelling
+## Analysis
 
 ### Baseline Model: Fixed effects without location information
 
@@ -371,7 +380,7 @@ dataset %>%
 
 ```
 
-### Using location information in the model
+### Introducing location context in the model
 
  Each MSOA can have its own level of rentership that needs to be accounted for (and town centers can be very different from suburbs). <br/>
  This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA and LAD are randomly chosen and that MSOA are nested inside LAD.

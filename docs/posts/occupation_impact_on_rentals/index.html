@@ -179,18 +179,18 @@ div.csl-indent {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#data" id="toc-data" class="nav-link active" data-scroll-target="#data">Data</a></li>
-  <li><a href="#dataset" id="toc-dataset" class="nav-link" data-scroll-target="#dataset">Dataset</a>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a>
   <ul class="collapse">
   <li><a href="#additional-information" id="toc-additional-information" class="nav-link" data-scroll-target="#additional-information">Additional information</a></li>
   <li><a href="#filter" id="toc-filter" class="nav-link" data-scroll-target="#filter">Filter</a></li>
   <li><a href="#subsample" id="toc-subsample" class="nav-link" data-scroll-target="#subsample">Subsample</a></li>
-  </ul></li>
   <li><a href="#eda" id="toc-eda" class="nav-link" data-scroll-target="#eda">EDA</a></li>
-  <li><a href="#modelling" id="toc-modelling" class="nav-link" data-scroll-target="#modelling">Modelling</a>
+  </ul></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a>
   <ul class="collapse">
   <li><a href="#baseline-model-fixed-effects-without-location-information" id="toc-baseline-model-fixed-effects-without-location-information" class="nav-link" data-scroll-target="#baseline-model-fixed-effects-without-location-information">Baseline Model: Fixed effects without location information</a></li>
-  <li><a href="#using-location-information-in-the-model" id="toc-using-location-information-in-the-model" class="nav-link" data-scroll-target="#using-location-information-in-the-model">Using location information in the model</a></li>
+  <li><a href="#introducing-location-context-in-the-model" id="toc-introducing-location-context-in-the-model" class="nav-link" data-scroll-target="#introducing-location-context-in-the-model">Introducing location context in the model</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -202,6 +202,17 @@ div.csl-indent {
 
 
 
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Private renting has expanded across the UK, yet the propensity to rent varies widely across occupations and life stages. This study quantifies how occupation and age relate to private rentership using 2021 ONS Census cross‑tabulations at the MSOA (neighbourhood‑scale) level. Housing tenure for household reference persons is linked to occupational categories and augmented with local authority identifiers to capture geographic context.</p>
+<p>The analysis addresses three questions: <br></p>
+<ul>
+<li>Do higher‑skilled occupations rent less than lower‑skilled groups after accounting for age composition?</li>
+<li>How does rentership vary across life stages (age) ?</li>
+<li>To what extent do local authorities and neighbourhoods moderate these relationships?</li>
+</ul>
+<p>The study is descriptive and subject to measurement constraints: age composition is observed for all workers rather than HRPs, and the focus is on full‑time employment. Despite these limitations, the findings provide a transparent baseline on how occupational structure and local context shape rental demand and motivate future work with richer microdata and dynamic market indicators.</p>
+</section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><span>“RM140: Tenure by Occupation - Household Reference Persons”</span> 2023</a>)</span>. <br> MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br> This differs from datasets that count all workers (for example, occupation‑by‑age used later), because a household can contain more than one person in full‑time work.</p>
@@ -209,7 +220,7 @@ div.csl-indent {
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
-<col style="width: 8%">
+<col style="width: 9%">
 <col style="width: 1%">
 <col style="width: 9%">
 <col style="width: 6%">
@@ -240,96 +251,93 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">E02000062 : Barnet 039</td>
-<td style="text-align: left;">358</td>
+<td style="text-align: left;">E02004537 : Epping Forest 011</td>
+<td style="text-align: left;">512</td>
+<td style="text-align: left;">66</td>
+<td style="text-align: left;">80</td>
+<td style="text-align: left;">56</td>
+<td style="text-align: left;">47</td>
 <td style="text-align: left;">94</td>
-<td style="text-align: left;">113</td>
-<td style="text-align: left;">42</td>
-<td style="text-align: left;">19</td>
-<td style="text-align: left;">33</td>
-<td style="text-align: left;">17</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">19</td>
-<td style="text-align: left;">13</td>
-<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: left;">44</td>
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">38</td>
+<td style="text-align: left;">58</td>
+<td style="text-align: left;">Private rented or lives rent free</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02000281 : Enfield 005</td>
-<td style="text-align: left;">987</td>
-<td style="text-align: left;">182</td>
+<td style="text-align: left;">E02004581 : Tendring 009</td>
 <td style="text-align: left;">261</td>
-<td style="text-align: left;">138</td>
-<td style="text-align: left;">100</td>
-<td style="text-align: left;">120</td>
-<td style="text-align: left;">54</td>
+<td style="text-align: left;">28</td>
 <td style="text-align: left;">36</td>
-<td style="text-align: left;">65</td>
-<td style="text-align: left;">31</td>
-<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
+<td style="text-align: left;">23</td>
+<td style="text-align: left;">20</td>
+<td style="text-align: left;">53</td>
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">15</td>
+<td style="text-align: left;">23</td>
+<td style="text-align: left;">34</td>
+<td style="text-align: left;">Private rented or lives rent free</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">E02000017 : Barking and Dagenham 016</td>
-<td style="text-align: left;">117</td>
+<td style="text-align: left;">E02002705 : East Riding of Yorkshire 022</td>
+<td style="text-align: left;">97</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">12</td>
+<td style="text-align: left;">5</td>
+<td style="text-align: left;">6</td>
+<td style="text-align: left;">14</td>
+<td style="text-align: left;">10</td>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">16</td>
-<td style="text-align: left;">5</td>
-<td style="text-align: left;">10</td>
-<td style="text-align: left;">14</td>
-<td style="text-align: left;">15</td>
-<td style="text-align: left;">12</td>
-<td style="text-align: left;">8</td>
-<td style="text-align: left;">31</td>
+<td style="text-align: left;">22</td>
 <td style="text-align: left;">Social rented</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02005502 : West Lindsey 011</td>
-<td style="text-align: left;">1356</td>
-<td style="text-align: left;">200</td>
-<td style="text-align: left;">305</td>
-<td style="text-align: left;">223</td>
+<td style="text-align: left;">E02003468 : Milton Keynes 010</td>
+<td style="text-align: left;">1232</td>
+<td style="text-align: left;">222</td>
+<td style="text-align: left;">357</td>
+<td style="text-align: left;">203</td>
 <td style="text-align: left;">103</td>
-<td style="text-align: left;">214</td>
-<td style="text-align: left;">74</td>
-<td style="text-align: left;">63</td>
-<td style="text-align: left;">117</td>
-<td style="text-align: left;">57</td>
+<td style="text-align: left;">113</td>
+<td style="text-align: left;">41</td>
+<td style="text-align: left;">46</td>
+<td style="text-align: left;">91</td>
+<td style="text-align: left;">56</td>
 <td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">E02006032 : Shropshire 018</td>
-<td style="text-align: left;">478</td>
-<td style="text-align: left;">47</td>
-<td style="text-align: left;">78</td>
-<td style="text-align: left;">46</td>
-<td style="text-align: left;">38</td>
-<td style="text-align: left;">79</td>
-<td style="text-align: left;">54</td>
-<td style="text-align: left;">43</td>
-<td style="text-align: left;">48</td>
-<td style="text-align: left;">45</td>
+<td style="text-align: left;">E02003302 : Thurrock 007</td>
+<td style="text-align: left;">312</td>
+<td style="text-align: left;">36</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">35</td>
+<td style="text-align: left;">27</td>
+<td style="text-align: left;">37</td>
+<td style="text-align: left;">24</td>
+<td style="text-align: left;">26</td>
+<td style="text-align: left;">53</td>
+<td style="text-align: left;">37</td>
 <td style="text-align: left;">Owns outright</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">E02003319 : Medway 006</td>
-<td style="text-align: left;">352</td>
-<td style="text-align: left;">37</td>
-<td style="text-align: left;">40</td>
+<td style="text-align: left;">E02006593 : Horsham 006</td>
+<td style="text-align: left;">1319</td>
+<td style="text-align: left;">277</td>
+<td style="text-align: left;">469</td>
+<td style="text-align: left;">230</td>
+<td style="text-align: left;">84</td>
+<td style="text-align: left;">111</td>
 <td style="text-align: left;">43</td>
-<td style="text-align: left;">28</td>
-<td style="text-align: left;">49</td>
-<td style="text-align: left;">27</td>
-<td style="text-align: left;">19</td>
-<td style="text-align: left;">55</td>
-<td style="text-align: left;">54</td>
-<td style="text-align: left;">Owns outright</td>
+<td style="text-align: left;">43</td>
+<td style="text-align: left;">29</td>
+<td style="text-align: left;">33</td>
+<td style="text-align: left;">Owns with a mortgage or loan or shared ownership</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-</section>
-<section id="dataset" class="level2">
-<h2 class="anchored" data-anchor-id="dataset">Dataset</h2>
 <section id="additional-information" class="level3">
 <h3 class="anchored" data-anchor-id="additional-information">Additional information</h3>
 <p>Local authority for each MSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring MSOAs introducing correlations in their data. <br></p>
@@ -366,7 +374,7 @@ div.csl-indent {
 <colgroup>
 <col style="width: 3%">
 <col style="width: 11%">
-<col style="width: 17%">
+<col style="width: 16%">
 <col style="width: 4%">
 <col style="width: 5%">
 <col style="width: 8%">
@@ -377,7 +385,7 @@ div.csl-indent {
 <col style="width: 7%">
 <col style="width: 5%">
 <col style="width: 3%">
-<col style="width: 6%">
+<col style="width: 4%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -399,100 +407,100 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">e02005011</td>
+<td style="text-align: left;">e02003863</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">9. elementary occupations</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: right;">97</td>
+<td style="text-align: left;">7. sales and customer service occupations</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">62</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.2592593</td>
-<td style="text-align: right;">0.1563786</td>
-<td style="text-align: right;">0.2057613</td>
-<td style="text-align: right;">0.3251029</td>
-<td style="text-align: right;">0.0534979</td>
-<td style="text-align: right;">243</td>
-<td style="text-align: left;">e12000008</td>
-<td style="text-align: left;">canterbury</td>
+<td style="text-align: right;">0.2452830</td>
+<td style="text-align: right;">0.1383648</td>
+<td style="text-align: right;">0.2578616</td>
+<td style="text-align: right;">0.2893082</td>
+<td style="text-align: right;">0.0691824</td>
+<td style="text-align: right;">159</td>
+<td style="text-align: left;">e12000002</td>
+<td style="text-align: left;">cheshire east</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02005139</td>
+<td style="text-align: left;">e02004481</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">3. associate professional and technical occupations</td>
-<td style="text-align: right;">50</td>
-<td style="text-align: right;">248</td>
+<td style="text-align: left;">2. professional occupations</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">153</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0911162</td>
-<td style="text-align: right;">0.1708428</td>
-<td style="text-align: right;">0.3394077</td>
-<td style="text-align: right;">0.3416856</td>
-<td style="text-align: right;">0.0569476</td>
-<td style="text-align: right;">439</td>
-<td style="text-align: left;">e12000008</td>
-<td style="text-align: left;">thanet</td>
+<td style="text-align: right;">0.1130137</td>
+<td style="text-align: right;">0.3116438</td>
+<td style="text-align: right;">0.2808219</td>
+<td style="text-align: right;">0.2568493</td>
+<td style="text-align: right;">0.0376712</td>
+<td style="text-align: right;">292</td>
+<td style="text-align: left;">e12000006</td>
+<td style="text-align: left;">castle point</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">e02002149</td>
+<td style="text-align: left;">e02003564</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">1. managers, directors and senior officials</td>
-<td style="text-align: right;">37</td>
-<td style="text-align: right;">269</td>
+<td style="text-align: left;">8. process, plant and machine operatives</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">231</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0123762</td>
-<td style="text-align: right;">0.2227723</td>
-<td style="text-align: right;">0.3688119</td>
-<td style="text-align: right;">0.3391089</td>
-<td style="text-align: right;">0.0569307</td>
-<td style="text-align: right;">404</td>
-<td style="text-align: left;">e12000005</td>
-<td style="text-align: left;">south staffordshire</td>
+<td style="text-align: right;">0.0380952</td>
+<td style="text-align: right;">0.2444444</td>
+<td style="text-align: right;">0.3523810</td>
+<td style="text-align: right;">0.3111111</td>
+<td style="text-align: right;">0.0539683</td>
+<td style="text-align: right;">315</td>
+<td style="text-align: left;">e12000008</td>
+<td style="text-align: left;">southampton</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02001798</td>
-<td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">3. associate professional and technical occupations</td>
-<td style="text-align: right;">17</td>
-<td style="text-align: right;">157</td>
-<td style="text-align: right;">0</td>
-<td style="text-align: right;">0.1006711</td>
-<td style="text-align: right;">0.2651007</td>
-<td style="text-align: right;">0.3422819</td>
-<td style="text-align: right;">0.2684564</td>
-<td style="text-align: right;">0.0234899</td>
-<td style="text-align: right;">298</td>
-<td style="text-align: left;">e12000001</td>
-<td style="text-align: left;">sunderland</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">e02002824</td>
+<td style="text-align: left;">e02001197</td>
 <td style="text-align: left;">private rented or lives rent free</td>
 <td style="text-align: left;">6. caring, leisure and other service occupations</td>
-<td style="text-align: right;">57</td>
-<td style="text-align: right;">285</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">127</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0848375</td>
-<td style="text-align: right;">0.2382671</td>
-<td style="text-align: right;">0.3808664</td>
-<td style="text-align: right;">0.2725632</td>
-<td style="text-align: right;">0.0234657</td>
-<td style="text-align: right;">554</td>
-<td style="text-align: left;">e12000004</td>
-<td style="text-align: left;">derby</td>
+<td style="text-align: right;">0.1162791</td>
+<td style="text-align: right;">0.1356589</td>
+<td style="text-align: right;">0.2945736</td>
+<td style="text-align: right;">0.4069767</td>
+<td style="text-align: right;">0.0465116</td>
+<td style="text-align: right;">258</td>
+<td style="text-align: left;">e12000002</td>
+<td style="text-align: left;">stockport</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">e02004775</td>
+<td style="text-align: left;">private rented or lives rent free</td>
+<td style="text-align: left;">5. skilled trades occupations</td>
+<td style="text-align: right;">68</td>
+<td style="text-align: right;">323</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">0.1306818</td>
+<td style="text-align: right;">0.2443182</td>
+<td style="text-align: right;">0.2632576</td>
+<td style="text-align: right;">0.2935606</td>
+<td style="text-align: right;">0.0681818</td>
+<td style="text-align: right;">528</td>
+<td style="text-align: left;">e12000008</td>
+<td style="text-align: left;">havant</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">e02002935</td>
+<td style="text-align: left;">e02001527</td>
 <td style="text-align: left;">private rented or lives rent free</td>
-<td style="text-align: left;">4. administrative and secretarial occupations</td>
-<td style="text-align: right;">40</td>
-<td style="text-align: right;">144</td>
+<td style="text-align: left;">1. managers, directors and senior officials</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">229</td>
 <td style="text-align: right;">0</td>
-<td style="text-align: right;">0.0731707</td>
-<td style="text-align: right;">0.2404181</td>
-<td style="text-align: right;">0.2508711</td>
-<td style="text-align: right;">0.3937282</td>
-<td style="text-align: right;">0.0418118</td>
-<td style="text-align: right;">287</td>
-<td style="text-align: left;">e12000005</td>
-<td style="text-align: left;">telford and wrekin</td>
+<td style="text-align: right;">0.0278638</td>
+<td style="text-align: right;">0.1331269</td>
+<td style="text-align: right;">0.3560372</td>
+<td style="text-align: right;">0.4365325</td>
+<td style="text-align: right;">0.0464396</td>
+<td style="text-align: right;">323</td>
+<td style="text-align: left;">e12000003</td>
+<td style="text-align: left;">barnsley</td>
 </tr>
 </tbody>
 </table>
@@ -549,9 +557,8 @@ div.csl-indent {
 </div>
 </div>
 </section>
-</section>
-<section id="eda" class="level2">
-<h2 class="anchored" data-anchor-id="eda">EDA</h2>
+<section id="eda" class="level3">
+<h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>At the level of MSOA the proportion of rentership can appear quite chaotic and noisy.</p>
 <div class="cell">
 <div class="cell-output-display">
@@ -676,8 +683,9 @@ div.csl-indent {
 </div>
 </div>
 </section>
-<section id="modelling" class="level2">
-<h2 class="anchored" data-anchor-id="modelling">Modelling</h2>
+</section>
+<section id="analysis" class="level2">
+<h2 class="anchored" data-anchor-id="analysis">Analysis</h2>
 <section id="baseline-model-fixed-effects-without-location-information" class="level3">
 <h3 class="anchored" data-anchor-id="baseline-model-fixed-effects-without-location-information">Baseline Model: Fixed effects without location information</h3>
 <p>We refer to data at MSOA level for modelling. For the baseline model, MSOA variable is excluded and <em>Elementary occupations</em> are treated as a reference category for <em>Occupation</em> variable. <em>aged 15 years and under</em> variable is dropped as it is irrelevant for this study. It is immediately obvious that occupation has significant association with proportion of people renting. <br></p>
@@ -765,8 +773,8 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 </div>
 </div>
 </section>
-<section id="using-location-information-in-the-model" class="level3">
-<h3 class="anchored" data-anchor-id="using-location-information-in-the-model">Using location information in the model</h3>
+<section id="introducing-location-context-in-the-model" class="level3">
+<h3 class="anchored" data-anchor-id="introducing-location-context-in-the-model">Introducing location context in the model</h3>
 <p>Each MSOA can have its own level of rentership that needs to be accounted for (and town centers can be very different from suburbs). <br> This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA and LAD are randomly chosen and that MSOA are nested inside LAD.</p>
 <p>Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. This is also confirmed in the ANOVA output.</p>
 <div class="cell">
