@@ -36,6 +36,8 @@ library(duckdb)
 library(RAthena)
 library(tidymodels)
 library(patchwork)
+library(sf)
+library(leaflet)
 
 data_dir <- file.path(
   here::here(),
@@ -281,8 +283,10 @@ high_counts %>%
 
 ```
 
-```{r}
+The age distribution of working population varies significantly across occupations. <br/>
+It is interesting to note that some occupations are over represented among older age groups (e.g. *Managers and Professionals*), whereas others are more evenly spread (e.g. *Elementary operations*). <br/>
 
+```{r}
 sql(
   "select *
   from dataset_filtered
@@ -292,11 +296,21 @@ sql(
   pivot_longer(
     cols = starts_with("aged"),
     names_to = "age_band",
-    values_to = "counts_of_hrp_age_band"
-  )
+    values_to = "counts_of_usual_residents"
+  ) %>%
+  filter(age_band != 'aged 15 years and under') %>%
+  ggplot() +
+  geom_boxplot(aes(
+    x = age_band,
+    y = counts_of_usual_residents
+  )) +
+  facet_wrap(~occupation, ncol = 3, scales = 'free_y') +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(title = 'Age distribution of working population across MSOAs')
 
 ```
 
+Since, age data has a long tailed distribution, log scaling is used to better scale it and also make its interpretation in the model more intuitive.
 
 ## Analysis
 
@@ -332,10 +346,11 @@ select lad_name
 glmod_base <- glm(
   cbind(renting_total, occupation_total - renting_total) ~
     occupation +
-    age_25_34 +
-    age_35_49 +
-    age_50_64 +
-    age_over_65,
+    log(age_16_24 + 1) +
+    log(age_25_34 + 1) +
+    log(age_35_49 + 1) +
+    log(age_50_64 + 1) +
+    log(age_over_65 + 1),
   data = dataset,
   family = binomial
 )
@@ -344,9 +359,12 @@ print(anova(glmod_base, test = 'Chisq'))
 
 ```
 
-The diagnostics look assuring and at this point, outliers do not appear to be significantly harmful.
+The diagnostics look just about okay at this point, there is slightly higher dispersion than expected as indicated by the dispersion parameter, `{r} (residuals(glmod_base, type='pearson')^2/df.residual(glmod_base)) |> sum() |> round(2)`
 
 ```{r}
+#| figure-height: 10
+#| figure-width: 10
+
 par(mfrow = c(2, 2))
 plot(glmod_base)
 par(mfrow = c(1, 1))
@@ -362,7 +380,7 @@ Manual inspection can be aided by geographic location data [MSOA Map](https://ge
 * e02005775: Harrogate, rentership is severly underpredicted due to 27% Professionals falling in 50-64 age bracket, leading to a high residual.
 
 ```{r}
-dataset %>%
+ordered_residuals_glm_base <- dataset %>%
   augment(glmod_base, .) %>%
   select(
     msoa,
@@ -377,8 +395,56 @@ dataset %>%
     actual_renting_proportion = renting_total / occupation_total,
     predicted_proportion = predict(glmod_base, ., type = 'response')
   ) %>%
-  slice(c(8057, 17867, 18452, 15446)) %>%
+  arrange(desc(abs(.resid))) %>%
+  head(10)
+
+ordered_residuals_glm_base %>%
   knitr::kable()
+
+```
+
+```{r}
+#| cache: true
+
+msoa_geometries <- athena_sql(glue::glue_sql(
+  "select msoa
+  , msoa_polygon_wkt
+  from geo.dim_msoa
+  where msoa in ({msoa_list*})",
+  msoa_list = ordered_residuals_glm_base %>% pull(msoa),
+  .con = acon
+))
+
+```
+
+```{r}
+
+# Parse WKT to sf (4326 = WGS84 for leaflet)
+df_sf <- msoa_geometries %>%
+  mutate(
+    geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
+  ) %>%
+  st_sf() # Promote to sf
+
+# Create popups
+df_sf <- df_sf %>%
+  mutate(popup = glue::glue("MSOA: {msoa}"))
+
+# Build leaflet map
+leaflet(df_sf) %>%
+  addTiles() %>% # Base map
+  addPolygons(
+    fillColor = "black",
+    fillOpacity = 0.6,
+    color = "black",
+    weight = 1,
+    highlightOptions = highlightOptions(
+      weight = 3,
+      color = "orange",
+      fillOpacity = 0.8
+    )
+  ) %>%
+  setView(lng = -1.5, lat = 52.5, zoom = 8) # England center
 
 ```
 
@@ -393,10 +459,11 @@ dataset %>%
 glmermod <- glmer(
   cbind(renting_total, occupation_total - renting_total) ~
     occupation +
-    age_25_34 +
-    age_35_49 +
-    age_50_64 +
-    age_over_65 +
+    log(age_16_24 + 1) +
+    log(age_25_34 + 1) +
+    log(age_35_49 + 1) +
+    log(age_50_64 + 1) +
+    log(age_over_65 + 1) +
     (1 | lad_name) +
     (1 | lad_name:msoa),
   data = dataset,
@@ -459,30 +526,59 @@ df_coef <- glmermod %>%
   mutate(occupation = str_remove(names, "^occupation\\d+\\.\\s*"))
 
 ggplot(df_coef %>% filter(str_detect(names, 'occupation'))) +
-  geom_bar(aes(x = occupation, y = exp(coefficient)), stat = 'identity') +
+  geom_bar(
+    aes(x = occupation, y = 100 * (exp(coefficient) - 1)),
+    stat = 'identity'
+  ) +
   labs(
-    subtitle = 'Odds of renting compared to Elementary Occupations',
-    y = 'Odds of Renting'
+    subtitle = 'Odds of renting (relative to Elementary Occupations)',
+    y = 'Difference in Odds [%]'
   ) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
 
-Age plays a key role in likelihood of renting too. Highest rentership can be observed in 25-34 year olds. This is almost 4x more (300% more) compared to 16-24 year olds. <br/>
-This is likely because young adults aged 16-24 rarely act as HRPs for rented homes; instead, they are typically dependent residents in owner-occupied parental households.
+Age plays a key role in likelihood of renting too. Rentership is highly sensitive to population in 25-34 year age bracket. With a 10% increase in population in that age bracket, odds increase by approx `{r} glmermod %>% fixef() %>% tidy() %>% filter(str_detect(names, 'age_25_34')) %>% pull(x) %>% prod(0.1) %>% exp() %>% prod(100) %>% round() - 100` % <br/>
 
 ```{r}
 df_coef <- glmermod %>%
   fixef() %>%
   tidy() %>%
-  rename(coefficient = x, age_band = names)
+  rename(coefficient = x)
 
-ggplot(df_coef %>% filter(str_detect(age_band, 'age_'))) +
-  geom_bar(aes(x = age_band, y = exp(coefficient)), stat = 'identity') +
-  labs(
-    subtitle = 'Odds of renting compared to 16-24 year olds',
-    y = 'Odds of Renting'
+df_plot <- df_coef %>%
+  filter(str_detect(names, 'age_')) %>%
+  cross_join(tibble(
+    percentage_increase_in_population = seq(-1, 1, by = 0.1)
+  )) %>%
+  mutate(
+    age_band = case_when(
+      str_detect(names, '16_24') ~ 'aged 16 to 24 years',
+      str_detect(names, '25_34') ~ 'aged 25 to 34 years',
+      str_detect(names, '35_49') ~ 'aged 35 to 49 years',
+      str_detect(names, '50_64') ~ 'aged 50 to 64 years',
+      str_detect(names, 'over_65') ~ 'aged 65 years and over',
+      TRUE ~ 'unknown'
+    ),
+    change_in_odds = (exp(coefficient * percentage_increase_in_population) -
+      1) *
+      100
+  )
+
+ggplot(
+  df_plot
+) +
+  geom_line(
+    aes(
+      x = percentage_increase_in_population * 100,
+      y = change_in_odds,
+      colour = age_band
+    )
   ) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  labs(
+    subtitle = 'Effect of age band population change on odds of renting',
+    y = 'Change in Odds [%]',
+    x = 'Percentage increase in age band population [%]'
+  )
 
 ```
