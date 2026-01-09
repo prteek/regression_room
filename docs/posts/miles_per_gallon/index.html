@@ -9,7 +9,7 @@
 <meta name="author" content="Prateek">
 <meta name="dcterms.date" content="2025-11-23">
 
-<title>MPG ~ Manufacturer analysis – Blog</title>
+<title>MPG ~ manufacturer, analysis – Blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -134,7 +134,7 @@ div.csl-indent {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">MPG ~ Manufacturer analysis</h1>
+      <h1 class="title">MPG ~ manufacturer, analysis</h1>
                                 <div class="quarto-categories">
                 <div class="quarto-category">random effects</div>
                 <div class="quarto-category">hierarchical models</div>
@@ -238,50 +238,83 @@ div.csl-indent {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">hyundai</td>
-<td style="text-align: left;">sonata</td>
-<td style="text-align: right;">2.4</td>
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: left;">r</td>
-<td style="text-align: left;">midsize</td>
-<td style="text-align: left;">manual</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">toyota</td>
-<td style="text-align: left;">camry solara</td>
-<td style="text-align: right;">2.2</td>
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">21</td>
-<td style="text-align: left;">r</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">manual</td>
-</tr>
-<tr class="odd">
 <td style="text-align: left;">toyota</td>
 <td style="text-align: left;">corolla</td>
 <td style="text-align: right;">1.8</td>
-<td style="text-align: left;">1999</td>
+<td style="text-align: left;">2008</td>
 <td style="text-align: right;">4</td>
 <td style="text-align: right;">26</td>
 <td style="text-align: left;">r</td>
 <td style="text-align: left;">compact</td>
-<td style="text-align: left;">manual</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">honda</td>
+<td style="text-align: left;">civic</td>
+<td style="text-align: right;">1.6</td>
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">subcompact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">toyota</td>
+<td style="text-align: left;">camry solara</td>
+<td style="text-align: right;">3.3</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">r</td>
+<td style="text-align: left;">compact</td>
+<td style="text-align: left;">auto</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">volkswagen</td>
-<td style="text-align: left;">gti</td>
-<td style="text-align: right;">2.8</td>
-<td style="text-align: left;">1999</td>
+<td style="text-align: left;">jetta</td>
+<td style="text-align: right;">2.0</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: left;">p</td>
+<td style="text-align: left;">compact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">volkswagen</td>
+<td style="text-align: left;">passat</td>
+<td style="text-align: right;">3.6</td>
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">17</td>
+<td style="text-align: left;">p</td>
+<td style="text-align: left;">midsize</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">hyundai</td>
+<td style="text-align: left;">tiburon</td>
+<td style="text-align: right;">2.7</td>
+<td style="text-align: left;">2008</td>
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">17</td>
 <td style="text-align: left;">r</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">manual</td>
+<td style="text-align: left;">subcompact</td>
+<td style="text-align: left;">auto</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;">audi</td>
+<td style="text-align: left;">a4</td>
+<td style="text-align: right;">1.8</td>
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">p</td>
+<td style="text-align: left;">compact</td>
+<td style="text-align: left;">auto</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;">audi</td>
 <td style="text-align: left;">a4</td>
 <td style="text-align: right;">2.8</td>
@@ -289,39 +322,6 @@ div.csl-indent {
 <td style="text-align: right;">6</td>
 <td style="text-align: right;">16</td>
 <td style="text-align: left;">p</td>
-<td style="text-align: left;">compact</td>
-<td style="text-align: left;">auto</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">honda</td>
-<td style="text-align: left;">civic</td>
-<td style="text-align: right;">1.8</td>
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">26</td>
-<td style="text-align: left;">r</td>
-<td style="text-align: left;">subcompact</td>
-<td style="text-align: left;">manual</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">volkswagen</td>
-<td style="text-align: left;">passat</td>
-<td style="text-align: right;">1.8</td>
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">18</td>
-<td style="text-align: left;">p</td>
-<td style="text-align: left;">midsize</td>
-<td style="text-align: left;">auto</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">toyota</td>
-<td style="text-align: left;">corolla</td>
-<td style="text-align: right;">1.8</td>
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">4</td>
-<td style="text-align: right;">24</td>
-<td style="text-align: left;">r</td>
 <td style="text-align: left;">compact</td>
 <td style="text-align: left;">auto</td>
 </tr>
@@ -334,17 +334,17 @@ div.csl-indent {
 <td style="text-align: right;">21</td>
 <td style="text-align: left;">r</td>
 <td style="text-align: left;">midsize</td>
-<td style="text-align: left;">auto</td>
+<td style="text-align: left;">manual</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">toyota</td>
-<td style="text-align: left;">camry solara</td>
-<td style="text-align: right;">3.0</td>
+<td style="text-align: left;">volkswagen</td>
+<td style="text-align: left;">new beetle</td>
+<td style="text-align: right;">2.0</td>
 <td style="text-align: left;">1999</td>
-<td style="text-align: right;">6</td>
-<td style="text-align: right;">18</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">19</td>
 <td style="text-align: left;">r</td>
-<td style="text-align: left;">compact</td>
+<td style="text-align: left;">subcompact</td>
 <td style="text-align: left;">auto</td>
 </tr>
 </tbody>
@@ -738,7 +738,7 @@ deviance = -231.0 </code></pre>
     (p-value based on 10000 simulated values)
 
 data:  
-RLRT = 13.167, p-value &lt; 2.2e-16</code></pre>
+RLRT = 13.167, p-value = 4e-04</code></pre>
 </div>
 </div>
 <p>So we reject the hypothesis that manufacturer:model nesting effect is not significant. <br></p>
@@ -749,7 +749,7 @@ RLRT = 13.167, p-value &lt; 2.2e-16</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
 <pre><code>
-109 message(s): boundary (singular) fit: see help('isSingular')</code></pre>
+110 message(s): boundary (singular) fit: see help('isSingular')</code></pre>
 </div>
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -763,33 +763,33 @@ RLRT = 13.167, p-value &lt; 2.2e-16</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">.sig01</td>
-<td style="text-align: right;">0.0066545</td>
-<td style="text-align: right;">0.0733425</td>
+<td style="text-align: right;">0.0061511</td>
+<td style="text-align: right;">0.0763115</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">.sig02</td>
 <td style="text-align: right;">0.0000000</td>
-<td style="text-align: right;">0.1068947</td>
+<td style="text-align: right;">0.1049620</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">.sigma</td>
-<td style="text-align: right;">0.0439330</td>
-<td style="text-align: right;">0.0624053</td>
+<td style="text-align: right;">0.0444100</td>
+<td style="text-align: right;">0.0631230</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">(Intercept)</td>
-<td style="text-align: right;">3.2499073</td>
-<td style="text-align: right;">3.4184367</td>
+<td style="text-align: right;">3.2513088</td>
+<td style="text-align: right;">3.4227193</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">displ</td>
-<td style="text-align: right;">-0.1765422</td>
-<td style="text-align: right;">-0.1241745</td>
+<td style="text-align: right;">-0.1756225</td>
+<td style="text-align: right;">-0.1254008</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">year2008</td>
-<td style="text-align: right;">0.0583465</td>
-<td style="text-align: right;">0.1080074</td>
+<td style="text-align: right;">0.0574356</td>
+<td style="text-align: right;">0.1054150</td>
 </tr>
 </tbody>
 </table>
