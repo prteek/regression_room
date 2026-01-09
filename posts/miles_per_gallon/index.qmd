@@ -1,5 +1,5 @@
 ---
-title: "Miles per gallon"
+title: "MPG ~ Manufacturer analysis"
 author: "Prateek"
 date: "2025-11-23"
 categories: [random effects, hierarchical models]
