@@ -677,7 +677,7 @@ ggplot(df_coef %>% filter(str_detect(names, 'occupation'))) +
 
 ```
 
-Age plays a key role in likelihood of renting too. Rentership is highly sensitive to population in 25-34 year age bracket. With a 10% increase in population in that age bracket, odds increase by approx `{r} glmermod %>% fixef() %>% tidy() %>% filter(str_detect(names, 'age_25_34')) %>% pull(x) %>% prod(0.1) %>% exp() %>% prod(100) %>% round() - 100` % <br/>
+Age plays a key role in likelihood of renting too. Rentership is highly sensitive to population in 25-34 year age bracket. With a 10% increase in population in that age bracket, odds increase by approx `{r} glmermod %>% fixef() %>% tidy() %>% filter(str_detect(names, 'age_25_34')) %>% pull(x) %>% prod(log(1.1)/10) %>% exp() %>% sum(-1) %>% prod(100) %>% round(1)`% <br/>
 
 ```{r}
 df_coef <- glmermod %>%
