@@ -394,10 +394,7 @@ par(mfrow = c(1, 1))
 ```
 
 High residual points can be investigated to identify some issues. <br/>
-Primarily, these seem to areas in the city centers where rentership is much higher than what the model predicts. <br/>
-At the top of the list is an edge case:
-
-* e02007095: Dinnington, has a very low proportion of rentership (6%), which causes a high value of residuals. This is an affluent, semi-rural village with many of the houses been bought under right to buy legislation [@dinnington]
+Primarily, these seem to areas in the city centers where rentership is much higher than what the model predicts and can be seen on the map too. <br/>
 
 ```{r}
 ordered_residuals_glm_base <- dataset %>%
@@ -412,14 +409,12 @@ ordered_residuals_glm_base <- dataset %>%
     .resid
   ) %>%
   mutate(
-    actual_renting_proportion = renting_total / occupation_total,
-    predicted_proportion = predict(glmod_base, ., type = 'response')
+    actual_renting_proportion = round(renting_total / occupation_total, 2),
+    predicted_proportion = round(predict(glmod_base, ., type = 'response'), 2)
   ) %>%
-  arrange(desc(abs(.resid))) %>%
-  head(10)
+  arrange(desc(abs(.resid)))
 
-ordered_residuals_glm_base %>%
-  knitr::kable()
+ordered_residuals_glm_base %>% head(10) %>% knitr::kable()
 
 ```
 
@@ -431,7 +426,7 @@ msoa_geometries <- athena_sql(glue::glue_sql(
   , msoa_polygon_wkt
   from geo.dim_msoa
   where msoa in ({msoa_list*})",
-  msoa_list = ordered_residuals_glm_base %>% pull(msoa),
+  msoa_list = ordered_residuals_glm_base %>% head(10) %>% pull(msoa),
   .con = acon
 ))
 
@@ -475,7 +470,7 @@ Overall it appears that including location information in the model is necessary
 ### Introducing location context in the model
 
  Each MSOA can have its own level of rentership that needs to be accounted for (and town centers can be very different from suburbs). <br/>
- This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA and LAD are randomly chosen and that MSOA are nested inside LAD.
+ This is an opportunity for us to introduce location information (LAD and MSOA) in the model. We shall be mindful of the fact that the MSOA are randomly chosen and that MSOA are nested inside LAD.
 
 ```{r}
 #| cache: true
@@ -497,8 +492,9 @@ glmermod <- glmer(
 
 ```
 
-Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. This is also confirmed in the ANOVA output. <br/>
-The dispersion is still greater than ideal, `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`
+### Model evaluation
+
+Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. <br/>
 
 ```{r}
 df_plot <- fortify.merMod(glmermod, dataset)
@@ -511,16 +507,16 @@ halfnorm(df_plot$.resid)
 lines(c(0, 6), c(0, 6), lty = 2)
 par(mfrow = c(1, 1))
 
-anova(glmermod, glmod_base, test = "Chisq")
-
 ```
 
 
+#### Comparison
+
+Comparing predictions from the 2 models on the list of worse cases highlighted earlier, there again seems to be an improvement.
 
 ```{r}
-
-ordered_residuals_glmermod <- dataset %>%
-  fortify.merMod(glmermod, .) %>%
+ordered_residuals_glm_base %>%
+  rename(predicted_proportion_base = predicted_proportion) %>%
   select(
     msoa,
     lad_name,
@@ -528,58 +524,35 @@ ordered_residuals_glmermod <- dataset %>%
     starts_with('age'),
     renting_total,
     occupation_total,
-    .resid
+    actual_renting_proportion,
+    predicted_proportion_base
   ) %>%
   mutate(
-    actual_renting_proportion = renting_total / occupation_total,
-    predicted_proportion = predict(glmermod, ., type = 'response')
+    predicted_proportion_glmer = round(
+      predict(glmermod, ., type = 'response'),
+      2
+    )
   ) %>%
-  arrange(desc(abs(.resid)))
-
-ordered_residuals_glmermod %>% head(10) %>% knitr::kable()
-
-```
-
-Random effects of LAD appear reasonably normally distributed. <br/>
-MSOA nested inside LAD are slighly more dispersed and have longer tails.
-The worst residual point lies in Catterick Garrison, which is a small town with a large army base and unusually high rentership of *Associate professionals* in that area.
-
-```{r}
-par(mfrow = c(1, 2))
-qqnorm(
-  ranef(glmermod)$lad_name[[1]],
-  main = "LAD RE"
-)
-qqline(ranef(glmermod)$lad_name[[1]], col = "red")
-
-qqnorm(
-  ranef(glmermod)$`lad_name:msoa`[[1]],
-  main = "LAD:MSOA RE"
-)
-qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
-
-par(mfrow = c(1, 1))
+  select(-starts_with('age')) %>%
+  head(10) %>%
+  knitr::kable()
 
 ```
-
-Before moving to inference using this model, it is important to check how it fits. ChiSq GoF test suggests p-value `{r} deviance(glmermod) |> pchisq(df.residual(glmermod), lower.tail = F) |> round(2)`, which indicates that there is still quite a lot of variance in data that isn't explained by the current model. <br/>
-
-The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that there is some degree of overdispersion. It is likely a result of not including more factors affecting rentership (e.g. presence of employers, type of location, commute etc.) and using a simplistic model. The overdispersion is largely relevant for standard errors, but fixed effects which are our quantity of interest should be unchanged. Inference will likely be worse but with such a simplistic model we do not expect significant impact. We shall retain the current model as it is since it provides useful insights as we shall see in the following sections.
 
 
 ```{r}
 #| cache: true
 
-msoa_geometries <- athena_sql(glue::glue_sql(
+msoa_geometries <- athena_sql(
   "select msoa
   , msoa_polygon_wkt
   from geo.dim_msoa
-  --where msoa in ({msoa_list*})",
-  msoa_list = ordered_residuals_glmermod %>% pull(msoa),
-  .con = acon
-))
+"
+)
 
 ```
+
+#### Error behaviour spatially
 
 The error in predicted probability of rentership is small for several MSOAs, even though a small subset was used in modelling.
 This is another good reason to retain the current model.
@@ -653,9 +626,37 @@ ggplot() +
 
 ```
 
+#### Random effects and dispersion
+
+Random effects of LAD appear reasonably normally distributed. <br/>
+MSOA nested inside LAD are slighly more dispersed and have longer tails, but it doesn't seem too problematic to affect reliability of the model.
+
+```{r}
+par(mfrow = c(1, 2))
+qqnorm(
+  ranef(glmermod)$lad_name[[1]],
+  main = "LAD RE"
+)
+qqline(ranef(glmermod)$lad_name[[1]], col = "red")
+
+qqnorm(
+  ranef(glmermod)$`lad_name:msoa`[[1]],
+  main = "LAD:MSOA RE"
+)
+qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
+
+par(mfrow = c(1, 1))
+
+```
+
+Before moving to inference using this model, it is important to check how it fits. ChiSq GoF test suggests p-value `{r} deviance(glmermod) |> pchisq(df.residual(glmermod), lower.tail = F) |> round(2)`, which indicates that there is still quite a lot of variance in data that isn't explained by the current model. <br/>
+
+The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that there is some degree of overdispersion. It is likely a result of not including more factors affecting rentership (e.g. presence of employers, type of location, commute etc.) and using a simplistic model. The overdispersion is largely relevant for standard errors, but fixed effects which are our quantity of interest should be unchanged. Inference will likely be worse but with such a simplistic model we do not expect significant impact. We shall retain the current model as it is since it provides useful insights as we shall see in the following sections.
+
+#### Occupation effect
 
 Looking at the coefficients of Occupation types, since *Elementary Occupations* was reference class, the odds for any Occupation are relative to it. <br/>
-In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 40% less likely (0.6x) to rent.
+In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 55% less likely (0.44x) to rent.
 
 ```{r}
 df_coef <- glmermod %>%
@@ -676,6 +677,9 @@ ggplot(df_coef %>% filter(str_detect(names, 'occupation'))) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
+
+
+#### Age effect
 
 Age plays a key role in likelihood of renting too. Rentership is highly sensitive to population in 25-34 year age bracket. With a 10% increase in population in that age bracket, odds increase by approx `{r} glmermod %>% fixef() %>% tidy() %>% filter(str_detect(names, 'age_25_34')) %>% pull(x) %>% prod(log(1.1)/10) %>% exp() %>% sum(-1) %>% prod(100) %>% round(1)`% <br/>
 
