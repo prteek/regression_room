@@ -767,7 +767,7 @@ sample <- dataset_full %>%
 
 sample %>%
   cross_join(tibble(
-    fraction_change_in_population = seq(0.5, 2, by = 0.01)
+    fraction_change_in_population = seq(0.5, 1.5, by = 0.01)
   )) %>%
   # pivot_longer(starts_with('age')) %>%
   mutate(age_25_34 = round(age_25_34 * fraction_change_in_population)) %>%
