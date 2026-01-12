@@ -772,10 +772,10 @@ sample <- dataset_full %>%
 
 sample %>%
   cross_join(tibble(
-    fraction_change_in_population = seq(0.5, 1.5, by = 0.01)
+    delta_change_in_population = seq(-50, 50, by = 10)
   )) %>%
   # pivot_longer(starts_with('age')) %>%
-  mutate(age_25_34 = round(age_25_34 * fraction_change_in_population)) %>%
+  mutate(age_25_34 = pmax(age_25_34 + delta_change_in_population, 0)) %>%
   # pivot_wider(names_from = 'name', values_from = 'value') %>%
   mutate(
     .pred = predict(glmermod, ., type = "response", allow.new.levels = TRUE)
