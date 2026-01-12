@@ -10,22 +10,25 @@ execute:
   echo: false
   warning: false
 abstract:
-  Using 2021 ONS Census data for neighbourhoods across the UK (MSOAs), this
-  article examines how occupation and age relate to private renting. We link
-  housing tenure for the household reference person to occupation and add local
-  authority information to account for location specific behaviours. We then fit
-  statistical models that account for age mix and geography.
-  We use a balanced data sample across local authorities and MSOAs and excludes London since it is an outlier rental market.
-  Key findings are, higher‑skilled groups rent less.
-  Professionals are about 40% less likely to rent than Elementary occupations, and rentership is highest among 25–34 year olds.
-  Accounting for local authority and neighbourhood effects improves model fit, revealing meaningful spatial variation in rental markets.
-  A key limitation is that age‑by‑occupation data refer to all workers rather than HRPs. Overall, the findings indicate that rental demand is shaped by both occupational structure and local context.
+    Using 2021 ONS Census data for neighbourhoods across the UK (MSOAs), this
+    article examines how occupation and age relate to private renting. We link
+    housing tenure for the household reference person to occupation and add local
+    authority and neighbourhood information to capture location-specific patterns.
+    We fit binomial models that account for age mix and hierarchical geography,
+    using a balanced sample across local authorities and MSOAs and excluding London.
+    Key findings: higher‑skilled groups rent less; professionals are ~55% less likely
+    to rent than elementary occupations; rentership is highest among 25–34 year olds.
+    Including local authority and MSOA random effects improves model fit and reveals
+    spatial heterogeneity, with town centres renting more than suburbs. Limitations
+    include age‑by‑occupation counts for all workers (not HRPs), cross‑sectional data,
+    and non‑London focus. Results describe associations, indicating rental demand is
+    shaped by occupational structure, age composition, and local context.
 
 ---
 
 ```{r}
 #| warning: false
-readRenviron(file.path(here::here(), '.local_credentials'))
+readRenviron(file.path(here::here(), ".local_credentials"))
 
 renv::load(here::here())
 library(tidyverse)
@@ -42,31 +45,31 @@ library(RColorBrewer)
 library(ggspatial)
 
 data_dir <- file.path(
-  here::here(),
-  "posts",
-  "occupation_impact_on_rentals",
-  "data"
+    here::here(),
+    "posts",
+    "occupation_impact_on_rentals",
+    "data"
 )
 
 con <- dbConnect(
-  drv = duckdb(),
-  dbdir = file.path(data_dir, "lab.duckdb")
+    drv = duckdb(),
+    dbdir = file.path(data_dir, "lab.duckdb")
 )
 
 acon <- dbConnect(
-  athena(),
-  workgroup = "primary",
-  schema_name = "default",
-  s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
-  profile_name = "personal",
-  region = "eu-west-1",
+    athena(),
+    workgroup = "primary",
+    schema_name = "default",
+    s3_staging_dir = "s3://aws-athena-query-results-434616802091-eu-west-1",
+    profile_name = "personal",
+    region = "eu-west-1",
 )
 athena_sql <- function(query) {
-  tibble(dbGetQuery(acon, query))
+    tibble(dbGetQuery(acon, query))
 }
 
 sql <- function(query) {
-  tibble(dbGetQuery(con, query))
+    tibble(dbGetQuery(con, query))
 }
 
 theme_set(theme_minimal())
@@ -93,13 +96,13 @@ These are different from the counts of all workers (used in occupation‑by‑ag
 
 ```{r}
 sql(
-  "select *
+    "select *
 from msoa_tenure_occupation
 order by random()
 limit 10"
 ) %>%
-  head() %>%
-  knitr::kable()
+    head() %>%
+    knitr::kable()
 
 ```
 
@@ -145,13 +148,13 @@ London is also filtered out as it is a very different rental market compared to 
 
 ```{r}
 sql(
-  "select *
+    "select *
     from dataset_filtered
     order by random()
     "
 ) %>%
-  head() %>%
-  knitr::kable()
+    head() %>%
+    knitr::kable()
 
 ```
 
@@ -164,16 +167,16 @@ We can see that majority of Local authorities have 10-15 MSOAs. To get a balance
 
 ```{r}
 sql(
-  "select lad_name,
+    "select lad_name,
 count(distinct(msoa)) as msoa_count
 from dataset_filtered
 group by lad_name
 "
 ) %>%
-  ggplot() +
-  geom_histogram(aes(x = msoa_count)) +
-  geom_vline(aes(xintercept = 10), colour = 'red') +
-  labs(subtitle = 'MSOA count per Local authority')
+    ggplot() +
+    geom_histogram(aes(x = msoa_count)) +
+    geom_vline(aes(xintercept = 10), colour = "red") +
+    labs(subtitle = "MSOA count per Local authority")
 
 ```
 
@@ -191,18 +194,18 @@ The procedure ensures sufficient counts of Local Authorities and MSOAs to be abl
 
 ```{r}
 sql("select * from dataset_sample") %>%
-  summarise(
-    rows = n(),
-    distinct_tenure = n_distinct(tenure),
-    distinct_occupation = n_distinct(occupation),
-    max_hrp_counts = max(counts_of_hrp),
-    min_hrp_counts = min(counts_of_hrp),
-    median_hrp_counts = median(counts_of_hrp),
-    distinct_lad = n_distinct(lad_name),
-    distinct_msoa = n_distinct(msoa),
-    .groups = 'drop'
-  ) %>%
-  knitr::kable()
+    summarise(
+        rows = n(),
+        distinct_tenure = n_distinct(tenure),
+        distinct_occupation = n_distinct(occupation),
+        max_hrp_counts = max(counts_of_hrp),
+        min_hrp_counts = min(counts_of_hrp),
+        median_hrp_counts = median(counts_of_hrp),
+        distinct_lad = n_distinct(lad_name),
+        distinct_msoa = n_distinct(msoa),
+        .groups = "drop"
+    ) %>%
+    knitr::kable()
 
 ```
 
@@ -211,22 +214,22 @@ sql("select * from dataset_sample") %>%
 At the level of MSOA the proportion of rentership can appear quite chaotic and noisy.
 ```{r}
 sql(
-  "
+    "
 select *
   , counts_of_hrp/occupation_total as proportion_renting
   from dataset_filtered
   where msoa in (select distinct(msoa) from dataset_filtered order by random() limit 10)
 "
 ) %>%
-  ggplot() +
-  geom_line(aes(
-    x = occupation,
-    y = proportion_renting,
-    colour = lad_name,
-    group = lad_name
-  )) +
-  labs(title = 'Sample MSOA data per local authority') +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+    ggplot() +
+    geom_line(aes(
+        x = occupation,
+        y = proportion_renting,
+        colour = lad_name,
+        group = lad_name
+    )) +
+    labs(title = "Sample MSOA data per local authority") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
 ```
 
@@ -234,17 +237,17 @@ Aggregated data shows clear differences in renting by occupation. Highly skilled
 
 ```{r}
 sql(
-  "
+    "
 select *
   , counts_of_hrp/occupation_total as proportion_renting
   from dataset_filtered
 "
 ) %>%
-  ggplot() +
-  geom_boxplot(aes(x = occupation, y = proportion_renting)) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  ylim(0, 0.5) +
-  labs(title = 'All MSOA rentership')
+    ggplot() +
+    geom_boxplot(aes(x = occupation, y = proportion_renting)) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    ylim(0, 0.5) +
+    labs(title = "All MSOA rentership")
 
 ```
 
@@ -253,7 +256,7 @@ The observation holds and patterns become more clear when the data is aggregated
 
 ```{r}
 sql(
-  "
+    "
 select lad_name
   , occupation
   , sum(counts_of_hrp)/sum(occupation_total) as proportion_renting
@@ -262,21 +265,21 @@ select lad_name
   group by lad_name, occupation
 "
 ) %>%
-  ggplot() +
-  geom_boxplot(aes(
-    x = occupation,
-    y = proportion_renting,
-  )) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  ylim(0, 0.5) +
-  labs(title = 'All Local authority rentership')
+    ggplot() +
+    geom_boxplot(aes(
+        x = occupation,
+        y = proportion_renting,
+    )) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    ylim(0, 0.5) +
+    labs(title = "All Local authority rentership")
 
 ```
 
 
 ```{r}
 high_counts <- sql(
-  "
+    "
 select msoa
 , lad_name
 , sum(occupation_total) as counts_of_hrp
@@ -288,8 +291,8 @@ order by 3 desc
 )
 
 high_counts %>%
-  ggplot() +
-  geom_histogram(aes(x = counts_of_hrp))
+    ggplot() +
+    geom_histogram(aes(x = counts_of_hrp))
 
 ```
 
@@ -299,8 +302,8 @@ Looking at the msoa where the greatest proportion of working population is renti
 
 ```{r}
 high_counts %>%
-  head(10) %>%
-  knitr::kable()
+    head(10) %>%
+    knitr::kable()
 
 ```
 
@@ -309,25 +312,25 @@ It is interesting to note that some occupations are over represented among older
 
 ```{r}
 sql(
-  "select *
+    "select *
   from dataset_filtered
 "
 ) %>%
-  select(lad_name, msoa, occupation, starts_with('aged')) %>%
-  pivot_longer(
-    cols = starts_with("aged"),
-    names_to = "age_band",
-    values_to = "counts_of_usual_residents"
-  ) %>%
-  filter(age_band != 'aged 15 years and under') %>%
-  ggplot() +
-  geom_boxplot(aes(
-    x = age_band,
-    y = counts_of_usual_residents
-  )) +
-  facet_wrap(~occupation, ncol = 3, scales = 'free_y') +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-  labs(title = 'Age distribution of working population across MSOAs')
+    select(lad_name, msoa, occupation, starts_with("aged")) %>%
+    pivot_longer(
+        cols = starts_with("aged"),
+        names_to = "age_band",
+        values_to = "counts_of_usual_residents"
+    ) %>%
+    filter(age_band != "aged 15 years and under") %>%
+    ggplot() +
+    geom_boxplot(aes(
+        x = age_band,
+        y = counts_of_usual_residents
+    )) +
+    facet_wrap(~occupation, ncol = 3, scales = "free_y") +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+    labs(title = "Age distribution of working population across MSOAs")
 
 ```
 
@@ -341,7 +344,7 @@ We refer to data at MSOA level for modelling. For the baseline model, MSOA varia
 
 ```{r}
 dataset <- sql(
-  "
+    "
 select lad_name
   , msoa
   , occupation
@@ -358,26 +361,26 @@ select lad_name
   order by msoa, occupation
 "
 ) %>%
-  mutate(
-    occupation = relevel(
-      factor(occupation),
-      ref = '9. elementary occupations'
+    mutate(
+        occupation = relevel(
+            factor(occupation),
+            ref = "9. elementary occupations"
+        )
     )
-  )
 
 glmod_base <- glm(
-  cbind(renting_total, occupation_total - renting_total) ~
-    occupation *
-    (log(age_16_24 + 1) +
-      log(age_25_34 + 1) +
-      log(age_35_49 + 1) +
-      log(age_50_64 + 1) +
-      log(age_over_65 + 1)),
-  data = dataset,
-  family = binomial
+    cbind(renting_total, occupation_total - renting_total) ~
+        occupation *
+            (log(age_16_24 + 1) +
+                log(age_25_34 + 1) +
+                log(age_35_49 + 1) +
+                log(age_50_64 + 1) +
+                log(age_over_65 + 1)),
+    data = dataset,
+    family = binomial
 )
 
-print(anova(glmod_base, test = 'Chisq'))
+print(anova(glmod_base, test = "Chisq"))
 
 ```
 
@@ -398,23 +401,25 @@ Primarily, these seem to areas in the city centers where rentership is much high
 
 ```{r}
 ordered_residuals_glm_base <- dataset %>%
-  augment(glmod_base, .) %>%
-  select(
-    msoa,
-    lad_name,
-    occupation,
-    starts_with('age'),
-    renting_total,
-    occupation_total,
-    .resid
-  ) %>%
-  mutate(
-    actual_renting_proportion = round(renting_total / occupation_total, 2),
-    predicted_proportion = round(predict(glmod_base, ., type = 'response'), 2)
-  ) %>%
-  arrange(desc(abs(.resid)))
+    augment(glmod_base, .) %>%
+    select(
+        msoa,
+        lad_name,
+        occupation,
+        starts_with("age"),
+        renting_total,
+        occupation_total,
+        .resid
+    ) %>%
+    mutate(
+        actual_renting_proportion = round(renting_total / occupation_total, 2),
+        predicted_proportion = round(predict(glmod_base, ., type = "response"), 2)
+    ) %>%
+    arrange(desc(abs(.resid)))
 
-ordered_residuals_glm_base %>% head(10) %>% knitr::kable()
+ordered_residuals_glm_base %>%
+    head(10) %>%
+    knitr::kable()
 
 ```
 
@@ -422,12 +427,12 @@ ordered_residuals_glm_base %>% head(10) %>% knitr::kable()
 #| cache: true
 
 msoa_geometries <- athena_sql(glue::glue_sql(
-  "select msoa
+    "select msoa
   , msoa_polygon_wkt
   from geo.dim_msoa
   where msoa in ({msoa_list*})",
-  msoa_list = ordered_residuals_glm_base %>% head(10) %>% pull(msoa),
-  .con = acon
+    msoa_list = ordered_residuals_glm_base %>% head(10) %>% pull(msoa),
+    .con = acon
 ))
 
 ```
@@ -436,30 +441,30 @@ msoa_geometries <- athena_sql(glue::glue_sql(
 
 # Parse WKT to sf (4326 = WGS84 for leaflet)
 df_sf <- msoa_geometries %>%
-  mutate(
-    geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
-  ) %>%
-  st_sf() # Promote to sf
+    mutate(
+        geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
+    ) %>%
+    st_sf() # Promote to sf
 
 # Create popups
 df_sf <- df_sf %>%
-  mutate(popup = glue::glue("MSOA: {msoa}"))
+    mutate(popup = glue::glue("MSOA: {msoa}"))
 
 # Build leaflet map
 leaflet(df_sf) %>%
-  addTiles() %>% # Base map
-  addPolygons(
-    fillColor = "black",
-    fillOpacity = 0.6,
-    color = "black",
-    weight = 1,
-    highlightOptions = highlightOptions(
-      weight = 3,
-      color = "orange",
-      fillOpacity = 0.8
-    )
-  ) %>%
-  setView(lng = -1.5, lat = 52.5, zoom = 8) # England center
+    addTiles() %>% # Base map
+    addPolygons(
+        fillColor = "black",
+        fillOpacity = 0.6,
+        color = "black",
+        weight = 1,
+        highlightOptions = highlightOptions(
+            weight = 3,
+            color = "orange",
+            fillOpacity = 0.8
+        )
+    ) %>%
+    setView(lng = -1.5, lat = 52.5, zoom = 8) # England center
 
 ```
 
@@ -476,18 +481,18 @@ Overall it appears that including location information in the model is necessary
 #| cache: true
 
 glmermod <- glmer(
-  cbind(renting_total, occupation_total - renting_total) ~
-    occupation +
-    I(log(age_16_24 + 1) / 10) +
-    I(log(age_25_34 + 1) / 10) +
-    I(log(age_35_49 + 1) / 10) +
-    I(log(age_50_64 + 1) / 10) +
-    I(log(age_over_65 + 1) / 10) +
-    (1 | lad_name) +
-    (1 | lad_name:msoa),
-  data = dataset,
-  family = binomial,
-  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
+    cbind(renting_total, occupation_total - renting_total) ~
+        occupation +
+        I(log(age_16_24 + 1) / 10) +
+        I(log(age_25_34 + 1) / 10) +
+        I(log(age_35_49 + 1) / 10) +
+        I(log(age_50_64 + 1) / 10) +
+        I(log(age_over_65 + 1) / 10) +
+        (1 | lad_name) +
+        (1 | lad_name:msoa),
+    data = dataset,
+    family = binomial,
+    control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
 )
 
 ```
@@ -516,26 +521,26 @@ Comparing predictions from the 2 models on the list of worse cases highlighted e
 
 ```{r}
 ordered_residuals_glm_base %>%
-  rename(predicted_proportion_base = predicted_proportion) %>%
-  select(
-    msoa,
-    lad_name,
-    occupation,
-    starts_with('age'),
-    renting_total,
-    occupation_total,
-    actual_renting_proportion,
-    predicted_proportion_base
-  ) %>%
-  mutate(
-    predicted_proportion_glmer = round(
-      predict(glmermod, ., type = 'response'),
-      2
-    )
-  ) %>%
-  select(-starts_with('age')) %>%
-  head(10) %>%
-  knitr::kable()
+    rename(predicted_proportion_base = predicted_proportion) %>%
+    select(
+        msoa,
+        lad_name,
+        occupation,
+        starts_with("age"),
+        renting_total,
+        occupation_total,
+        actual_renting_proportion,
+        predicted_proportion_base
+    ) %>%
+    mutate(
+        predicted_proportion_glmer = round(
+            predict(glmermod, ., type = "response"),
+            2
+        )
+    ) %>%
+    select(-starts_with("age")) %>%
+    head(10) %>%
+    knitr::kable()
 
 ```
 
@@ -544,7 +549,7 @@ ordered_residuals_glm_base %>%
 #| cache: true
 
 msoa_geometries <- athena_sql(
-  "select msoa
+    "select msoa
   , msoa_polygon_wkt
   from geo.dim_msoa
 "
@@ -560,7 +565,7 @@ This is another good reason to retain the current model.
 #| cache: true
 
 dataset_full <- sql(
-  "
+    "
 select lad_name
   , msoa
   , occupation
@@ -577,52 +582,52 @@ select lad_name
   order by msoa, occupation
 "
 ) %>%
-  mutate(
-    occupation = relevel(
-      factor(occupation),
-      ref = '9. elementary occupations'
-    ),
-    .pred = predict(
-      glmermod,
-      newdata = .,
-      type = "response",
-      allow.new.levels = TRUE
-    ),
-    mu = .pred * occupation_total,
-    # .resid = (renting_total - mu) / sqrt(mu * (1 - .pred)),
-    .resid = renting_total / occupation_total - .pred
-  )
+    mutate(
+        occupation = relevel(
+            factor(occupation),
+            ref = "9. elementary occupations"
+        ),
+        .pred = predict(
+            glmermod,
+            newdata = .,
+            type = "response",
+            allow.new.levels = TRUE
+        ),
+        mu = .pred * occupation_total,
+        # .resid = (renting_total - mu) / sqrt(mu * (1 - .pred)),
+        .resid = renting_total / occupation_total - .pred
+    )
 
 # Parse WKT to sf (4326 = WGS84 for leaflet)
 df_sf <- msoa_geometries %>%
-  inner_join(
-    dataset_full %>%
-      group_by(msoa) %>%
-      summarise(residual = mean(abs(.resid))),
-    by = 'msoa'
-  ) %>%
-  mutate(
-    geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
-  ) %>%
-  st_sf()
+    inner_join(
+        dataset_full %>%
+            group_by(msoa) %>%
+            summarise(residual = mean(abs(.resid))),
+        by = "msoa"
+    ) %>%
+    mutate(
+        geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
+    ) %>%
+    st_sf()
 
 
 ggplot() +
-  annotation_map_tile(
-    type = "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/${z}/${x}/${y}.png",
-    zoomin = 0,
-    progress = "none"
-  ) +
-  geom_sf(
-    data = df_sf,
-    aes(fill = residual),
-    color = NA,
-    linewidth = 0.1
-  ) +
-  scale_fill_gradientn(
-    colors = RColorBrewer::brewer.pal(9, "RdYlBu")[9:1], # reverse RdYlBu
-    name = "MAE (prob)"
-  )
+    annotation_map_tile(
+        type = "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/${z}/${x}/${y}.png",
+        zoomin = 0,
+        progress = "none"
+    ) +
+    geom_sf(
+        data = df_sf,
+        aes(fill = residual),
+        color = NA,
+        linewidth = 0.1
+    ) +
+    scale_fill_gradientn(
+        colors = RColorBrewer::brewer.pal(9, "RdYlBu")[9:1], # reverse RdYlBu
+        name = "MAE (prob)"
+    )
 
 ```
 
@@ -634,14 +639,14 @@ MSOA nested inside LAD are slighly more dispersed and have longer tails, but it 
 ```{r}
 par(mfrow = c(1, 2))
 qqnorm(
-  ranef(glmermod)$lad_name[[1]],
-  main = "LAD RE"
+    ranef(glmermod)$lad_name[[1]],
+    main = "LAD RE"
 )
 qqline(ranef(glmermod)$lad_name[[1]], col = "red")
 
 qqnorm(
-  ranef(glmermod)$`lad_name:msoa`[[1]],
-  main = "LAD:MSOA RE"
+    ranef(glmermod)$`lad_name:msoa`[[1]],
+    main = "LAD:MSOA RE"
 )
 qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
 
@@ -660,21 +665,21 @@ In general any Occupation category is less likely to rent compared to *Elementar
 
 ```{r}
 df_coef <- glmermod %>%
-  fixef() %>%
-  tidy() %>%
-  rename(coefficient = x) %>%
-  mutate(occupation = str_remove(names, "^occupation\\d+\\.\\s*"))
+    fixef() %>%
+    tidy() %>%
+    rename(coefficient = x) %>%
+    mutate(occupation = str_remove(names, "^occupation\\d+\\.\\s*"))
 
-ggplot(df_coef %>% filter(str_detect(names, 'occupation'))) +
-  geom_bar(
-    aes(x = occupation, y = 100 * (exp(coefficient) - 1)),
-    stat = 'identity'
-  ) +
-  labs(
-    subtitle = 'Odds of renting (relative to Elementary Occupations)',
-    y = 'Difference in Odds [%]'
-  ) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+ggplot(df_coef %>% filter(str_detect(names, "occupation"))) +
+    geom_bar(
+        aes(x = occupation, y = 100 * (exp(coefficient) - 1)),
+        stat = "identity"
+    ) +
+    labs(
+        subtitle = "Odds of renting (relative to Elementary Occupations)",
+        y = "Difference in Odds [%]"
+    ) +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
 
 ```
 
@@ -685,46 +690,46 @@ Age plays a key role in likelihood of renting too. Rentership is highly sensitiv
 
 ```{r}
 df_coef <- glmermod %>%
-  fixef() %>%
-  tidy() %>%
-  rename(coefficient = x)
+    fixef() %>%
+    tidy() %>%
+    rename(coefficient = x)
 
 df_plot <- df_coef %>%
-  filter(str_detect(names, 'age_')) %>%
-  cross_join(tibble(
-    fraction_change_in_population = seq(0.8, 1.2, by = 0.01)
-  )) %>%
-  mutate(
-    age_band = case_when(
-      str_detect(names, '16_24') ~ 'aged 16 to 24 years',
-      str_detect(names, '25_34') ~ 'aged 25 to 34 years',
-      str_detect(names, '35_49') ~ 'aged 35 to 49 years',
-      str_detect(names, '50_64') ~ 'aged 50 to 64 years',
-      str_detect(names, 'over_65') ~ 'aged 65 years and over',
-      TRUE ~ 'unknown'
-    ),
-    change_in_odds = (exp(
-      coefficient / 10 * log(fraction_change_in_population)
-    ) -
-      1) *
-      100
-  )
+    filter(str_detect(names, "age_")) %>%
+    cross_join(tibble(
+        fraction_change_in_population = seq(0.8, 1.2, by = 0.01)
+    )) %>%
+    mutate(
+        age_band = case_when(
+            str_detect(names, "16_24") ~ "aged 16 to 24 years",
+            str_detect(names, "25_34") ~ "aged 25 to 34 years",
+            str_detect(names, "35_49") ~ "aged 35 to 49 years",
+            str_detect(names, "50_64") ~ "aged 50 to 64 years",
+            str_detect(names, "over_65") ~ "aged 65 years and over",
+            TRUE ~ "unknown"
+        ),
+        change_in_odds = (exp(
+            coefficient / 10 * log(fraction_change_in_population)
+        ) -
+            1) *
+            100
+    )
 
 ggplot(
-  df_plot
+    df_plot
 ) +
-  geom_line(
-    aes(
-      x = (fraction_change_in_population - 1) * 100,
-      y = change_in_odds,
-      colour = age_band
+    geom_line(
+        aes(
+            x = (fraction_change_in_population - 1) * 100,
+            y = change_in_odds,
+            colour = age_band
+        )
+    ) +
+    labs(
+        subtitle = "Effect of age band population change on odds of renting",
+        y = "Change in Odds [%]",
+        x = "Percentage change in age band population [%]"
     )
-  ) +
-  labs(
-    subtitle = 'Effect of age band population change on odds of renting',
-    y = 'Change in Odds [%]',
-    x = 'Percentage change in age band population [%]'
-  )
 
 ```
 
@@ -737,77 +742,88 @@ Although, this evaluation is only from supply point of view. It is possible that
 
 ```{r}
 sample <- dataset_full %>%
-  filter(
-    occupation %in%
-      c(
-        '2. professional occupations',
-        '7. sales and customer service occupations'
-      )
-  ) %>%
-  filter(
-    msoa %in%
-      (dataset_full %>%
-        distinct(msoa) %>%
-        sample_n(5) %>%
-        pull(msoa))
-  ) %>%
-  mutate(
-    predicted = predict(
-      glmermod,
-      .,
-      type = 'response',
-      allow.new.levels = TRUE
-    ),
-    actual = renting_total / occupation_total,
-    se_lo = predicted -
-      1.96 * sqrt((1 - predicted) * predicted / occupation_total),
-    se_hi = predicted +
-      1.96 * sqrt((1 - predicted) * predicted / occupation_total)
-  )
+    filter(
+        occupation %in%
+            c(
+                "2. professional occupations",
+                "7. sales and customer service occupations"
+            )
+    ) %>%
+    filter(
+        msoa %in%
+            (dataset_full %>%
+                distinct(msoa) %>%
+                sample_n(5) %>%
+                pull(msoa))
+    ) %>%
+    mutate(
+        predicted = predict(
+            glmermod,
+            .,
+            type = "response",
+            allow.new.levels = TRUE
+        ),
+        actual = renting_total / occupation_total,
+        se_lo = predicted -
+            1.96 * sqrt((1 - predicted) * predicted / occupation_total),
+        se_hi = predicted +
+            1.96 * sqrt((1 - predicted) * predicted / occupation_total)
+    )
 
 sample %>%
-  cross_join(tibble(
-    fraction_change_in_population = seq(0.5, 1.5, by = 0.01)
-  )) %>%
-  # pivot_longer(starts_with('age')) %>%
-  mutate(age_25_34 = round(age_25_34 * fraction_change_in_population)) %>%
-  # pivot_wider(names_from = 'name', values_from = 'value') %>%
-  mutate(
-    .pred = predict(glmermod, ., type = 'response', allow.new.levels = TRUE)
-  ) %>%
-  ggplot() +
-  geom_line(aes(
-    x = age_25_34 / 2, # to convert population to households
-    y = .pred,
-    colour = msoa,
-  )) +
-  geom_point(
-    aes(
-      x = age_25_34 / 2, # to convert population to households
-      y = value,
-      shape = name
-    ),
-    data = sample %>%
-      pivot_longer(c(predicted, actual)) %>%
-      filter(name == 'predicted')
-  ) +
-  geom_errorbar(
-    aes(
-      x = age_25_34 / 2, # to convert population to households
-      y = value,
-      ymin = se_lo,
-      ymax = se_hi
-    ),
-    alpha = 0.2,
-    data = sample %>%
-      pivot_longer(c(predicted, actual)) %>%
-      filter(name == 'predicted')
-  ) +
-  facet_wrap(~occupation, scales = 'free_x', ncol = 3) +
-  labs(
-    subtitle = 'Elasticity of age (random MSOA)',
-    x = 'HRP in age bracket 25-34 years',
-    y = 'Propensity to rent'
-  )
+    cross_join(tibble(
+        fraction_change_in_population = seq(0.5, 1.5, by = 0.01)
+    )) %>%
+    # pivot_longer(starts_with('age')) %>%
+    mutate(age_25_34 = round(age_25_34 * fraction_change_in_population)) %>%
+    # pivot_wider(names_from = 'name', values_from = 'value') %>%
+    mutate(
+        .pred = predict(glmermod, ., type = "response", allow.new.levels = TRUE)
+    ) %>%
+    ggplot() +
+    geom_line(aes(
+        x = age_25_34 / 2, # to convert population to households
+        y = .pred,
+        colour = msoa,
+    )) +
+    geom_point(
+        aes(
+            x = age_25_34 / 2, # to convert population to households
+            y = value,
+            shape = name
+        ),
+        data = sample %>%
+            pivot_longer(c(predicted, actual)) %>%
+            filter(name == "predicted")
+    ) +
+    geom_errorbar(
+        aes(
+            x = age_25_34 / 2, # to convert population to households
+            y = value,
+            ymin = se_lo,
+            ymax = se_hi
+        ),
+        alpha = 0.2,
+        data = sample %>%
+            pivot_longer(c(predicted, actual)) %>%
+            filter(name == "predicted")
+    ) +
+    facet_wrap(~occupation, scales = "free_x", ncol = 3) +
+    labs(
+        subtitle = "Elasticity of age (random MSOA)",
+        x = "HRP in age bracket 25-34 years",
+        y = "Propensity to rent"
+    )
 
 ```
+
+
+## Conclusion
+
+This analysis provides descriptive evidence that who rents, and where, is shaped by occupation and age. Across UK MSOAs (excluding London), higher‑skilled groups—especially professionals—are consistently less likely to rent than lower‑skilled groups. Rentership peaks among 25–34 year olds, and remains sensitive to the age mix in local working populations. Introducing local authority and neighbourhood random effects improves fit and reveals meaningful spatial variation: town centres and dense urban MSOAs tend to have higher rentership than suburban areas, even after adjusting for occupation and age.
+
+The models are simple and intentionally transparent. While they capture core patterns, residual variance and mild overdispersion indicate omitted local factors (e.g., price levels, employer presence, transport access) still matter. Results should be interpreted as associations, not causal effects.
+
+Several limitations are important. Age‑by‑occupation counts refer to all workers rather than household reference persons, creating a measurement disconnect with tenure data. London is excluded, so findings do not generalise to its market. The analysis is cross‑sectional and does not track transitions into or out of renting.
+
+Despite these caveats, the evidence suggests rental demand is highest where younger workers are concentrated and falls with occupational skill. For planning and housing supply, this points to tailoring new rental provision toward places with strong 25–34 cohorts and occupations more likely to rent.
