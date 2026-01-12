@@ -727,3 +727,87 @@ ggplot(
   )
 
 ```
+
+
+#### Compound effect on a sample of MSOA
+
+Supposing that a company wants to introduce new rental supply in a location with a target consumer that is  either *Professionals* or *Sales and service*, their corresponding elasticities can be estimated. <br/>
+This exercise is helpful with a test for the fact that new supply does not significantly change the underlying renting propensity (.pred). This would mean that under existing conditions, new supply can likely be absorbed by the market. <br/>
+Although, this evaluation is only from supply point of view. It is possible that price elasticity of supply can limit absorption much before what is proposed here.
+
+```{r}
+sample <- dataset_full %>%
+  filter(
+    occupation %in%
+      c(
+        '2. professional occupations',
+        '7. sales and customer service occupations'
+      )
+  ) %>%
+  filter(
+    msoa %in%
+      (dataset_full %>%
+        distinct(msoa) %>%
+        sample_n(5) %>%
+        pull(msoa))
+  ) %>%
+  mutate(
+    predicted = predict(
+      glmermod,
+      .,
+      type = 'response',
+      allow.new.levels = TRUE
+    ),
+    actual = renting_total / occupation_total,
+    se_lo = predicted -
+      1.96 * sqrt((1 - predicted) * predicted / occupation_total),
+    se_hi = predicted +
+      1.96 * sqrt((1 - predicted) * predicted / occupation_total)
+  )
+
+sample %>%
+  cross_join(tibble(
+    fraction_change_in_population = seq(0.5, 2, by = 0.01)
+  )) %>%
+  # pivot_longer(starts_with('age')) %>%
+  mutate(age_25_34 = round(age_25_34 * fraction_change_in_population)) %>%
+  # pivot_wider(names_from = 'name', values_from = 'value') %>%
+  mutate(
+    .pred = predict(glmermod, ., type = 'response', allow.new.levels = TRUE)
+  ) %>%
+  ggplot() +
+  geom_line(aes(
+    x = age_25_34 / 2, # to convert population to households
+    y = .pred,
+    colour = msoa,
+  )) +
+  geom_point(
+    aes(
+      x = age_25_34 / 2, # to convert population to households
+      y = value,
+      shape = name
+    ),
+    data = sample %>%
+      pivot_longer(c(predicted, actual)) %>%
+      filter(name == 'predicted')
+  ) +
+  geom_errorbar(
+    aes(
+      x = age_25_34 / 2, # to convert population to households
+      y = value,
+      ymin = se_lo,
+      ymax = se_hi
+    ),
+    alpha = 0.2,
+    data = sample %>%
+      pivot_longer(c(predicted, actual)) %>%
+      filter(name == 'predicted')
+  ) +
+  facet_wrap(~occupation, scales = 'free_x', ncol = 3) +
+  labs(
+    subtitle = 'Elasticity of age (random MSOA)',
+    x = 'HRP in age bracket 25-34 years',
+    y = 'Propensity to rent'
+  )
+
+```
