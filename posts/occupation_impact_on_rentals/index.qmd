@@ -38,6 +38,7 @@ library(tidymodels)
 library(patchwork)
 library(sf)
 library(leaflet)
+library(RColorBrewer)
 
 data_dir <- file.path(
   here::here(),
@@ -157,10 +158,29 @@ sql(
 ### Subsample
 
 Since, the dataset is very well compiled but is large, we can work with reduced dataset and infer large scale effects from it. This reduction will allow speeding up the analysis and experimentation. <br/>
+
+We can see that majority of Local authorities have 10-15 MSOAs. To get a balanced representation, we chose to sample 10 MSOA from each Local authority. This will likely also ensure robust estimation of any random effects.
+
+```{r}
+sql(
+  "select lad_name,
+count(distinct(msoa)) as msoa_count
+from dataset_filtered
+group by lad_name
+"
+) %>%
+  ggplot() +
+  geom_histogram(aes(x = msoa_count)) +
+  geom_vline(aes(xintercept = 10), colour = 'red') +
+  labs(subtitle = 'MSOA count per Local authority')
+
+```
+
+
 The subsampling process does the following: <br/>
 
 * Randomly sample 10 local authorities per 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
-* Within each of the sampled local authorities sample 50 MSOAs at random
+* Within each of the sampled local authorities sample 10 MSOAs at random
 * Get all the data in the sampled MSOAs
 
 The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
@@ -467,7 +487,8 @@ glmermod <- glmer(
     I(log(age_35_49 + 1) / 10) +
     I(log(age_50_64 + 1) / 10) +
     I(log(age_over_65 + 1) / 10) +
-    (1 | msoa),
+    (1 | lad_name) +
+    (1 | lad_name:msoa),
   data = dataset,
   family = binomial,
   control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
@@ -496,6 +517,74 @@ anova(glmermod, glmod_base, test = "Chisq")
 
 
 ```{r}
+
+ordered_residuals_glmermod <- dataset %>%
+  fortify.merMod(glmermod, .) %>%
+  select(
+    msoa,
+    lad_name,
+    occupation,
+    starts_with('age'),
+    renting_total,
+    occupation_total,
+    .resid
+  ) %>%
+  mutate(
+    actual_renting_proportion = renting_total / occupation_total,
+    predicted_proportion = predict(glmermod, ., type = 'response')
+  ) %>%
+  arrange(desc(abs(.resid)))
+
+ordered_residuals_glmermod %>% head(10) %>% knitr::kable()
+
+```
+
+Random effects of LAD appear reasonably normally distributed. <br/>
+MSOA nested inside LAD are slighly more dispersed and have longer tails.
+The worst residual point lies in Catterick Garrison, which is a small town with a large army base and unusually high rentership of *Associate professionals* in that area.
+
+```{r}
+par(mfrow = c(1, 2))
+qqnorm(
+  ranef(glmermod)$lad_name[[1]],
+  main = "LAD RE"
+)
+qqline(ranef(glmermod)$lad_name[[1]], col = "red")
+
+qqnorm(
+  ranef(glmermod)$`lad_name:msoa`[[1]],
+  main = "LAD:MSOA RE"
+)
+qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
+
+par(mfrow = c(1, 1))
+
+```
+
+Before moving to inference using this model, it is important to check how it fits. ChiSq GoF test suggests p-value `{r} deviance(glmermod) |> pchisq(df.residual(glmermod), lower.tail = F) |> round(2)`, which indicates that there is still quite a lot of variance in data that isn't explained by the current model. <br/>
+
+The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that there is some degree of overdispersion. It is likely a result of not including more factors affecting rentership (e.g. presence of employers, type of location, commute etc.) and using a simplistic model. The overdispersion is largely relevant for standard errors, but fixed effects which are our quantity of interest should be unchanged. Inference will likely be worse but with such a simplistic model we do not expect significant impact. We shall retain the current model as it is since it provides useful insights as we shall see in the following sections.
+
+
+```{r}
+#| cache: true
+
+msoa_geometries <- athena_sql(glue::glue_sql(
+  "select msoa
+  , msoa_polygon_wkt
+  from geo.dim_msoa
+  --where msoa in ({msoa_list*})",
+  msoa_list = ordered_residuals_glmermod %>% pull(msoa),
+  .con = acon
+))
+
+```
+
+The error in predicted probability of rentership is small for several MSOAs, even though a small subset was used in modelling.
+This is another good reason to retain the current model.
+```{r}
+#| cache: true
+
 dataset_full <- sql(
   "
 select lad_name
@@ -526,53 +615,16 @@ select lad_name
       allow.new.levels = TRUE
     ),
     mu = .pred * occupation_total,
-    .resid = (renting_total - mu) / sqrt(mu * (1 - .pred))
+    # .resid = (renting_total - mu) / sqrt(mu * (1 - .pred)),
+    .resid = renting_total / occupation_total - .pred
   )
-
-ordered_residuals_glmermod <- dataset %>%
-  fortify.merMod(glmermod, .) %>%
-  select(
-    msoa,
-    lad_name,
-    occupation,
-    starts_with('age'),
-    renting_total,
-    occupation_total,
-    .resid
-  ) %>%
-  mutate(
-    actual_renting_proportion = renting_total / occupation_total,
-    predicted_proportion = predict(glmermod, ., type = 'response')
-  ) %>%
-  arrange(desc(abs(.resid)))
-
-ordered_residuals_glmermod %>% head(10) %>% knitr::kable()
-
-```
-
-```{r}
-#| cache: true
-
-msoa_geometries <- athena_sql(glue::glue_sql(
-  "select msoa
-  , msoa_polygon_wkt
-  from geo.dim_msoa
-  --where msoa in ({msoa_list*})",
-  msoa_list = ordered_residuals_glmermod %>% pull(msoa),
-  .con = acon
-))
-
-```
-
-```{r}
-#| cache: true
 
 # Parse WKT to sf (4326 = WGS84 for leaflet)
 df_sf <- msoa_geometries %>%
   inner_join(
     dataset_full %>%
       group_by(msoa) %>%
-      summarise(total_residual = sum(.resid)),
+      summarise(residual = mean(.resid)),
     by = 'msoa'
   ) %>%
   mutate(
@@ -584,19 +636,17 @@ df_sf <- msoa_geometries %>%
 df_sf <- df_sf %>%
   mutate(popup = glue::glue("MSOA: {msoa}"))
 
-library(RColorBrewer)
-
 pal <- colorNumeric(
   palette = "RdYlBu", # or any Brewer/hex palette
-  domain = pmin(df_sf$total_residual, 50)
+  domain = pmax(pmin(df_sf$residual, 0.25), -0.25)
 )
 
 leaflet(df_sf) |>
   addProviderTiles("CartoDB.Positron") |> # gray basemap
   addPolygons(
-    fillColor = ~ pal(total_residual),
+    fillColor = ~ pal(residual),
     fillOpacity = 0.6,
-    color = ~ pal(total_residual),
+    color = ~ pal(residual),
     weight = 1,
     highlightOptions = highlightOptions(
       weight = 3,
@@ -607,40 +657,14 @@ leaflet(df_sf) |>
   addLegend(
     "bottomright",
     pal = pal,
-    values = ~total_residual,
-    title = "Total residual",
+    values = ~residual,
+    title = "Avg. residual",
     opacity = 1
   ) |>
   setView(lng = -1.5, lat = 52.5, zoom = 8)
 
 ```
 
-
-Random effects of LAD appear reasonably normally distributed. <br/>
-MSOA nested inside LAD are slighly more dispersed and have longer tails.
-The worst residual point lies in Catterick Garrison, which is a small town with a large army base and unusually high rentership of *Associate professionals* in that area.
-
-```{r}
-par(mfrow = c(1, 2))
-qqnorm(
-  ranef(glmermod)$lad_name[[1]],
-  main = "LAD RE"
-)
-qqline(ranef(glmermod)$lad_name[[1]], col = "red")
-
-qqnorm(
-  ranef(glmermod)$`lad_name:msoa`[[1]],
-  main = "LAD:MSOA RE"
-)
-qqline(ranef(glmermod)$`lad_name:msoa`[[1]], col = "red")
-
-par(mfrow = c(1, 1))
-
-```
-
-Before moving to inference using this model, it is important to check how it fits. ChiSq GoF test suggests p-value `{r} deviance(glmermod) |> pchisq(df.residual(glmermod), lower.tail = F) |> round(2)`, which indicates that there is still quite a lot of variance in data that isn't explained by the current model. <br/>
-
-The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that dispersion is not too extreme and we chose not to address this.
 
 Looking at the coefficients of Occupation types, since *Elementary Occupations* was reference class, the odds for any Occupation are relative to it. <br/>
 In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 40% less likely (0.6x) to rent.
