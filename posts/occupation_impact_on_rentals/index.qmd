@@ -39,6 +39,7 @@ library(patchwork)
 library(sf)
 library(leaflet)
 library(RColorBrewer)
+library(ggspatial)
 
 data_dir <- file.path(
   here::here(),
@@ -179,8 +180,8 @@ group by lad_name
 
 The subsampling process does the following: <br/>
 
-* Randomly sample 10 local authorities per 8 UK wide regions (e.g. West midlands, East of England etc.) excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
-* Within each of the sampled local authorities sample 10 MSOAs at random
+* Sample all local authorities from 8 UK wide regions (e.g. West midlands, East of England etc.) but excluding London region (since market behaviour may not generalise to other regions and create issues when data is mixed with others, due to very high counts)
+* Within each of the local authorities sample 10 MSOAs at random
 * Get all the data in the sampled MSOAs
 
 The above procedure is deliberate in that it results in balanced data among Local authorities to avoid issues with inference. <br/>
@@ -624,44 +625,31 @@ df_sf <- msoa_geometries %>%
   inner_join(
     dataset_full %>%
       group_by(msoa) %>%
-      summarise(residual = mean(.resid)),
+      summarise(residual = mean(abs(.resid))),
     by = 'msoa'
   ) %>%
   mutate(
     geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
   ) %>%
-  st_sf() # Promote to sf
+  st_sf()
 
-# Create popups
-df_sf <- df_sf %>%
-  mutate(popup = glue::glue("MSOA: {msoa}"))
 
-pal <- colorNumeric(
-  palette = "RdYlBu", # or any Brewer/hex palette
-  domain = pmax(pmin(df_sf$residual, 0.25), -0.25)
-)
-
-leaflet(df_sf) |>
-  addProviderTiles("CartoDB.Positron") |> # gray basemap
-  addPolygons(
-    fillColor = ~ pal(residual),
-    fillOpacity = 0.6,
-    color = ~ pal(residual),
-    weight = 1,
-    highlightOptions = highlightOptions(
-      weight = 3,
-      color = "orange",
-      fillOpacity = 0.8
-    )
-  ) |>
-  addLegend(
-    "bottomright",
-    pal = pal,
-    values = ~residual,
-    title = "Avg. residual",
-    opacity = 1
-  ) |>
-  setView(lng = -1.5, lat = 52.5, zoom = 8)
+ggplot() +
+  annotation_map_tile(
+    type = "https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/${z}/${x}/${y}.png",
+    zoomin = 0,
+    progress = "none"
+  ) +
+  geom_sf(
+    data = df_sf,
+    aes(fill = residual),
+    color = NA,
+    linewidth = 0.1
+  ) +
+  scale_fill_gradientn(
+    colors = RColorBrewer::brewer.pal(9, "RdYlBu")[9:1], # reverse RdYlBu
+    name = "MAE (prob)"
+  )
 
 ```
 
