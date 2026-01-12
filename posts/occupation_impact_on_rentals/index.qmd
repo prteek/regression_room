@@ -331,6 +331,7 @@ select lad_name
   , \"aged 35 to 49 years\" as age_35_49
   , \"aged 50 to 64 years\" as age_50_64
   , \"aged 65 years and over\" as age_over_65
+  , all_ages_total
   from dataset_sample
   where tenure = 'private rented or lives rent free'
   order by msoa, occupation
@@ -345,12 +346,12 @@ select lad_name
 
 glmod_base <- glm(
   cbind(renting_total, occupation_total - renting_total) ~
-    occupation +
-    log(age_16_24 + 1) +
-    log(age_25_34 + 1) +
-    log(age_35_49 + 1) +
-    log(age_50_64 + 1) +
-    log(age_over_65 + 1),
+    occupation *
+    (log(age_16_24 + 1) +
+      log(age_25_34 + 1) +
+      log(age_35_49 + 1) +
+      log(age_50_64 + 1) +
+      log(age_over_65 + 1)),
   data = dataset,
   family = binomial
 )
@@ -359,7 +360,7 @@ print(anova(glmod_base, test = 'Chisq'))
 
 ```
 
-The diagnostics look just about okay at this point, there is slightly higher dispersion than expected as indicated by the dispersion parameter, `{r} (residuals(glmod_base, type='pearson')^2/df.residual(glmod_base)) |> sum() |> round(2)`
+The Scale-location diagnostics and QQ-Residuals suggest the dispersion is much higher than expected. This is also confirmed by the dispersion parameter, `{r} (residuals(glmod_base, type='pearson')^2/df.residual(glmod_base)) |> sum() |> round(2)`
 
 ```{r}
 #| figure-height: 10
@@ -371,13 +372,11 @@ par(mfrow = c(1, 1))
 
 ```
 
-It can be investigated to see which data points are causing this. <br/>
-Manual inspection can be aided by geographic location data [MSOA Map](https://geoportal.statistics.gov.uk/datasets/12baf1e6a44441208ffe5ba5ed063a68_0/explore?location=52.735111%2C-2.489483%2C6.76)
+High residual points can be investigated to identify some issues. <br/>
+Primarily, these seem to areas in the city centers where rentership is much higher than what the model predicts. <br/>
+At the top of the list is an edge case:
 
-* e02002991 : Is in the middle of Bath town Center and has much higher proportion of Professionals than what model predicts.
-* e02006841 : Is a high leverage point. Is in the center of Gateshead, which has slightly higher proportion of Professionals than what model predicts. High leverage comes from 61% Professionals falling in age_25_34 bracket. But the residuals indicate that the influence of this data point is not high
-* e02007095: Dinnington, has a very low proportion of rentership (6%), which causes a high value of residuals. This is an affluent, semi-rural village with many of the houses been bought under right to buy legislation [@dinnington].
-* e02005775: Harrogate, rentership is severly underpredicted due to 27% Professionals falling in 50-64 age bracket, leading to a high residual.
+* e02007095: Dinnington, has a very low proportion of rentership (6%), which causes a high value of residuals. This is an affluent, semi-rural village with many of the houses been bought under right to buy legislation [@dinnington]
 
 ```{r}
 ordered_residuals_glm_base <- dataset %>%
@@ -448,6 +447,10 @@ leaflet(df_sf) %>%
 
 ```
 
+<br/>
+
+Overall it appears that including location information in the model is necessary to account for area-specific rentership patterns.
+
 ### Introducing location context in the model
 
  Each MSOA can have its own level of rentership that needs to be accounted for (and town centers can be very different from suburbs). <br/>
@@ -459,20 +462,21 @@ leaflet(df_sf) %>%
 glmermod <- glmer(
   cbind(renting_total, occupation_total - renting_total) ~
     occupation +
-    log(age_16_24 + 1) +
-    log(age_25_34 + 1) +
-    log(age_35_49 + 1) +
-    log(age_50_64 + 1) +
-    log(age_over_65 + 1) +
-    (1 | lad_name) +
-    (1 | lad_name:msoa),
+    I(log(age_16_24 + 1) / 10) +
+    I(log(age_25_34 + 1) / 10) +
+    I(log(age_35_49 + 1) / 10) +
+    I(log(age_50_64 + 1) / 10) +
+    I(log(age_over_65 + 1) / 10) +
+    (1 | msoa),
   data = dataset,
-  family = binomial
+  family = binomial,
+  control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 200000))
 )
 
 ```
 
-Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. This is also confirmed in the ANOVA output.
+Diagnostics have improved and residuals are smaller than before, so the addition of MSOAs in model is worthwhile. This is also confirmed in the ANOVA output. <br/>
+The dispersion is still greater than ideal, `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`
 
 ```{r}
 df_plot <- fortify.merMod(glmermod, dataset)
@@ -488,6 +492,129 @@ par(mfrow = c(1, 1))
 anova(glmermod, glmod_base, test = "Chisq")
 
 ```
+
+
+
+```{r}
+dataset_full <- sql(
+  "
+select lad_name
+  , msoa
+  , occupation
+  , counts_of_hrp as renting_total
+  , occupation_total
+  , \"aged 16 to 24 years\" as age_16_24
+  , \"aged 25 to 34 years\" as age_25_34
+  , \"aged 35 to 49 years\" as age_35_49
+  , \"aged 50 to 64 years\" as age_50_64
+  , \"aged 65 years and over\" as age_over_65
+  , all_ages_total
+  from dataset
+  where tenure = 'private rented or lives rent free'
+  order by msoa, occupation
+"
+) %>%
+  mutate(
+    occupation = relevel(
+      factor(occupation),
+      ref = '9. elementary occupations'
+    ),
+    .pred = predict(
+      glmermod,
+      newdata = .,
+      type = "response",
+      allow.new.levels = TRUE
+    ),
+    mu = .pred * occupation_total,
+    .resid = (renting_total - mu) / sqrt(mu * (1 - .pred))
+  )
+
+ordered_residuals_glmermod <- dataset %>%
+  fortify.merMod(glmermod, .) %>%
+  select(
+    msoa,
+    lad_name,
+    occupation,
+    starts_with('age'),
+    renting_total,
+    occupation_total,
+    .resid
+  ) %>%
+  mutate(
+    actual_renting_proportion = renting_total / occupation_total,
+    predicted_proportion = predict(glmermod, ., type = 'response')
+  ) %>%
+  arrange(desc(abs(.resid)))
+
+ordered_residuals_glmermod %>% head(10) %>% knitr::kable()
+
+```
+
+```{r}
+#| cache: true
+
+msoa_geometries <- athena_sql(glue::glue_sql(
+  "select msoa
+  , msoa_polygon_wkt
+  from geo.dim_msoa
+  --where msoa in ({msoa_list*})",
+  msoa_list = ordered_residuals_glmermod %>% pull(msoa),
+  .con = acon
+))
+
+```
+
+```{r}
+#| cache: true
+
+# Parse WKT to sf (4326 = WGS84 for leaflet)
+df_sf <- msoa_geometries %>%
+  inner_join(
+    dataset_full %>%
+      group_by(msoa) %>%
+      summarise(total_residual = sum(.resid)),
+    by = 'msoa'
+  ) %>%
+  mutate(
+    geometry = st_as_sfc(msoa_polygon_wkt, crs = 4326) # WKT → sfc
+  ) %>%
+  st_sf() # Promote to sf
+
+# Create popups
+df_sf <- df_sf %>%
+  mutate(popup = glue::glue("MSOA: {msoa}"))
+
+library(RColorBrewer)
+
+pal <- colorNumeric(
+  palette = "RdYlBu", # or any Brewer/hex palette
+  domain = pmin(df_sf$total_residual, 50)
+)
+
+leaflet(df_sf) |>
+  addProviderTiles("CartoDB.Positron") |> # gray basemap
+  addPolygons(
+    fillColor = ~ pal(total_residual),
+    fillOpacity = 0.6,
+    color = ~ pal(total_residual),
+    weight = 1,
+    highlightOptions = highlightOptions(
+      weight = 3,
+      color = "orange",
+      fillOpacity = 0.8
+    )
+  ) |>
+  addLegend(
+    "bottomright",
+    pal = pal,
+    values = ~total_residual,
+    title = "Total residual",
+    opacity = 1
+  ) |>
+  setView(lng = -1.5, lat = 52.5, zoom = 8)
+
+```
+
 
 Random effects of LAD appear reasonably normally distributed. <br/>
 MSOA nested inside LAD are slighly more dispersed and have longer tails.
@@ -549,7 +676,7 @@ df_coef <- glmermod %>%
 df_plot <- df_coef %>%
   filter(str_detect(names, 'age_')) %>%
   cross_join(tibble(
-    percentage_increase_in_population = seq(-1, 1, by = 0.1)
+    fraction_change_in_population = seq(0.8, 1.2, by = 0.01)
   )) %>%
   mutate(
     age_band = case_when(
@@ -560,7 +687,9 @@ df_plot <- df_coef %>%
       str_detect(names, 'over_65') ~ 'aged 65 years and over',
       TRUE ~ 'unknown'
     ),
-    change_in_odds = (exp(coefficient * percentage_increase_in_population) -
+    change_in_odds = (exp(
+      coefficient / 10 * log(fraction_change_in_population)
+    ) -
       1) *
       100
   )
@@ -570,7 +699,7 @@ ggplot(
 ) +
   geom_line(
     aes(
-      x = percentage_increase_in_population * 100,
+      x = (fraction_change_in_population - 1) * 100,
       y = change_in_odds,
       colour = age_band
     )
@@ -578,7 +707,31 @@ ggplot(
   labs(
     subtitle = 'Effect of age band population change on odds of renting',
     y = 'Change in Odds [%]',
-    x = 'Percentage increase in age band population [%]'
+    x = 'Percentage change in age band population [%]'
   )
+
+```
+
+
+```{r}
+library(DHARMa)
+library(glmmTMB)
+
+m <- glmmTMB(
+  cbind(renting_total, occupation_total - renting_total) ~
+    occupation +
+    I(log(age_16_24 + 1) / 10) +
+    I(log(age_25_34 + 1) / 10) +
+    I(log(age_35_49 + 1) / 10) +
+    I(log(age_50_64 + 1) / 10) +
+    I(log(age_over_65 + 1) / 10) +
+    (1 | lad_name) +
+    (1 | lad_name:msoa),
+  data = dataset,
+  family = betabinomial(),
+)
+
+res <- DHARMa::simulateResiduals(m)
+plot(res)
 
 ```
