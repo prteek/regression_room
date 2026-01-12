@@ -735,27 +735,3 @@ ggplot(
   )
 
 ```
-
-
-```{r}
-library(DHARMa)
-library(glmmTMB)
-
-m <- glmmTMB(
-  cbind(renting_total, occupation_total - renting_total) ~
-    occupation +
-    I(log(age_16_24 + 1) / 10) +
-    I(log(age_25_34 + 1) / 10) +
-    I(log(age_35_49 + 1) / 10) +
-    I(log(age_50_64 + 1) / 10) +
-    I(log(age_over_65 + 1) / 10) +
-    (1 | lad_name) +
-    (1 | lad_name:msoa),
-  data = dataset,
-  family = betabinomial(),
-)
-
-res <- DHARMa::simulateResiduals(m)
-plot(res)
-
-```
