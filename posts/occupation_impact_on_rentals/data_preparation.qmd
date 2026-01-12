@@ -611,7 +611,7 @@ create or replace table dataset_sample as (
     select a.*
     from dataset_filtered a
             left join ranked_geos b on a.msoa = b.msoa
-    where b.lad_rank <= 10 and b.msoa_rank <= 50
+    where b.lad_rank <= 10 and b.msoa_rank <= 10
 )
 
 ```
