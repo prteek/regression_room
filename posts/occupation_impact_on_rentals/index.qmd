@@ -765,7 +765,7 @@ ggplot(
 #### Compound effect on a sample of MSOA
 
 Supposing that a real estate investment firm wants to introduce new rental supply or wants to sell its existing portfolio in a location where the target consumer is employed as a *Professional* or in *Sales and service*, the elasticities associated with these changes can be estimated (as an example +/- 50 units change is demonstrated below). <br/>
-This exercise is helpful with a test for the fact that new supply does not significantly change the underlying renting propensity (.pred). This would mean that under existing conditions, new supply can likely be absorbed by the market. <br/>
+This exercise is helpful with a test for the fact that new supply does not significantly change the underlying renting propensity. This would mean that under existing conditions, new supply can likely be absorbed by the market. <br/>
 It is important to note that this evaluation is only from supply point of view. It is possible that price elasticity of supply can limit absorption much earlier than what is proposed here. Neverthless, the idea here tests for stability in the market and that may implicitly imply stability of some phenomenon that affect price elasticity.
 
 ```{r}
@@ -821,7 +821,8 @@ sample %>%
       shape = name
     ),
     data = sample %>%
-      pivot_longer(c(predicted, actual))
+      pivot_longer(c(predicted, actual)) %>% # Removing actuals from the plot because error bars are not standard errors of p-estimate but rather the sampling variability introduced by probabilistic process
+      filter(name == "predicted")
   ) +
   geom_errorbar(
     aes(
