@@ -689,14 +689,64 @@ The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.resid
 #### Occupation effect
 
 Looking at the coefficients of Occupation types, since *Elementary Occupations* was reference class, the odds for any Occupation are relative to it. <br/>
-In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 55% less likely (0.44x) to rent.
+In general any Occupation category is less likely to rent compared to *Elementary Occupations*, in particular *Professionals* are nearly 55% less likely (0.44x) to rent. <br/>
+There is intuitive sense to the effects as higher paid occupations are less likely to rent, except interestingly that unlike observations in raw data, *Managers* are not the least likely renters when age is taken into account.
 
 ```{r}
 df_coef <- glmermod %>%
   fixef() %>%
   tidy() %>%
   rename(coefficient = x) %>%
-  mutate(occupation = str_remove(names, "^occupation\\d+\\.\\s*"))
+  mutate(
+    occupation = case_when(
+      str_detect(
+        names,
+        'managers, directors and senior officials'
+      ) ~ '1. managers, directors and senior officials',
+
+      str_detect(
+        names,
+        'professional occupations'
+      ) ~ '2. professional occupations',
+
+      str_detect(
+        names,
+        'associate professional and technical occupations'
+      ) ~ '3. associate professional and technical occupations',
+
+      str_detect(
+        names,
+        'administrative and secretarial occupations'
+      ) ~ '4. administrative and secretarial occupations',
+
+      str_detect(
+        names,
+        'skilled trades occupations'
+      ) ~ '5. skilled trades occupations',
+
+      str_detect(
+        names,
+        'caring, leisure and other service occupations'
+      ) ~ '6. caring, leisure and other service occupations',
+
+      str_detect(
+        names,
+        'sales and customer service occupations'
+      ) ~ '7. sales and customer service occupations',
+
+      str_detect(
+        names,
+        'process, plant and machine operatives'
+      ) ~ '8. process, plant and machine operatives',
+
+      str_detect(
+        names,
+        'elementary occupations'
+      ) ~ '9. elementary occupations',
+
+      .default = 'unknown'
+    )
+  )
 
 ggplot(df_coef %>% filter(str_detect(names, "occupation"))) +
   geom_bar(
