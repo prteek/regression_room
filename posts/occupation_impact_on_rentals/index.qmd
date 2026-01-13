@@ -515,6 +515,32 @@ par(mfrow = c(1, 1))
 ```
 
 
+#### Error by occupation
+
+The model captures renting behaviour across different occupations reasonably well and does not seem to have biased results for any. <br/>
+An avenue for improvement can be with more information relevant to *Elementary occupations* and *Professional occupations* where the model seems to make large errors compared to others.
+
+```{r}
+df_plot %>%
+  ggplot() +
+  geom_boxplot(aes(x = occupation, y = .resid)) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+The model is robust to how many people are engaged in particular occupations. It seems to make similar magnitudes of errors and on average is unbiased. For e.g. the accuracy is coparalble at a location fewer occupants are Managers vs a location where several occupants are Managers.
+
+```{r}
+#| fig-width: 10
+#| fig-height: 10
+
+df_plot %>%
+  ggplot(aes(x = log(occupation_total), y = .resid)) +
+  geom_point(alpha = 0.1) +
+  facet_wrap(~occupation) +
+  geom_smooth()
+
+```
+
 #### Comparison
 
 Comparing predictions from the 2 models on the list of worse cases highlighted earlier, there again seems to be an improvement.
@@ -544,7 +570,10 @@ ordered_residuals_glm_base %>%
 
 ```
 
+#### Error behaviour spatially
 
+The error in predicted probability of rentership is small for several MSOAs, even though a small subset was used in modelling.
+This is another good reason to retain the current model.
 ```{r}
 #| cache: true
 
@@ -557,10 +586,6 @@ msoa_geometries <- athena_sql(
 
 ```
 
-#### Error behaviour spatially
-
-The error in predicted probability of rentership is small for several MSOAs, even though a small subset was used in modelling.
-This is another good reason to retain the current model.
 ```{r}
 #| cache: true
 
@@ -658,6 +683,9 @@ Before moving to inference using this model, it is important to check how it fit
 
 The dispersion parameter is `{r} (residuals(glmermod, type='pearson')^2/df.residual(glmermod)) |> sum() |> round(2)`. This indicates that there is some degree of overdispersion. It is likely a result of not including more factors affecting rentership (e.g. presence of employers, type of location, commute etc.) and using a simplistic model. The overdispersion is largely relevant for standard errors, but fixed effects which are our quantity of interest should be unchanged. Inference will likely be worse but with such a simplistic model we do not expect significant impact. We shall retain the current model as it is since it provides useful insights as we shall see in the following sections.
 
+
+### Interpretation and application
+
 #### Occupation effect
 
 Looking at the coefficients of Occupation types, since *Elementary Occupations* was reference class, the odds for any Occupation are relative to it. <br/>
@@ -736,9 +764,9 @@ ggplot(
 
 #### Compound effect on a sample of MSOA
 
-Supposing that a company wants to introduce new rental supply in a location with a target consumer that is  either *Professionals* or *Sales and service*, their corresponding elasticities can be estimated. <br/>
+Supposing that a real estate investment firm wants to introduce new rental supply or wants to sell its existing portfolio in a location where the target consumer is employed as a *Professional* or in *Sales and service*, the elasticities associated with these changes can be estimated (as an example +/- 50 units change is demonstrated below). <br/>
 This exercise is helpful with a test for the fact that new supply does not significantly change the underlying renting propensity (.pred). This would mean that under existing conditions, new supply can likely be absorbed by the market. <br/>
-Although, this evaluation is only from supply point of view. It is possible that price elasticity of supply can limit absorption much before what is proposed here.
+It is important to note that this evaluation is only from supply point of view. It is possible that price elasticity of supply can limit absorption much earlier than what is proposed here. Neverthless, the idea here tests for stability in the market and that may implicitly imply stability of some phenomenon that affect price elasticity.
 
 ```{r}
 sample <- dataset_full %>%
@@ -772,7 +800,7 @@ sample <- dataset_full %>%
 
 sample %>%
   cross_join(tibble(
-    delta_change_in_population = seq(-50, 50, by = 10)
+    delta_change_in_population = seq(-50, 50, by = 2)
   )) %>%
   # pivot_longer(starts_with('age')) %>%
   mutate(age_25_34 = pmax(age_25_34 + delta_change_in_population, 0)) %>%
@@ -793,8 +821,7 @@ sample %>%
       shape = name
     ),
     data = sample %>%
-      pivot_longer(c(predicted, actual)) %>%
-      filter(name == "predicted")
+      pivot_longer(c(predicted, actual))
   ) +
   geom_errorbar(
     aes(
