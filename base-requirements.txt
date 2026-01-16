@@ -1,47 +1,27 @@
 ## Working environment
 pip
 joblib
-python-dotenv
 black
 tqdm
 
-
-#others
-beautifulsoup4
-yfinance
-six
-traveltimepy
-pgeocode
-
-
-## core scientific
+## core
 numpy
-geopandas
-shapely
 pandas
 scipy
-lifelines
+statsmodels
+scikit-learn
+
+## data
 duckdb
-pymc
 
 ## Visualisation
 seaborn
 matplotlib
-plotly
-holoviews
-lets-plot
+plotnine
 
-## ML
-scikit-learn
+## Movies getting longer post
+cinemagoer # IMDB
+beautifulsoup4
 
-## IMDB
-cinemagoer
-
-## AWS
-boto3
-awswrangler
-sagemaker
-
-
-## flickr
-flickr_api
+## F1
+fastf1
