@@ -1,0 +1,16 @@
+---
+title: "F1 lap time simulation"
+author: "Multiple"
+date: "2026-01-16"
+bibliography: references.bib
+categories: [random effects, probabilistic]
+image: "monza.png"
+toc: true
+execute:
+  echo: false
+  warning: false
+draft: true
+abstract:
+    F1... go brrr...
+
+---
