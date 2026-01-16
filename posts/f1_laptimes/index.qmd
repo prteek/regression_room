@@ -14,3 +14,22 @@ abstract:
     F1... go brrr...
 
 ---
+
+```{python}
+import pandas as pd
+import os
+from plotnine import *
+
+```
+
+```{python}
+sample_laptimes = pd.read_csv(os.path.join(
+  'posts',
+  'f1_laptimes',
+  'data',
+  'sample_laptimes.csv'
+))
+
+ggplot(sample_laptimes, aes(x='LapNumber', y='LapTime', colour='Driver')) + geom_line() + geom_point() + theme_minimal()
+
+```
