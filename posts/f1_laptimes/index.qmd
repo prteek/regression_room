@@ -20,13 +20,23 @@ import pandas as pd
 import os
 from plotnine import *
 
+if os.path.exists(os.path.join(
+  'posts',
+  'f1_laptimes',
+  'data')): # interactive case
+  data = os.path.join(
+  'posts',
+  'f1_laptimes',
+  'data')
+else: # rendering case
+  data = './data'
+
 ```
 
 ```{python}
+
 sample_laptimes = pd.read_csv(os.path.join(
-  'posts',
-  'f1_laptimes',
-  'data',
+  data,
   'sample_laptimes.csv'
 ))
 
