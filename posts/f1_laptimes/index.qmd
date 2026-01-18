@@ -26,11 +26,18 @@ import fastf1
 
 ```{python}
 
-sample_laptimes = pd.read_csv(os.path.join(
-  data,
-  'sample_laptimes.csv'
+sample_laptimes = (pd
+      .read_csv(os.path.join(
+  'posts',
+  'f1_laptimes',
+  'data',
+  'season_race.csv'
+))
+.query("Driver in ['VER', 'NOR'] and RoundNumber < 20 and RoundNumber >= 18")
+.assign(
+  LapTime=lambda df: pd.to_timedelta(df['LapTime']).dt.total_seconds()
 ))
 
-ggplot(sample_laptimes, aes(x='LapNumber', y='LapTime', colour='Driver')) + geom_line() + geom_point() + theme_minimal()
+ggplot(sample_laptimes, aes(x='LapNumber', y='LapTime', colour='Driver')) + geom_line() + geom_point() + theme_minimal() + facet_wrap('~EventName')
 
 ```
