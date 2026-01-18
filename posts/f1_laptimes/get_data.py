@@ -1,7 +1,6 @@
 #%%
 import fastf1
 import pandas as pd
-from plotnine import *
 import duckdb
 import os
 
@@ -10,7 +9,7 @@ schedule = fastf1.get_event_schedule(2025)
 print(schedule.get(['RoundNumber', 'EventDate', 'Location', 'OfficialEventName']))
 
 #%%
-session = fastf1.get_session(2025, 7, 'R')
+session = fastf1.get_session(2025, 1, 'R')
 session.load()
 
 print(session.event['EventName'])
