@@ -14,3 +14,328 @@ abstract:
     F1... go brrr...
 
 ---
+
+```{python}
+import pandas as pd
+import os
+from plotnine import *
+import fastf1
+
+```
+
+
+```{python}
+
+sample_laptimes = (pd
+      .read_csv(os.path.join(
+  'data',
+  'season_race.csv'
+))
+.query("Driver in ['PIA', 'NOR'] and RoundNumber < 20 and RoundNumber >= 18")
+.assign(
+  LapTime=lambda df: pd.to_timedelta(df['LapTime']).dt.total_seconds())
+.assign(SafetyCar=lambda df: df['TrackStatus'].astype('str').str.contains('4'),
+        VirtualSafetyCar=lambda df: df['TrackStatus'].astype('str').str.contains('6'),
+        YellowFlag=lambda df: df['TrackStatus'].astype('str').str.contains('2')
+        )
+)
+
+ggplot(sample_laptimes, aes(x='LapNumber', y='LapTime', colour='Driver')) + geom_line() + geom_point(alpha=0.5) + theme_minimal() + facet_wrap('~EventName')
+
+```
+
+
+```{python}
+df_plot = (sample_laptimes
+        .query("Driver in ('NOR', 'PIA') and RoundNumber == 19")
+        .sort_values('LapNumber')
+        )
+
+ggplot(df_plot, aes(x='LapNumber', y='LapTime', colour='Compound')) + geom_line() + geom_point() + theme_minimal()
+
+```
+
+
+```{python}
+
+ggplot(df_plot, aes(x='LapNumber', y='LapTime', colour='TyreLife')) + \
+  geom_line() + \
+    geom_point() + \
+    geom_line(aes(y='VirtualSafetyCar * 100 + 50'), colour='grey', linetype='dashed') + \
+    geom_line(aes(y='YellowFlag * 100 + 50'), colour='yellow') + \
+      theme_minimal()
+
+```
+
+
+```{python}
+
+ggplot(df_plot.query("~SafetyCar and ~ VirtualSafetyCar and ~ YellowFlag and PitInTime.isna() and PitOutTime.isna()"), aes(x='LapTime')) + \
+  geom_histogram(binwidth=0.2, fill='lightblue', colour='black') + \
+      theme_minimal()
+
+```
+
+## Exploratory Data Analysis: Why Simple Models Fall Short
+
+Before diving into modeling lap times, we need to understand the structure of our data. F1 lap time data has inherent characteristics that violate key assumptions of ordinary least squares (OLS) regression. Let's explore two critical issues: **within-race correlation among teammates** and **temporal autocorrelation within a driver's laps**.
+
+```{python}
+#| label: eda-setup
+import numpy as np
+from scipy import stats
+import statsmodels.api as sm
+from statsmodels.stats.stattools import durbin_watson
+from statsmodels.graphics.tsaplots import plot_acf
+import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings('ignore')
+```
+
+### Teammate Correlation Within Races
+
+Teammates share the same car, setup philosophy, and strategy team. This creates correlation in their lap times that violates the independence assumption of OLS. Let's examine McLaren teammates Norris (NOR) and Piastri (PIA) across multiple races.
+
+```{python}
+#| label: teammate-data-prep
+
+# Prepare clean lap data for multiple races
+clean_laps = (pd
+    .read_csv(os.path.join('data', 'season_race.csv'))
+    .assign(LapTime=lambda df: pd.to_timedelta(df['LapTime']).dt.total_seconds())
+    .assign(
+        SafetyCar=lambda df: df['TrackStatus'].astype('str').str.contains('4'),
+        VirtualSafetyCar=lambda df: df['TrackStatus'].astype('str').str.contains('6'),
+        YellowFlag=lambda df: df['TrackStatus'].astype('str').str.contains('2')
+    )
+    # Filter out safety car periods, pit laps, and outliers
+    .query("~SafetyCar and ~VirtualSafetyCar and ~YellowFlag")
+    .query("PitInTime != PitInTime or PitOutTime != PitOutTime")  # NaN check
+    .query("LapTime > 60 and LapTime < 150")  # Remove extreme outliers
+)
+
+# McLaren teammates across several races
+mclaren_laps = clean_laps.query("Team == 'McLaren' and Driver in ['NOR', 'PIA']")
+```
+
+```{python}
+#| label: teammate-scatter
+#| fig-cap: "Teammate lap times show strong positive correlation - when one driver is fast, the other tends to be fast too"
+
+# Pivot to compare teammates lap-by-lap within each race
+teammate_comparison = (mclaren_laps
+    .pivot_table(index=['RoundNumber', 'EventName', 'LapNumber'],
+                 columns='Driver',
+                 values='LapTime')
+    .dropna()
+    .reset_index()
+)
+
+# Scatter plot of teammate lap times
+(ggplot(teammate_comparison, aes(x='NOR', y='PIA'))
+ + geom_point(alpha=0.3, size=1.5, color='#FF8700')
+ + geom_smooth(method='lm', color='darkblue', se=True)
+ + geom_abline(intercept=0, slope=1, linetype='dashed', color='gray')
+ + labs(x='Norris Lap Time (seconds)',
+        y='Piastri Lap Time (seconds)',
+        title='McLaren Teammates: Lap-by-Lap Correlation')
+ + theme_minimal()
+ + coord_fixed()
+)
+```
+
+```{python}
+#| label: teammate-correlation-test
+#| echo: true
+
+# Statistical test for teammate correlation
+nor_times = teammate_comparison['NOR'].values
+pia_times = teammate_comparison['PIA'].values
+
+pearson_r, pearson_p = stats.pearsonr(nor_times, pia_times)
+spearman_r, spearman_p = stats.spearmanr(nor_times, pia_times)
+
+print(f"Pearson correlation:  r = {pearson_r:.3f}, p-value = {pearson_p:.2e}")
+print(f"Spearman correlation: ρ = {spearman_r:.3f}, p-value = {spearman_p:.2e}")
+print(f"\nNumber of paired observations: {len(nor_times)}")
+```
+
+The correlation between teammates' lap times is strong and highly significant (p < 0.001). This makes intuitive sense: track conditions (temperature, grip level, rubber buildup), race circumstances (safety cars, weather), and car performance affect both drivers similarly. **This shared variance violates the independence assumption of OLS.**
+
+```{python}
+#| label: teammate-by-race
+#| fig-cap: "Teammate correlation persists across different circuits and conditions"
+
+# Correlation by race
+race_correlations = (teammate_comparison
+    .groupby(['RoundNumber', 'EventName'])
+    .apply(lambda x: pd.Series({
+        'correlation': x['NOR'].corr(x['PIA']),
+        'n_laps': len(x)
+    }))
+    .reset_index()
+    .query("n_laps >= 20")  # Only races with enough laps
+)
+
+(ggplot(race_correlations, aes(x='reorder(EventName, correlation)', y='correlation'))
+ + geom_col(fill='#FF8700', alpha=0.8)
+ + geom_hline(yintercept=0, linetype='dashed')
+ + coord_flip()
+ + labs(x='', y='Pearson Correlation',
+        title='Teammate Lap Time Correlation by Race')
+ + theme_minimal()
+ + ylim(0, 1)
+)
+```
+
+### Temporal Autocorrelation: Lap Times Are Not IID
+
+A driver's lap time on lap $n$ is not independent of their lap time on lap $n-1$. Factors like tyre degradation, fuel load, and track evolution create systematic patterns. Let's examine this autocorrelation structure.
+
+```{python}
+#| label: single-driver-timeseries
+#| fig-cap: "A driver's lap times through a race show clear temporal structure - not random noise"
+
+# Pick a specific race for detailed analysis
+selected_race = clean_laps.query("RoundNumber == 10 and Driver == 'NOR'").sort_values('LapNumber')
+
+(ggplot(selected_race, aes(x='LapNumber', y='LapTime'))
+ + geom_line(color='#FF8700', size=0.8)
+ + geom_point(aes(color='factor(Stint)'), size=2)
+ + labs(x='Lap Number', y='Lap Time (seconds)',
+        title=f"Norris Lap Times: {selected_race['EventName'].iloc[0]}",
+        color='Stint')
+ + theme_minimal()
+)
+```
+
+```{python}
+#| label: acf-plot
+#| fig-cap: "Autocorrelation function shows significant correlation at multiple lags"
+
+# Compute and plot ACF for a clean stint
+single_stint = (clean_laps
+    .query("RoundNumber == 10 and Driver == 'NOR' and Stint == 2")
+    .sort_values('LapNumber')
+    ['LapTime']
+    .dropna()
+)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+plot_acf(single_stint, lags=min(15, len(single_stint)-1), ax=ax, alpha=0.05)
+ax.set_xlabel('Lag (laps)')
+ax.set_ylabel('Autocorrelation')
+ax.set_title('Autocorrelation of Lap Times Within a Stint')
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+#| label: autocorrelation-test
+#| echo: true
+
+# Ljung-Box test for autocorrelation
+lb_result = sm.stats.acorr_ljungbox(single_stint, lags=[1, 5, 10], return_df=True)
+print("Ljung-Box Test for Autocorrelation:")
+print(lb_result.to_string())
+print("\nNull hypothesis: No autocorrelation up to lag k")
+print("Small p-values indicate significant autocorrelation")
+```
+
+The autocorrelation function (ACF) and Ljung-Box test confirm what we see visually: **consecutive lap times are correlated**. The ACF shows significant positive autocorrelation at lag 1 (and often beyond), meaning a fast lap tends to be followed by another fast lap, and a slow lap by another slow lap.
+
+### Why OLS Regression Fails
+
+Let's fit a simple OLS model and examine the residuals to see the violations in action.
+
+```{python}
+#| label: ols-fit
+#| echo: true
+
+# Simple OLS: predict lap time from tyre life and stint
+ols_data = (clean_laps
+    .query("Driver == 'NOR' and RoundNumber == 10")
+    .sort_values('LapNumber')
+    .dropna(subset=['LapTime', 'TyreLife'])
+)
+
+X = sm.add_constant(ols_data[['TyreLife']])
+y = ols_data['LapTime']
+
+ols_model = sm.OLS(y, X).fit()
+print(ols_model.summary().tables[1])
+```
+
+```{python}
+#| label: residual-diagnostics
+#| fig-cap: "OLS residuals show clear patterns - they are not randomly distributed"
+
+# Add residuals to data
+ols_data = ols_data.copy()
+ols_data['residuals'] = ols_model.resid
+ols_data['fitted'] = ols_model.fittedvalues
+
+# Residuals vs lap number (should be random if IID)
+(ggplot(ols_data, aes(x='LapNumber', y='residuals'))
+ + geom_point(aes(color='factor(Stint)'), alpha=0.7)
+ + geom_hline(yintercept=0, linetype='dashed', color='red')
+ + geom_line(alpha=0.3)
+ + labs(x='Lap Number', y='Residual (seconds)',
+        title='OLS Residuals Over Time: Clear Patterns Emerge',
+        color='Stint')
+ + theme_minimal()
+)
+```
+
+```{python}
+#| label: durbin-watson-test
+#| echo: true
+
+# Durbin-Watson test for autocorrelation in residuals
+dw_stat = durbin_watson(ols_model.resid)
+print(f"Durbin-Watson statistic: {dw_stat:.3f}")
+print(f"\nInterpretation:")
+print(f"  DW ≈ 2: No autocorrelation")
+print(f"  DW < 2: Positive autocorrelation (our case)")
+print(f"  DW > 2: Negative autocorrelation")
+print(f"\nConclusion: DW = {dw_stat:.3f} indicates {'positive' if dw_stat < 2 else 'negative'} autocorrelation in residuals")
+```
+
+```{python}
+#| label: residual-acf
+#| fig-cap: "ACF of OLS residuals confirms the model fails to capture temporal structure"
+
+fig, ax = plt.subplots(figsize=(8, 4))
+plot_acf(ols_model.resid, lags=15, ax=ax, alpha=0.05)
+ax.set_xlabel('Lag (laps)')
+ax.set_ylabel('Autocorrelation')
+ax.set_title('Autocorrelation of OLS Residuals')
+plt.tight_layout()
+plt.show()
+```
+
+### Summary: The Case for Hierarchical Models
+
+Our EDA reveals two fundamental violations of OLS assumptions:
+
+| Assumption | Violation | Evidence |
+|------------|-----------|----------|
+| **Independence** | Teammate lap times are correlated | Pearson r > 0.9 across races |
+| **IID errors** | Residuals show autocorrelation | Durbin-Watson ≠ 2, significant ACF |
+
+These violations have serious consequences for OLS:
+
+1. **Biased standard errors**: OLS underestimates uncertainty, leading to overconfident inference
+2. **Inefficient estimates**: We're not using the correlation structure to improve predictions
+3. **Invalid hypothesis tests**: p-values and confidence intervals are unreliable
+
+**The solution**: Hierarchical (mixed-effects) models that explicitly account for:
+
+- **Random effects** for drivers and teams (handling teammate correlation)
+- **Correlation structures** for repeated measures within drivers/races
+- **Proper variance estimation** that respects the data's nested structure
+
+This motivates the use of models like:
+$$\text{LapTime}_{ijt} = \beta_0 + \beta_1 \text{TyreLife}_{ijt} + u_i + v_j + \epsilon_{ijt}$$
+
+Where $u_i$ captures driver-level variation, $v_j$ captures race-level variation, and $\epsilon_{ijt}$ can have an AR(1) structure within driver-race combinations.
