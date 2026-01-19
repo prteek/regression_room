@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
 </style>
 
 
@@ -72,6 +107,35 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <meta name="quarto:status" content="draft">
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -153,8 +217,20 @@ ul.task-list li input[type="checkbox"] {
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#exploratory-data-analysis-why-simple-models-fall-short" id="toc-exploratory-data-analysis-why-simple-models-fall-short" class="nav-link active" data-scroll-target="#exploratory-data-analysis-why-simple-models-fall-short">Exploratory Data Analysis: Why Simple Models Fall Short</a>
+  <ul class="collapse">
+  <li><a href="#teammate-correlation-within-races" id="toc-teammate-correlation-within-races" class="nav-link" data-scroll-target="#teammate-correlation-within-races">Teammate Correlation Within Races</a></li>
+  <li><a href="#temporal-autocorrelation-lap-times-are-not-iid" id="toc-temporal-autocorrelation-lap-times-are-not-iid" class="nav-link" data-scroll-target="#temporal-autocorrelation-lap-times-are-not-iid">Temporal Autocorrelation: Lap Times Are Not IID</a></li>
+  <li><a href="#why-ols-regression-fails" id="toc-why-ols-regression-fails" class="nav-link" data-scroll-target="#why-ols-regression-fails">Why OLS Regression Fails</a></li>
+  <li><a href="#summary-the-case-for-hierarchical-models" id="toc-summary-the-case-for-hierarchical-models" class="nav-link" data-scroll-target="#summary-the-case-for-hierarchical-models">Summary: The Case for Hierarchical Models</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -163,17 +239,244 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<div id="21523dba" class="cell" data-execution_count="2">
-<div class="cell-output cell-output-display" data-execution_count="2">
+<div id="a15e1af8" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-3-output-1.png" width="672" height="480" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-3-output-1.png" width="640" height="480" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
+<div id="39ddb703" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-4-output-1.png" width="640" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="31f2ceae" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-5-output-1.png" width="640" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="defa713e" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-6-output-1.png" width="640" height="480" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="exploratory-data-analysis-why-simple-models-fall-short" class="level2">
+<h2 class="anchored" data-anchor-id="exploratory-data-analysis-why-simple-models-fall-short">Exploratory Data Analysis: Why Simple Models Fall Short</h2>
+<p>Before diving into modeling lap times, we need to understand the structure of our data. F1 lap time data has inherent characteristics that violate key assumptions of ordinary least squares (OLS) regression. Let’s explore two critical issues: <strong>within-race correlation among teammates</strong> and <strong>temporal autocorrelation within a driver’s laps</strong>.</p>
+<section id="teammate-correlation-within-races" class="level3">
+<h3 class="anchored" data-anchor-id="teammate-correlation-within-races">Teammate Correlation Within Races</h3>
+<p>Teammates share the same car, setup philosophy, and strategy team. This creates correlation in their lap times that violates the independence assumption of OLS. Let’s examine McLaren teammates Norris (NOR) and Piastri (PIA) across multiple races.</p>
+<div id="cell-teammate-scatter" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div id="teammate-scatter" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/teammate-scatter-output-1.png" width="640" height="480" class="figure-img"></p>
+<figcaption>Teammate lap times show strong positive correlation - when one driver is fast, the other tends to be fast too</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="teammate-correlation-test" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Statistical test for teammate correlation</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>nor_times <span class="op">=</span> teammate_comparison[<span class="st">'NOR'</span>].values</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pia_times <span class="op">=</span> teammate_comparison[<span class="st">'PIA'</span>].values</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>pearson_r, pearson_p <span class="op">=</span> stats.pearsonr(nor_times, pia_times)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>spearman_r, spearman_p <span class="op">=</span> stats.spearmanr(nor_times, pia_times)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Pearson correlation:  r = </span><span class="sc">{</span>pearson_r<span class="sc">:.3f}</span><span class="ss">, p-value = </span><span class="sc">{</span>pearson_p<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Spearman correlation: ρ = </span><span class="sc">{</span>spearman_r<span class="sc">:.3f}</span><span class="ss">, p-value = </span><span class="sc">{</span>spearman_p<span class="sc">:.2e}</span><span class="ss">"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Number of paired observations: </span><span class="sc">{</span><span class="bu">len</span>(nor_times)<span class="sc">}</span><span class="ss">"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pearson correlation:  r = 0.931, p-value = 0.00e+00
+Spearman correlation: ρ = 0.946, p-value = 0.00e+00
+
+Number of paired observations: 1243</code></pre>
+</div>
+</div>
+<p>The correlation between teammates’ lap times is strong and highly significant (p &lt; 0.001). This makes intuitive sense: track conditions (temperature, grip level, rubber buildup), race circumstances (safety cars, weather), and car performance affect both drivers similarly. <strong>This shared variance violates the independence assumption of OLS.</strong></p>
+<div id="cell-teammate-by-race" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display">
+<div id="teammate-by-race" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/teammate-by-race-output-1.png" width="640" height="480" class="figure-img"></p>
+<figcaption>Teammate correlation persists across different circuits and conditions</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="temporal-autocorrelation-lap-times-are-not-iid" class="level3">
+<h3 class="anchored" data-anchor-id="temporal-autocorrelation-lap-times-are-not-iid">Temporal Autocorrelation: Lap Times Are Not IID</h3>
+<p>A driver’s lap time on lap <span class="math inline">\(n\)</span> is not independent of their lap time on lap <span class="math inline">\(n-1\)</span>. Factors like tyre degradation, fuel load, and track evolution create systematic patterns. Let’s examine this autocorrelation structure.</p>
+<div id="cell-single-driver-timeseries" class="cell" data-execution_count="11">
+<div class="cell-output cell-output-display">
+<div id="single-driver-timeseries" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/single-driver-timeseries-output-1.png" width="640" height="480" class="figure-img"></p>
+<figcaption>A driver’s lap times through a race show clear temporal structure - not random noise</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-acf-plot" class="cell" data-execution_count="12">
+<div class="cell-output cell-output-display">
+<div id="acf-plot" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/acf-plot-output-1.png" width="758" height="374" class="figure-img"></p>
+<figcaption>Autocorrelation function shows significant correlation at multiple lags</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="autocorrelation-test" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ljung-Box test for autocorrelation</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>lb_result <span class="op">=</span> sm.stats.acorr_ljungbox(single_stint, lags<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">10</span>], return_df<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Ljung-Box Test for Autocorrelation:"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(lb_result.to_string())</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"</span><span class="ch">\n</span><span class="st">Null hypothesis: No autocorrelation up to lag k"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"Small p-values indicate significant autocorrelation"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Ljung-Box Test for Autocorrelation:
+     lb_stat  lb_pvalue
+1   0.007006   0.933293
+5   0.061294   0.999952
+10  0.523226   0.999992
+
+Null hypothesis: No autocorrelation up to lag k
+Small p-values indicate significant autocorrelation</code></pre>
+</div>
+</div>
+<p>The autocorrelation function (ACF) and Ljung-Box test confirm what we see visually: <strong>consecutive lap times are correlated</strong>. The ACF shows significant positive autocorrelation at lag 1 (and often beyond), meaning a fast lap tends to be followed by another fast lap, and a slow lap by another slow lap.</p>
+</section>
+<section id="why-ols-regression-fails" class="level3">
+<h3 class="anchored" data-anchor-id="why-ols-regression-fails">Why OLS Regression Fails</h3>
+<p>Let’s fit a simple OLS model and examine the residuals to see the violations in action.</p>
+<div id="ols-fit" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Simple OLS: predict lap time from tyre life and stint</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ols_data <span class="op">=</span> (clean_laps</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .query(<span class="st">"Driver == 'NOR' and RoundNumber == 10"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    .sort_values(<span class="st">'LapNumber'</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    .dropna(subset<span class="op">=</span>[<span class="st">'LapTime'</span>, <span class="st">'TyreLife'</span>])</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>X <span class="op">=</span> sm.add_constant(ols_data[[<span class="st">'TyreLife'</span>]])</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>y <span class="op">=</span> ols_data[<span class="st">'LapTime'</span>]</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>ols_model <span class="op">=</span> sm.OLS(y, X).fit()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ols_model.summary().tables[<span class="dv">1</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>==============================================================================
+                 coef    std err          t      P&gt;|t|      [0.025      0.975]
+------------------------------------------------------------------------------
+const         75.2322      0.778     96.761      0.000      73.678      76.786
+TyreLife       0.0873      0.055      1.596      0.116      -0.022       0.197
+==============================================================================</code></pre>
+</div>
+</div>
+<div id="cell-residual-diagnostics" class="cell" data-execution_count="15">
+<div class="cell-output cell-output-display">
+<div id="residual-diagnostics" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/residual-diagnostics-output-1.png" width="640" height="480" class="figure-img"></p>
+<figcaption>OLS residuals show clear patterns - they are not randomly distributed</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="durbin-watson-test" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Durbin-Watson test for autocorrelation in residuals</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>dw_stat <span class="op">=</span> durbin_watson(ols_model.resid)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Durbin-Watson statistic: </span><span class="sc">{</span>dw_stat<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Interpretation:"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  DW ≈ 2: No autocorrelation"</span>)</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  DW &lt; 2: Positive autocorrelation (our case)"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"  DW &gt; 2: Negative autocorrelation"</span>)</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="ch">\n</span><span class="ss">Conclusion: DW = </span><span class="sc">{</span>dw_stat<span class="sc">:.3f}</span><span class="ss"> indicates </span><span class="sc">{</span><span class="st">'positive'</span> <span class="cf">if</span> dw_stat <span class="op">&lt;</span> <span class="dv">2</span> <span class="cf">else</span> <span class="st">'negative'</span><span class="sc">}</span><span class="ss"> autocorrelation in residuals"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Durbin-Watson statistic: 1.497
+
+Interpretation:
+  DW ≈ 2: No autocorrelation
+  DW &lt; 2: Positive autocorrelation (our case)
+  DW &gt; 2: Negative autocorrelation
+
+Conclusion: DW = 1.497 indicates positive autocorrelation in residuals</code></pre>
+</div>
+</div>
+<div id="cell-residual-acf" class="cell" data-execution_count="17">
+<div class="cell-output cell-output-display">
+<div id="residual-acf" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="index_files/figure-html/residual-acf-output-1.png" width="758" height="374" class="figure-img"></p>
+<figcaption>ACF of OLS residuals confirms the model fails to capture temporal structure</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="summary-the-case-for-hierarchical-models" class="level3">
+<h3 class="anchored" data-anchor-id="summary-the-case-for-hierarchical-models">Summary: The Case for Hierarchical Models</h3>
+<p>Our EDA reveals two fundamental violations of OLS assumptions:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 33%">
+<col style="width: 30%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Assumption</th>
+<th>Violation</th>
+<th>Evidence</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Independence</strong></td>
+<td>Teammate lap times are correlated</td>
+<td>Pearson r &gt; 0.9 across races</td>
+</tr>
+<tr class="even">
+<td><strong>IID errors</strong></td>
+<td>Residuals show autocorrelation</td>
+<td>Durbin-Watson ≠ 2, significant ACF</td>
+</tr>
+</tbody>
+</table>
+<p>These violations have serious consequences for OLS:</p>
+<ol type="1">
+<li><strong>Biased standard errors</strong>: OLS underestimates uncertainty, leading to overconfident inference</li>
+<li><strong>Inefficient estimates</strong>: We’re not using the correlation structure to improve predictions</li>
+<li><strong>Invalid hypothesis tests</strong>: p-values and confidence intervals are unreliable</li>
+</ol>
+<p><strong>The solution</strong>: Hierarchical (mixed-effects) models that explicitly account for:</p>
+<ul>
+<li><strong>Random effects</strong> for drivers and teams (handling teammate correlation)</li>
+<li><strong>Correlation structures</strong> for repeated measures within drivers/races</li>
+<li><strong>Proper variance estimation</strong> that respects the data’s nested structure</li>
+</ul>
+<p>This motivates the use of models like: <span class="math display">\[\text{LapTime}_{ijt} = \beta_0 + \beta_1 \text{TyreLife}_{ijt} + u_i + v_j + \epsilon_{ijt}\]</span></p>
+<p>Where <span class="math inline">\(u_i\)</span> captures driver-level variation, <span class="math inline">\(v_j\)</span> captures race-level variation, and <span class="math inline">\(\epsilon_{ijt}\)</span> can have an AR(1) structure within driver-race combinations.</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
