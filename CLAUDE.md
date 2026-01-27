@@ -48,3 +48,8 @@ Posts support both R and Python code chunks. Use `echo: false` in YAML to hide c
 ## Execution Model
 
 Posts use `freeze: true` by default - code only re-runs when source changes. To force re-execution, delete the corresponding `_freeze/posts/<name>/` directory before rendering.
+
+
+## Conventions
+
+- **git commit**: Do not add *Co-Authored-By* detail in any commits
