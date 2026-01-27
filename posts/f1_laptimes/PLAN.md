@@ -13,7 +13,7 @@ The analysis builds on existing work in F1 analytics and provides a framework fo
 ## Data
 
 **Sources:**
-- fastf1 Python library - provides comprehensive race telemetry data
+- fastf1 Python library - provides comprehensive race telemetry data (saved at @posts/f1_laptimes/data/season_race.csv)
 - 2025 F1 season races (dry conditions only)
 
 **Variables:**
