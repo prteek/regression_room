@@ -1,5 +1,5 @@
 ---
-title: "Product ratings (Part 1)"
+title: "ratings ~ brand, analysis"
 author: "Prateek"
 date: "2026-04-15"
 categories: [inference, likelihood, dispersion]
@@ -7,7 +7,7 @@ image: "ratings.png"
 toc: true
 bibliography: references.bib
 abstract: |
-  This article applies likelihood-based inference to product rating data. We fit a binomial model to estimate the propensity for favorable ratings and account for overdispersion by introducing additional variance.
+  Likelihood-based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.
 execute:
   echo: false
   warning: false
@@ -15,16 +15,8 @@ execute:
 
 ## Introduction
 
-In this article, we explore the use of likelihood-based inference for analyzing product rating data. Traditional data science approaches often rely on summary statistics or machine learning models, but likelihood-based methods offer a different perspective by directly modeling the probability of observed outcomes. We focus on a binomial model to estimate the propensity of users to give favorable ratings to products. However, the data exhibits overdispersion, meaning that the variance in ratings is higher than what a simple binomial model would predict. To address this, we introduce additional variance in the propensity parameter, allowing for a more accurate representation of the underlying rating behavior.
+Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.
 
-
-## Data
-
-We use electronics product rating dataset. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5.
-For this article we're using a subset of `Headphones` in the data from brands *Philips, Jabra and Apple*.
-Using the ratings data it is possible to model the probability of a favorable rating using a binomial framework.
-
-### EDA
 
 ```{python}
 import seaborn as sns
@@ -36,24 +28,223 @@ from scipy import stats
 from scipy.integrate import quad
 import matplotlib.pyplot as plt
 import warnings
-from plotnine import *
+from rfuns import *
 from IPython.display import display
+from seaborn import axes_style
+
+theme_dict = {**axes_style("whitegrid")}
+sns.set_theme(style="whitegrid", palette=None)
 
 warnings.filterwarnings("ignore")
 ```
 
+## Data
+
+Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5.
+For this article a subset of `Headphones` in the data, from brands *Philips, Jabra and Apple* is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.
+
 ```{python}
-ratings = pd.read_csv("ratings.csv").drop(["split", "user_attr"], axis=1)
-display(ratings.head())
+ratings = (
+    pd.read_csv("ratings.csv")
+    .drop(["split", "user_attr"], axis=1)
+    .query("item_id in (4501, 6699, 3700)")
+)
+
+display(ratings.sample(n=5, random_state=42))
 ```
 
-Average ratings for brands and their variance
+---
+
+### EDA
+
+Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.
 
 ```{python}
+fig, ax = plt.subplots(1, 2, figsize=(8, 4))
+
+sns.barplot(
+    data=ratings.sort_values(["brand"]),
+    x="rating",
+    y="brand",
+    estimator=np.mean,
+    errorbar="se",
+    alpha=0.6,
+    ax=ax[0],
+    orient="h",
+)
+ax[0].set_title("Mean rating by brand")
+ax[0].set_xlim([1, 5])
+sns.countplot(data=ratings, x="brand", alpha=0.7, ax=ax[1])
+ax[1].set_title("Rating counts by brand")
+ax[1].tick_params(axis="x", rotation=45)
+
+fig.tight_layout()
+```
+
+The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on *Jabra* (commonly rate 1 or 5), Philips has a more favourable set of ratings with fewest 1 Stars.
+
+```{python}
+
+sns.countplot(ratings, x="rating", hue="brand", alpha=0.7)
+```
+
+At this point it is hard to say which brand is more favourably rated given the variability in average ratings.
+
+
+## Analysis
+
+### Modelling a single brand
+
+It can be useful to start by modeling the ratings for a single brand to understand the underlying distribution and variability.
+
+It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials.
+
+A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$.
+
+Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
+
+So, effectively each user has a preference *p* and the observed ratings are realizations of a binomial process with this underlying probability.
+
+To model a single user's preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of *p* for a user but rather a range of possible values with different likelihood based on how the user has rated the product.
+
+For e.g. if a user who has rated the product *4* star is considered, then the likelihood of their preference *p* would be higher for values around 0.8 (assuming 4 out of 5 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.
+
+*For a refresher on likelihood theory refer [likelihood primer](https://prteek.github.io/regression_room/posts/likelihood_primer/)*
+
+```{python}
+
+theta = seq(from_=0, to=1, length_out=100)
+ll_theta = stats.binom.logpmf(k=4, n=5, p=theta)
 
 (
-    ggplot(ratings)
-    + geom_bar(aes(x="brand", y="rating"), alpha=0.5, stat="summary", fun_y=np.mean)
-    + theme_minimal()
+    so.Plot({"x": theta, "y": ll_theta}, x="x", y="y")
+    .add(so.Line())
+    .theme(theme_dict)
+    .label(
+        title="Log-Likelihood of User Preference with 4 star rating",
+        x="p",
+        y="Log-Likelihood",
+    )
 )
 ```
+
+#### Heirarchical model
+It is not unreasonable to assume that these preferences (p) for users are drawn from a distribution (say Beta). The marginal likelihood for a given user integrates over the uncertainty in $p$:
+
+$$L(y) = \int_0^1 L(y \mid p) \, f(p) \, dp = \int_0^1 p^y(1-p)^{n-y} f(p) \, dp$$
+
+where $f(p) = \text{Beta}(p \mid \alpha, \beta)$. This captures heterogeneity in user preferences while pooling information across observations.
+
+A numerical approach is favoured here so that $\alpha$ and $\beta$ can be estimated from the data.
+
+```{python}
+
+
+def beta_binom_pmf(k, n, alpha, beta):
+    """
+    Compute Beta-Binomial PMF by numerical integration.
+
+    P(X=k) = ∫ Binomial(k;n,p) × Beta(p;α,β) dp
+
+    This avoids deriving the closed-form Beta function formula,
+    instead computing the marginal distribution directly.
+    """
+
+    def integrand(p):
+        binom_pmf = stats.binom.pmf(k, n, p)
+        beta_pdf = stats.beta.pdf(p, alpha, beta)
+        return binom_pmf * beta_pdf
+
+    result, _ = quad(integrand, 0, 1)
+    return result
+
+
+apple_ratings = ratings.query("brand=='Apple'")["rating"].to_list()
+
+
+def ll_od_binom(params):
+    """Negative log-likelihood for Beta-Binomial"""
+    alpha, beta = params
+    pmf = np.array([beta_binom_pmf(k, 5, alpha, beta) for k in apple_ratings])
+    pmf = np.clip(pmf, 1e-300, 1)  # Avoid log(0)
+    return -np.sum(np.log(pmf))
+```
+#### Maximum Likelihood Estimation
+
+```{python}
+#| cache: true
+
+res_od_binom = minimize(
+    ll_od_binom, x0=[10, 10], bounds=[(0.1, 100), (0.1, 100)], method="L-BFGS-B"
+)
+
+alpha, beta = res_od_binom.x
+print(f"Beta-Binomial MLE:")
+print(f"  α = {alpha:.6f}")
+print(f"  β = {beta:.6f}")
+
+# Distribution of p
+p_mean = alpha / (alpha + beta)
+p_var = (alpha * beta) / ((alpha + beta) ** 2 * (alpha + beta + 1))
+p_std = np.sqrt(p_var)
+
+print(f"\nDistribution of p ~ Beta({alpha:.2f}, {beta:.2f}):")
+print(f"  E[p] = {p_mean:.6f}")
+print(f"  SD[p] = {p_std:.6f}")
+print(f"  95% range: [{p_mean - 1.96 * p_std:.6f}, {p_mean + 1.96 * p_std:.6f}]")
+print(
+    f"\nInterpretation: Users have a preference for Apple products with p varying around {p_mean:.1%}"
+)
+print(f"with standard deviation ±{p_std:.1%}")
+```
+
+#### Profile likelihood of *p*
+
+For Beta-Binomial, we fix E[p] and optimize α.
+
+```{python}
+#| cache: true
+
+p_vals_bb = np.linspace(0.6, 0.80, 20)
+alpha_res_bb = []
+ll_res_bb = []
+
+for p_fixed in p_vals_bb:
+
+    def profile_ll_bb(alpha):
+        beta = alpha * (1 - p_fixed) / p_fixed
+        pmf = np.array([beta_binom_pmf(k, 5, alpha, beta) for k in apple_ratings])
+        pmf = np.clip(pmf, 1e-300, 1)
+        return -np.sum(np.log(pmf))
+
+    res = minimize_scalar(profile_ll_bb, bounds=(0.1, 200), method="bounded")
+    if res.success:
+        alpha_res_bb.append(res.x)
+        ll_res_bb.append(-res.fun)
+    else:
+        alpha_res_bb.append(np.nan)
+        ll_res_bb.append(np.nan)
+
+# Find MLE
+valid_idx_bb = np.isfinite(ll_res_bb)
+if np.any(valid_idx_bb):
+    mle_idx_bb = np.argmax(np.array(ll_res_bb)[valid_idx_bb])
+    p_mle_bb = p_vals_bb[valid_idx_bb][mle_idx_bb]
+    p_joint_bb = alpha / (alpha + beta)
+
+    print(f"Profile likelihood MLE: p = {p_mle_bb:.6f}")
+    print(f"Joint optimization MLE: p = {p_joint_bb:.6f}")
+    print(f"Difference: {abs(p_mle_bb - p_joint_bb):.6f}")
+```
+
+
+```{python}
+plt.plot(p_vals_bb, np.array(ll_res_bb), "o-", color="coral", linewidth=2)
+plt.xlabel("p = E[p]")
+plt.ylabel("Log-likelihood")
+plt.title("Profile Likelihood: Beta-Binomial")
+plt.grid(True, alpha=0.3)
+```
+
+
+The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. This could also be used to derive confidence interval on *p* if required.
