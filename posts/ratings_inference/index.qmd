@@ -1,0 +1,59 @@
+---
+title: "Product ratings (Part 1)"
+author: "Prateek"
+date: "2026-04-15"
+categories: [inference, likelihood, dispersion]
+image: "ratings.png"
+toc: true
+bibliography: references.bib
+abstract: |
+  This article applies likelihood-based inference to product rating data. We fit a binomial model to estimate the propensity for favorable ratings and account for overdispersion by introducing additional variance.
+execute:
+  echo: false
+  warning: false
+---
+
+## Introduction
+
+In this article, we explore the use of likelihood-based inference for analyzing product rating data. Traditional data science approaches often rely on summary statistics or machine learning models, but likelihood-based methods offer a different perspective by directly modeling the probability of observed outcomes. We focus on a binomial model to estimate the propensity of users to give favorable ratings to products. However, the data exhibits overdispersion, meaning that the variance in ratings is higher than what a simple binomial model would predict. To address this, we introduce additional variance in the propensity parameter, allowing for a more accurate representation of the underlying rating behavior.
+
+
+## Data
+
+We use electronics product rating dataset. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5.
+For this article we're using a subset of `Headphones` in the data from brands *Philips, Jabra and Apple*.
+Using the ratings data it is possible to model the probability of a favorable rating using a binomial framework.
+
+### EDA
+
+```{python}
+import seaborn as sns
+import seaborn.objects as so
+import numpy as np
+import pandas as pd
+from scipy.optimize import minimize, approx_fprime, minimize_scalar
+from scipy import stats
+from scipy.integrate import quad
+import matplotlib.pyplot as plt
+import warnings
+from plotnine import *
+from IPython.display import display
+
+warnings.filterwarnings("ignore")
+```
+
+```{python}
+ratings = pd.read_csv("ratings.csv").drop(["split", "user_attr"], axis=1)
+display(ratings.head())
+```
+
+Average ratings for brands and their variance
+
+```{python}
+
+(
+    ggplot(ratings)
+    + geom_bar(aes(x="brand", y="rating"), alpha=0.5, stat="summary", fun_y=np.mean)
+    + theme_minimal()
+)
+```
