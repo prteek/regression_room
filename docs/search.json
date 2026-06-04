@@ -264,5 +264,33 @@
     "title": "Regression Room",
     "section": "",
     "text": "ratings ~ brand, analysis\n\n\n\ninference\n\nlikelihood\n\ndispersion\n\n\n\n\n\n\nApr 15, 2026\n\n\nPrateek\n\n7 min\n\n\n\n\n\n\n\n\n\n\n\nData preparation\n\n\n\n\n\nNov 30, 2025\n\n\nPrateek\n\n24 min\n\n\n\n\n\n\n\n\n\n\n\nrentership ~ occupation, analysis\n\n\n\nrandom effects\n\nhierarchical models\n\nglm\n\nbinomial\n\n\n\n\n\n\nNov 30, 2025\n\n\nPrateek\n\n22 min\n\n\n\n\n\n\n\n\n\n\n\nMPG ~ manufacturer, analysis\n\n\n\nrandom effects\n\nhierarchical models\n\n\n\n\n\n\nNov 23, 2025\n\n\nPrateek\n\n10 min\n\n\n\n\n\n\n\n\n\n\n\ngambling spend ~ gender, analysis\n\n\n\nregression\n\nANOVA\n\n\n\n\n\n\nOct 16, 2025\n\n\nPrateek\n\n6 min\n\n\n\n\n\n\n\n\n\n\n\nLikelihood\n\n\n\nlikelihood\n\nfisher information\n\nnewton raphson\n\n\n\n\n\n\nDec 28, 2024\n\n\nPrateek\n\n8 min\n\n\n\n\n\n\n\n\n\n\n\nProbabilistic model of User journey\n\n\n\nmarkov chain\n\ntimeseries\n\n\n\n\n\n\nDec 18, 2024\n\n\nPrateek\n\n16 min\n\n\n\n\n\n\n\n\n\n\n\nMovie runtime ~ year, analysis\n\n\n\nhypothesis testing\n\nbootstrap\n\nregression\n\n\n\n\n\n\nJul 21, 2023\n\n\nPrateek\n\n7 min\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "posts/occupation_impact_on_rentals/data_preparation.html",
+    "href": "posts/occupation_impact_on_rentals/data_preparation.html",
+    "title": "Data preparation",
+    "section": "",
+    "text": "- The project is out-of-sync -- use `renv::status()` for details."
+  },
+  {
+    "objectID": "posts/occupation_impact_on_rentals/data_preparation.html#msoa-level-tenure-occupation-data",
+    "href": "posts/occupation_impact_on_rentals/data_preparation.html#msoa-level-tenure-occupation-data",
+    "title": "Data preparation",
+    "section": "MSOA level tenure-occupation data",
+    "text": "MSOA level tenure-occupation data"
+  },
+  {
+    "objectID": "posts/occupation_impact_on_rentals/data_preparation.html#additional-data",
+    "href": "posts/occupation_impact_on_rentals/data_preparation.html#additional-data",
+    "title": "Data preparation",
+    "section": "Additional data",
+    "text": "Additional data\n\nGeo data\n\n\nMSOA level occupation-age data"
+  },
+  {
+    "objectID": "posts/occupation_impact_on_rentals/data_preparation.html#dataset",
+    "href": "posts/occupation_impact_on_rentals/data_preparation.html#dataset",
+    "title": "Data preparation",
+    "section": "Dataset",
+    "text": "Dataset\n\nFiltered\n\n\nSubsampled"
   }
 ]
