@@ -1,9 +1,0 @@
-tidyverse
-renv
-MASS
-faraway
-httpgd
-HistData
-reticulate
-lmtest
-patchwork
