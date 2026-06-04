@@ -62,8 +62,8 @@ load httpfs;
 ## MSOA level tenure-occupation data
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create or replace table msoa_tenure_occupation as
 (
@@ -126,8 +126,8 @@ union all
 
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create
 or replace table occupation_by_tenure as (
@@ -273,8 +273,8 @@ dbWriteTable(con, "dim_region", dim_region, overwrite = TRUE)
 
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create
 or replace table msoa_occupation_age as (
@@ -366,8 +366,8 @@ or replace table msoa_occupation_age as (
 ```
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create
 or replace table occupation_by_age_long as (
@@ -469,8 +469,8 @@ or replace table occupation_by_age_long as (
 ```
 
 ```{sql, connection = "con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 create
 or replace table occupation_by_age as
 with base as (
@@ -527,8 +527,8 @@ order by msoa, occupation
 
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create or replace table dataset as
     (
@@ -562,8 +562,8 @@ create or replace table dataset as
 ### Filtered
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create or replace table dataset_filtered as
     (
@@ -579,8 +579,8 @@ create or replace table dataset_filtered as
 
 
 ```{sql, connection="con"}
-#| warning: false
-#| cache: false
+--| warning: false
+--| cache: false
 
 create or replace table dataset_sample as (
     with ranked_geos as (
