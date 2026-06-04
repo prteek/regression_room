@@ -178,7 +178,7 @@ window.Quarto = {
   <div>
     <div class="abstract">
       <div class="block-title">Abstract</div>
-      <p>We apply likelihood-based inference to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.</p>
+      <p>Likelihood-based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.</p>
     </div>
   </div>
   
@@ -211,14 +211,12 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>In this article, we explore the use of likelihood-based inference for analyzing product rating data. Traditional data science approaches often rely on summary statistics or machine learning models, but likelihood-based methods offer a different perspective by directly modeling the probability of observed outcomes. We focus on a binomial model to estimate the propensity of users to give favorable ratings to products. However, the data exhibits overdispersion, meaning that the variance in ratings is higher than what a simple binomial model would predict. To address this, we introduce additional variance in the propensity parameter, allowing for a more accurate representation of the underlying rating behavior.</p>
+<p>Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5. For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips, Jabra and Apple</em> is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.</p>
-<section id="eda" class="level3">
-<h3 class="anchored" data-anchor-id="eda">EDA</h3>
-<div id="dbbbbd4d" class="cell" data-execution_count="2">
+<div id="eded3756" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -300,8 +298,10 @@ window.Quarto = {
 </div>
 </div>
 <hr>
+<section id="eda" class="level3">
+<h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.</p>
-<div id="d701a115" class="cell" data-execution_count="3">
+<div id="edd4aad7" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -311,7 +311,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on <em>Jabra</em> (commonly rate 1 or 5), Philips has a more favourable set of ratings with fewest 1 Stars.</p>
-<div id="e789612e" class="cell" data-execution_count="4">
+<div id="31542850" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -335,8 +335,8 @@ window.Quarto = {
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
 <p>For e.g.&nbsp;if a user who has rated the product <em>4</em> star is considered, then the likelihood of their preference <em>p</em> would be higher for values around 0.8 (assuming 4 out of 5 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.</p>
 <p><em>For a refresher on likelihood theory refer <a href="https://prteek.github.io/regression_room/posts/likelihood_primer/">likelihood primer</a></em></p>
-<div id="6d378947" class="cell" data-execution_count="5">
-<div class="cell-output cell-output-display" data-execution_count="14">
+<div id="75d8773b" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 <figure class="figure">
 <p><img src="index_files/figure-html/cell-6-output-1.png" width="599" height="445" class="figure-img"></p>
@@ -353,7 +353,7 @@ window.Quarto = {
 </section>
 <section id="maximum-likelihood-estimation" class="level4">
 <h4 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum Likelihood Estimation</h4>
-<div id="4aea50cc" class="cell" data-cache="true" data-execution_count="7">
+<div id="a9e6d6a8" class="cell" data-cache="true" data-execution_count="7">
 <div class="cell-output cell-output-stdout">
 <pre><code>Beta-Binomial MLE:
   α = 1.540765
@@ -372,14 +372,14 @@ with standard deviation ±25.2%</code></pre>
 <section id="profile-likelihood-of-p" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-of-p">Profile likelihood of <em>p</em></h4>
 <p>For Beta-Binomial, we fix E[p] and optimize α.</p>
-<div id="d91b0dc5" class="cell" data-cache="true" data-execution_count="8">
+<div id="211f8b3d" class="cell" data-cache="true" data-execution_count="8">
 <div class="cell-output cell-output-stdout">
 <pre><code>Profile likelihood MLE: p = 0.726316
 Joint optimization MLE: p = 0.730090
 Difference: 0.003774</code></pre>
 </div>
 </div>
-<div id="7bd435e7" class="cell" data-execution_count="9">
+<div id="217badaa" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
