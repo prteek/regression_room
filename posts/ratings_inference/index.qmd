@@ -228,7 +228,7 @@ For Beta-Binomial, we fix E[p] and optimize α.
 ```{python}
 #| cache: true
 
-p_vals_bb = np.linspace(0.6, 0.80, 20)
+p_vals_bb = np.linspace(0.5, 0.80, 20)
 alpha_res_bb = []
 ll_res_bb = []
 
@@ -263,7 +263,7 @@ if np.any(valid_idx_bb):
 
 
 ```{python}
-plt.plot(p_vals_bb, np.array(ll_res_bb), "o-", color="coral", linewidth=2)
+plt.plot(p_vals_bb, np.array(ll_res_bb), "o-")
 plt.xlabel("p = E[p]")
 plt.ylabel("Log-likelihood")
 plt.title("Profile Likelihood: Beta-Binomial")
