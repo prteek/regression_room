@@ -102,13 +102,13 @@ It is useful to consider that each user effectively has 5 (0-4) discrete numbers
 
 A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$ [@statistical_inference]
 
-Extending this line of thinking it is cle r that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
+Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
 
 So, effectively each user has a preference *p* and the observed ratings are realizations of a binomial process with this underlying probability.
 
 To model a single user's preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of *p* for a user but rather a range of possible values with different likelihood based on how the user has rated the product.
 
-For e.g. if a user who has rated the product *3* star is considered, then the likelihood of their preference *p* would be higher for values around 0.75 (assuming 3 out of 4 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.
+For e.g. if a user who has rated the product *3* star is considered, then the likelihood of their preference *p* would be greater (around 0.65 value), but it may still be possible that their preference is some other value with a lower likelihood.
 
 *For a refresher on likelihood theory refer [likelihood primer](https://prteek.github.io/regression_room/posts/likelihood_primer/)*
 
