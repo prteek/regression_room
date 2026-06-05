@@ -3,11 +3,11 @@ title: "ratings ~ brand, analysis"
 author: "Prateek"
 date: "2026-04-15"
 categories: [inference, likelihood, dispersion]
-image: "ratings.png"
+image: "noun-user-rating-8089150.png"
 toc: true
 bibliography: references.bib
 abstract: |
-  Likelihood-based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.
+  In this article, likelihood based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.
 execute:
   echo: false
   warning: false
@@ -15,7 +15,7 @@ execute:
 
 ## Introduction
 
-Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.
+Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model [@in_all_likelihood] that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.
 
 
 ```{python}
@@ -97,11 +97,11 @@ At this point it is hard to say which brand is more favourably rated given the v
 
 It can be useful to start by modeling the ratings for a single brand to understand the underlying distribution and variability.
 
-It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials.
+It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood].
 
 A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$.
 
-Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
+Extending this line of thinking it is cle r that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
 
 So, effectively each user has a preference *p* and the observed ratings are realizations of a binomial process with this underlying probability.
 
