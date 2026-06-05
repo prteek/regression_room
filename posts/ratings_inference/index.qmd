@@ -40,13 +40,14 @@ warnings.filterwarnings("ignore")
 
 ## Data
 
-Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5.
+Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4).
 For this article a subset of `Headphones` in the data, from brands *Philips, Jabra and Apple* is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.
 
 ```{python}
 ratings = (
     pd.read_csv("ratings.csv")
     .drop(["split", "user_attr"], axis=1)
+    .assign(rating=lambda x: x["rating"] - 1)
     .query("item_id in (4501, 6699, 3700)")
 )
 
@@ -73,7 +74,7 @@ sns.barplot(
     orient="h",
 )
 ax[0].set_title("Mean rating by brand")
-ax[0].set_xlim([1, 5])
+ax[0].set_xlim([0, 4])
 sns.countplot(data=ratings, x="brand", alpha=0.7, ax=ax[1])
 ax[1].set_title("Rating counts by brand")
 ax[1].tick_params(axis="x", rotation=45)
@@ -81,7 +82,7 @@ ax[1].tick_params(axis="x", rotation=45)
 fig.tight_layout()
 ```
 
-The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on *Jabra* (commonly rate 1 or 5), Philips has a more favourable set of ratings with fewest 1 Stars.
+The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on *Jabra* (commonly rate 0 or 4), Philips has a more favourable set of ratings with fewest 0 Stars.
 
 ```{python}
 
@@ -97,7 +98,7 @@ At this point it is hard to say which brand is more favourably rated given the v
 
 It can be useful to start by modeling the ratings for a single brand to understand the underlying distribution and variability.
 
-It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood]
+It is useful to consider that each user effectively has 5 (0-4) discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood]
 
 A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$ [@statistical_inference]
 
@@ -107,21 +108,21 @@ So, effectively each user has a preference *p* and the observed ratings are real
 
 To model a single user's preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of *p* for a user but rather a range of possible values with different likelihood based on how the user has rated the product.
 
-For e.g. if a user who has rated the product *4* star is considered, then the likelihood of their preference *p* would be higher for values around 0.8 (assuming 4 out of 5 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.
+For e.g. if a user who has rated the product *3* star is considered, then the likelihood of their preference *p* would be higher for values around 0.75 (assuming 3 out of 4 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.
 
 *For a refresher on likelihood theory refer [likelihood primer](https://prteek.github.io/regression_room/posts/likelihood_primer/)*
 
 ```{python}
 
 theta = seq(from_=0, to=1, length_out=100)
-ll_theta = stats.binom.logpmf(k=4, n=5, p=theta)
+ll_theta = stats.binom.logpmf(k=3, n=4, p=theta)
 
 (
     so.Plot({"x": theta, "y": ll_theta}, x="x", y="y")
     .add(so.Line())
     .theme(theme_dict)
     .label(
-        title="Log-Likelihood of User Preference with 4 star rating",
+        title="Log-Likelihood of User Preference with 3 star rating",
         x="p",
         y="Log-Likelihood",
     )
@@ -165,7 +166,8 @@ apple_ratings = ratings.query("brand=='Apple'")["rating"].to_list()
 def ll_od_binom(params):
     """Negative log-likelihood for Beta-Binomial"""
     alpha, beta = params
-    pmf = np.array([beta_binom_pmf(k, 5, alpha, beta) for k in apple_ratings])
+    # Adjust ratings to include 0
+    pmf = np.array([beta_binom_pmf(k, 4, alpha, beta) for k in apple_ratings])
     pmf = np.clip(pmf, 1e-300, 1)  # Avoid log(0)
     return -np.sum(np.log(pmf))
 ```
@@ -175,7 +177,7 @@ def ll_od_binom(params):
 #| cache: true
 
 res_od_binom = minimize(
-    ll_od_binom, x0=[10, 10], bounds=[(0.1, 100), (0.1, 100)], method="L-BFGS-B"
+    ll_od_binom, x0=[1, 1], bounds=[(0.01, 10), (0.01, 10)], method="L-BFGS-B"
 )
 
 alpha, beta = res_od_binom.x
@@ -198,6 +200,27 @@ print(
 print(f"with standard deviation ±{p_std:.1%}")
 ```
 
+#### Goodness of fit
+
+Goodness of fit can be assessed by comparing counts from the Beta-binomial model using MLE estimates, to actual counts at different rating values. The counts are close and model is satisfactory for this data.
+
+```{python}
+pmf_od = np.array([beta_binom_pmf(k, 4, alpha, beta) for k in range(5)])
+total = len(apple_ratings)
+theoretical_counts_od_binom = np.round(pmf_od * total, 1)
+observed_counts = np.array([apple_ratings.count(k) for k in range(5)])
+
+comparison = pd.DataFrame(
+    {
+        "Rating": range(5),
+        "Observed counts": observed_counts,
+        "Modelled counts": theoretical_counts_od_binom,
+    }
+)
+print("\nModel check:")
+print(comparison)
+```
+
 #### Profile likelihood of *p*
 
 For Beta-Binomial, we fix E[p] and optimize α.
@@ -213,11 +236,12 @@ for p_fixed in p_vals_bb:
 
     def profile_ll_bb(alpha):
         beta = alpha * (1 - p_fixed) / p_fixed
-        pmf = np.array([beta_binom_pmf(k, 5, alpha, beta) for k in apple_ratings])
+        # Adjusting ratings to include 0
+        pmf = np.array([beta_binom_pmf(k, 4, alpha, beta) for k in apple_ratings])
         pmf = np.clip(pmf, 1e-300, 1)
         return -np.sum(np.log(pmf))
 
-    res = minimize_scalar(profile_ll_bb, bounds=(0.1, 200), method="bounded")
+    res = minimize_scalar(profile_ll_bb, bounds=(0.01, 10), method="bounded")
     if res.success:
         alpha_res_bb.append(res.x)
         ll_res_bb.append(-res.fun)
@@ -247,4 +271,4 @@ plt.grid(True, alpha=0.3)
 ```
 
 
-The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. This could also be used to derive confidence interval on *p* if required.
+The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. It could also be used to derive confidence interval on *p* using likelihod based intervals if required.
