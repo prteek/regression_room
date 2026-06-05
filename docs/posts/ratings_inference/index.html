@@ -198,7 +198,7 @@ window.Quarto = {
   <div>
     <div class="abstract">
       <div class="block-title">Abstract</div>
-      <p>In this article, likelihood based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.</p>
+      <p>This article develops a hierarchical beta-binomial model for likelihood based inference on brand favorability from product ratings. The approach captures heterogeneous user preferences by modeling individual rating propensities as draws from a beta distribution. We implement the model using closed-form PMF computation for computational efficiency and demonstrate profile likelihood-based inference for comparing brand preferences, including construction of confidence intervals and significance testing. The methodology is illustrated on product ratings for Apple and Philips headphones.</p>
     </div>
   </div>
   
@@ -218,7 +218,9 @@ window.Quarto = {
   <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a>
   <ul class="collapse">
   <li><a href="#modelling-a-single-brand" id="toc-modelling-a-single-brand" class="nav-link" data-scroll-target="#modelling-a-single-brand">Modelling a single brand</a></li>
+  <li><a href="#comparing-apple-and-philips" id="toc-comparing-apple-and-philips" class="nav-link" data-scroll-target="#comparing-apple-and-philips">Comparing Apple and Philips</a></li>
   </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
 </nav>
     </div>
@@ -231,12 +233,12 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span> that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.</p>
+<p>Product ratings are commonly used to assess brand preference, but summarizing ratings is challenging because user ratings reflect variability and randomness in individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span> that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4). For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips, Jabra and Apple</em> is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.</p>
-<div id="03b373de" class="cell" data-execution_count="2">
+<p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4). For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips and Apple</em> is used. The study focuses on 1 particular product from each of these brands to make a comparative assessment.</p>
+<div id="e0c2591d" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -257,59 +259,59 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<th data-quarto-table-cell-role="th">3098</th>
+<th data-quarto-table-cell-role="th">3396</th>
 <td>4501</td>
-<td>392873</td>
+<td>443035</td>
 <td>4.0</td>
-<td>2015-02-02</td>
+<td>2015-04-10</td>
 <td>Female</td>
 <td>Headphones</td>
 <td>Apple</td>
 <td>2014</td>
 </tr>
 <tr class="even">
-<th data-quarto-table-cell-role="th">3860</th>
+<th data-quarto-table-cell-role="th">1764</th>
 <td>3700</td>
-<td>510134</td>
+<td>209184</td>
 <td>4.0</td>
-<td>2015-07-16</td>
+<td>2014-01-10</td>
 <td>Male</td>
 <td>Headphones</td>
 <td>Philips</td>
 <td>2014</td>
 </tr>
 <tr class="odd">
-<th data-quarto-table-cell-role="th">2392</th>
+<th data-quarto-table-cell-role="th">2521</th>
 <td>4501</td>
-<td>298026</td>
+<td>312774</td>
 <td>1.0</td>
-<td>2014-08-31</td>
+<td>2014-09-28</td>
 <td>Female</td>
 <td>Headphones</td>
 <td>Apple</td>
 <td>2014</td>
 </tr>
 <tr class="even">
-<th data-quarto-table-cell-role="th">2678</th>
+<th data-quarto-table-cell-role="th">3105</th>
 <td>4501</td>
-<td>330293</td>
-<td>3.0</td>
-<td>2014-11-02</td>
+<td>394621</td>
+<td>4.0</td>
+<td>2015-02-04</td>
 <td>Female</td>
 <td>Headphones</td>
 <td>Apple</td>
 <td>2014</td>
 </tr>
 <tr class="odd">
-<th data-quarto-table-cell-role="th">3543</th>
-<td>6699</td>
-<td>465867</td>
-<td>1.0</td>
-<td>2015-05-14</td>
-<td>Female</td>
+<th data-quarto-table-cell-role="th">2063</th>
+<td>3700</td>
+<td>252433</td>
+<td>3.0</td>
+<td>2014-05-13</td>
+<td>Male</td>
 <td>Headphones</td>
-<td>Jabra</td>
-<td>2015</td>
+<td>Philips</td>
+<td>2014</td>
 </tr>
 </tbody>
 </table>
@@ -321,7 +323,7 @@ window.Quarto = {
 <section id="eda" class="level3">
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.</p>
-<div id="ae2df29a" class="cell" data-execution_count="3">
+<div id="1091c89f" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -330,8 +332,8 @@ window.Quarto = {
 </div>
 </div>
 </div>
-<p>The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on <em>Jabra</em> (commonly rate 0 or 4), Philips has a more favourable set of ratings with fewest 0 Stars.</p>
-<div id="f02274e4" class="cell" data-execution_count="4">
+<p>The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on <em>Apple</em> (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.</p>
+<div id="8637a26b" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -353,10 +355,10 @@ window.Quarto = {
 <p>Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.</p>
 <p>So, effectively each user has a preference <em>p</em> and the observed ratings are realizations of a binomial process with this underlying probability.</p>
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
-<p>For e.g.&nbsp;if a user who has rated the product <em>3</em> star is considered, then the likelihood of their preference <em>p</em> would be higher for values around 0.65 (assuming 3 out of 4 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.</p>
+<p>For e.g.&nbsp;if a user who has rated the product <em>3</em> star is considered, then the likelihood of their preference <em>p</em> would be greater (around 0.65 value), but it may still be possible that their preference is some other value with a lower likelihood.</p>
 <p><em>For a refresher on likelihood theory refer <a href="https://prteek.github.io/regression_room/posts/likelihood_primer/">likelihood primer</a></em></p>
-<div id="7fe21f88" class="cell" data-execution_count="5">
-<div class="cell-output cell-output-display" data-execution_count="25">
+<div id="9d8a0843" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 <figure class="figure">
 <p><img src="index_files/figure-html/cell-6-output-1.png" width="599" height="445" class="figure-img"></p>
@@ -371,9 +373,22 @@ window.Quarto = {
 <p>where <span class="math inline">\(f(p) = \text{Beta}(p \mid \alpha, \beta)\)</span>. This captures heterogeneity in user preferences while pooling information across observations <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span>.</p>
 <p>A numerical approach is favoured here so that <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> can be estimated from the data <span class="citation" data-cites="2020SciPy-NMeth">(<a href="#ref-2020SciPy-NMeth" role="doc-biblioref">Virtanen et al. 2020</a>)</span>.</p>
 </section>
+<section id="computing-the-beta-binomial-pmf" class="level4">
+<h4 class="anchored" data-anchor-id="computing-the-beta-binomial-pmf">Computing the Beta-Binomial PMF</h4>
+<p>The beta-binomial PMF can be computed via numerical integration or via a closed-form expression. For completeness, we show both approaches:</p>
+<p><strong>Numerical Integration Approach (Educational):</strong></p>
+<p>The marginal likelihood can be computed by numerically integrating over the uncertainty in <span class="math inline">\(p\)</span>:</p>
+<p><span class="math display">\[P(X=k) = \int_0^1 \text{Binomial}(k; n, p) \times \text{Beta}(p; \alpha, \beta) \, dp\]</span></p>
+<p>While numerically correct, this integration-based approach is slow since it requires evaluating the integral for each parameter value during optimization.</p>
+<p><strong>Closed-Form Approach (Used for Analysis):</strong></p>
+<p>The beta-binomial distribution has a closed-form expression:</p>
+<p><span class="math display">\[P(X=k) = \binom{n}{k} \frac{B(k + \alpha, n - k + \beta)}{B(\alpha, \beta)}\]</span></p>
+<p>where <span class="math inline">\(B\)</span> denotes the beta function. This can be computed efficiently using log-space arithmetic:</p>
+<p>The closed-form approach is orders of magnitude faster and numerically stable, making it ideal for likelihood optimization.</p>
+</section>
 <section id="maximum-likelihood-estimation" class="level4">
 <h4 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum Likelihood Estimation</h4>
-<div id="705dbc57" class="cell" data-cache="true" data-execution_count="7">
+<div id="6e1585e1" class="cell" data-cache="true" data-execution_count="8">
 <div class="cell-output cell-output-stdout">
 <pre><code>Beta-Binomial MLE:
   α = 0.668897
@@ -392,7 +407,7 @@ with standard deviation ±33.5%</code></pre>
 <section id="goodness-of-fit" class="level4">
 <h4 class="anchored" data-anchor-id="goodness-of-fit">Goodness of fit</h4>
 <p>Goodness of fit can be assessed by comparing counts from the Beta-binomial model using MLE estimates, to actual counts at different rating values. The counts are close and model is satisfactory for this data.</p>
-<div id="74504883" class="cell" data-execution_count="8">
+<div id="d56356f4" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Model check:
@@ -408,28 +423,123 @@ Model check:
 <section id="profile-likelihood-of-p" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-of-p">Profile likelihood of <em>p</em></h4>
 <p>For Beta-Binomial, we fix E[p] and optimize α.</p>
-<div id="83d861b5" class="cell" data-cache="true" data-execution_count="9">
+<div id="e33f8369" class="cell" data-cache="true" data-execution_count="10">
 <div class="cell-output cell-output-stdout">
-<pre><code>Profile likelihood MLE: p = 0.652632
+<pre><code>Profile likelihood MLE: p = 0.657895
 Joint optimization MLE: p = 0.653064
-Difference: 0.000432</code></pre>
+Difference: 0.004831</code></pre>
 </div>
 </div>
-<div id="619f3ac0" class="cell" data-execution_count="10">
+<div id="589527a7" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-11-output-1.png" width="605" height="455" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-12-output-1.png" width="605" height="455" class="figure-img"></p>
 </figure>
 </div>
 </div>
 </div>
 <p>The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. It could also be used to derive confidence interval on <em>p</em> using likelihod based intervals if required.</p>
-
-
-
 </section>
 </section>
+<section id="comparing-apple-and-philips" class="level3">
+<h3 class="anchored" data-anchor-id="comparing-apple-and-philips">Comparing Apple and Philips</h3>
+<p>The formulation earlier can be extended to compare the ratings distributions of Apple and Philips by fitting separate Beta-Binomial models for each brand and then comparing the estimated parameters and profile likelihoods. However, a reparameterisation of joint likelihood of both brands can enable estimation of difference in preferences between the two brands directly and efficiently.</p>
+<p>To illustrate this consider only 2 binomial datasets first and their joint likelihood.</p>
+<p><strong>Joint Likelihood of Two Binomial Datasets:</strong></p>
+<p>Let <span class="math inline">\(y_1 \sim \text{Binomial}(n_1, p_1)\)</span> and <span class="math inline">\(y_2 \sim \text{Binomial}(n_2, p_2)\)</span> be the observed counts (favorable ratings) from two brands. The joint likelihood is:</p>
+<p><span class="math display">\[L(p_1, p_2 \mid y_1, y_2) = p_1^{y_1}(1-p_1)^{n_1-y_1} \cdot p_2^{y_2}(1-p_2)^{n_2-y_2}\]</span></p>
+<p><strong>Pawitan’s Reparameterisation for Comparing Proportions:</strong></p>
+<p>Pawitan advocates reparameterising in terms of the <strong>log odds-ratio</strong> <span class="math inline">\(\theta\)</span> (parameter of interest) and <strong>log odds</strong> <span class="math inline">\(\eta\)</span> (nuisance parameter). This reparameterisation is preferred because the likelihood of the log odds-ratio is more regular than alternatives (difference or relative risk), particularly in small samples.</p>
+<p>Define: - <strong>Log odds-ratio:</strong> <span class="math inline">\(\theta = \log\left(\frac{p_1(1-p_2)}{p_2(1-p_1)}\right)\)</span> (compares relative odds between brands) - <strong>Log odds:</strong> <span class="math inline">\(\eta = \log\left(\frac{p_2}{1-p_2}\right)\)</span> (nuisance parameter)</p>
+<p>The null hypothesis of equal proportions is expressed as <span class="math inline">\(H_0: \theta = 0\)</span> (equivalent to <span class="math inline">\(p_1 = p_2\)</span>).</p>
+<p>By simple algebra, the probabilities can be expressed in terms of <span class="math inline">\((\theta, \eta)\)</span> as:</p>
+<p><span class="math display">\[\eta = \log\frac{p_2}{1-p_2}\]</span></p>
+<p><span class="math display">\[p_2 = \frac{e^{\eta}}{1+e^{\eta}}, \quad p_1 = \frac{e^{\theta+\eta}}{1+e^{\theta+\eta}}\]</span></p>
+<p>The <strong>joint likelihood</strong> in terms of <span class="math inline">\((\theta, \eta)\)</span> becomes:</p>
+<p><span class="math display">\[L(\theta, \eta) = \left(\frac{p_1/(1-p_1)}{p_2/(1-p_2)}\right)^{y_1} \left(\frac{p_2}{1-p_2}\right)^{y_1+y_2} (1-p_1)^{n_1-y_1}(1-p_2)^{n_2-y_2}\]</span></p>
+<p><span class="math display">\[= e^{\theta y_1} e^{\eta(y_1+y_2)}(1+e^{\theta+\eta})^{-(n_1-y_1)}(1+e^{\eta})^{-(n_2-y_2)}\]</span></p>
+<p>The <strong>profile likelihood</strong> of <span class="math inline">\(\theta\)</span> is obtained by maximizing the joint likelihood over the nuisance parameter <span class="math inline">\(\eta\)</span>:</p>
+<p><span class="math display">\[L_p(\theta) = \max_{\eta} L(\theta, \eta \mid y_1, y_2)\]</span></p>
+<p>This orthogonal parameterisation allows efficient inference on <span class="math inline">\(\theta\)</span> independently of the nuisance parameter. Confidence intervals for <span class="math inline">\(\theta\)</span> are constructed using the likelihood ratio test: values satisfying <span class="math inline">\(-2\log\Lambda(\theta) \leq \chi^2_{1,\alpha}\)</span> form a likelihood-based confidence region <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span>.</p>
+<hr>
+<section id="hierarchical-extension-comparing-two-brands-with-heterogeneity" class="level4">
+<h4 class="anchored" data-anchor-id="hierarchical-extension-comparing-two-brands-with-heterogeneity">Hierarchical Extension: Comparing Two Brands with Heterogeneity</h4>
+<p>The reparameterisation can be extended to account for heterogeneity in user preferences within each brand. Assume that for each brand, the underlying probability varies according to a beta distribution:</p>
+<ul>
+<li>Apple: <span class="math inline">\(p_1 \sim \text{Beta}(\alpha_1, \beta_1)\)</span></li>
+<li>Philips: <span class="math inline">\(p_2 \sim \text{Beta}(\alpha_2, \beta_2)\)</span></li>
+</ul>
+<p>Using Pawitan’s reparameterisation in terms of <span class="math inline">\((\theta, \eta)\)</span>, the <strong>marginal likelihood</strong> (integrating over the heterogeneity in both brands) is:</p>
+<p><span class="math display">\[L(\theta, \eta, \alpha_1, \beta_1, \alpha_2, \beta_2 \mid y_1, y_2) = \int_0^1 \int_0^1 L(\theta, \eta \mid p_1, p_2, y_1, y_2) \cdot f(p_1 \mid \alpha_1, \beta_1) \cdot f(p_2 \mid \alpha_2, \beta_2) \, dp_1 \, dp_2\]</span></p>
+<p>where <span class="math inline">\(f(p_i \mid \alpha_i, \beta_i)\)</span> denotes the beta probability density function for brand <span class="math inline">\(i\)</span>. This integral captures how user preferences vary within each brand while simultaneously allowing comparison of the preference distributions between brands through the log odds-ratio parameter <span class="math inline">\(\theta\)</span>.</p>
+</section>
+<section id="profile-likelihood-for-comparing-brands" class="level4">
+<h4 class="anchored" data-anchor-id="profile-likelihood-for-comparing-brands">Profile Likelihood for Comparing Brands</h4>
+<p>Following the same structure as the single-brand analysis, we compute the profile likelihood of <span class="math inline">\(\theta\)</span> by fixing it and optimizing over the nuisance parameters.</p>
+<div id="4ae0b8f0" class="cell" data-execution_count="13">
+<div class="cell-output cell-output-stdout">
+<pre><code>Computing profile likelihood...
+  5/20 complete
+  10/20 complete
+  15/20 complete
+  20/20 complete
+MLE: θ = -0.315789</code></pre>
+</div>
+</div>
+<div id="7181a4ff" class="cell" data-execution_count="14">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+95% Likelihood-based Confidence Interval for θ:
+  [-0.893, 0.261]
+  Excludes zero: False</code></pre>
+</div>
+</div>
+<div id="2ceba1d1" class="cell" data-execution_count="15">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-16-output-1.png" width="944" height="561" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="fd10c697" class="cell" data-execution_count="16">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+### Interpretation
+The profile likelihood shows the log odds-ratio between Apple and Philips preferences.
+
+**Point Estimate:**
+The estimated MLE is θ = -0.316, indicating that Philips products are favored.
+
+**Confidence Interval &amp; Significance:**
+The 95% likelihood-based confidence interval is [-0.893, 0.261].
+The observed difference is not statistically significant at the 0.05 level
+(the confidence interval includes zero).
+This means there is weak evidence that Apple disfavors Philips.
+
+**Interpretation:**
+A value of θ = 0 indicates equal preference distributions, while positive θ favors Apple and negative θ favors Philips.
+The reparameterization naturally handles the within-brand heterogeneity captured by the beta distribution parameters while directly addressing the comparison question.</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>This article demonstrated a hierarchical Bayesian approach to comparing brand favorability through product ratings. The key contributions are:</p>
+<ol type="1">
+<li><p><strong>Explicit heterogeneity modeling</strong>: The beta-binomial model captures individual user preference heterogeneity, which traditional summary statistics ignore.</p></li>
+<li><p><strong>Computational efficiency</strong>: Using the closed-form beta-binomial PMF via special functions (log-space computation) is orders of magnitude faster than numerical integration, enabling practical optimization.</p></li>
+<li><p><strong>Likelihood-based inference</strong>: The profile likelihood approach enables principled inference on the log odds-ratio, including confidence intervals and significance tests, without relying on asymptotic approximations.</p></li>
+<li><p><strong>Practical interpretability</strong>: The reparameterization in terms of log odds-ratio directly addresses the comparison question and naturally handles nuisance parameters representing within-brand heterogeneity.</p></li>
+</ol>
+<p>The methodology can be extended to multiple brands, product categories, or temporal dynamics by adjusting the hierarchical structure. The likelihood-based framework also naturally generalizes to missing data, hierarchical priors, or discrete choice models with richer preference structures.</p>
+
+
+
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
