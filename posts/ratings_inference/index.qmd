@@ -3,7 +3,7 @@ title: "ratings ~ brand, analysis"
 author: "Prateek"
 date: "2026-04-15"
 categories: [inference, likelihood, dispersion]
-image: "noun-user-rating-8089150.png"
+image: "ratings.png"
 toc: true
 bibliography: references.bib
 abstract: |
@@ -97,9 +97,9 @@ At this point it is hard to say which brand is more favourably rated given the v
 
 It can be useful to start by modeling the ratings for a single brand to understand the underlying distribution and variability.
 
-It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood].
+It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood]
 
-A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$.
+A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$ [@statistical_inference]
 
 Extending this line of thinking it is cle r that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
 
@@ -133,9 +133,9 @@ It is not unreasonable to assume that these preferences (p) for users are drawn 
 
 $$L(y) = \int_0^1 L(y \mid p) \, f(p) \, dp = \int_0^1 p^y(1-p)^{n-y} f(p) \, dp$$
 
-where $f(p) = \text{Beta}(p \mid \alpha, \beta)$. This captures heterogeneity in user preferences while pooling information across observations.
+where $f(p) = \text{Beta}(p \mid \alpha, \beta)$. This captures heterogeneity in user preferences while pooling information across observations [@in_all_likelihood].
 
-A numerical approach is favoured here so that $\alpha$ and $\beta$ can be estimated from the data.
+A numerical approach is favoured here so that $\alpha$ and $\beta$ can be estimated from the data [@2020SciPy-NMeth].
 
 ```{python}
 

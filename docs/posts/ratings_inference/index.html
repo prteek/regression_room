@@ -22,7 +22,27 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -178,7 +198,7 @@ window.Quarto = {
   <div>
     <div class="abstract">
       <div class="block-title">Abstract</div>
-      <p>Likelihood-based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.</p>
+      <p>In this article, likelihood based inference is applied to estimate brand favorability from product ratings using a hierarchical beta-binomial model. This approach captures heterogeneous user preferences and provides principled estimates of rating propensity for brand comparison.</p>
     </div>
   </div>
   
@@ -211,12 +231,12 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.</p>
+<p>Product ratings are commonly used to assess brand quality, but summarizing ratings is challenging because user ratings reflect both product quality and individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity. This article develops a hierarchical model <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span> that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5. For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips, Jabra and Apple</em> is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.</p>
-<div id="eded3756" class="cell" data-execution_count="2">
+<div id="38f183ef" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -301,7 +321,7 @@ window.Quarto = {
 <section id="eda" class="level3">
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.</p>
-<div id="edd4aad7" class="cell" data-execution_count="3">
+<div id="827dda7d" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -311,7 +331,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on <em>Jabra</em> (commonly rate 1 or 5), Philips has a more favourable set of ratings with fewest 1 Stars.</p>
-<div id="31542850" class="cell" data-execution_count="4">
+<div id="80a31d79" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -328,14 +348,14 @@ window.Quarto = {
 <section id="modelling-a-single-brand" class="level3">
 <h3 class="anchored" data-anchor-id="modelling-a-single-brand">Modelling a single brand</h3>
 <p>It can be useful to start by modeling the ratings for a single brand to understand the underlying distribution and variability.</p>
-<p>It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials.</p>
-<p>A binomial model assumes <span class="math inline">\(y \sim \text{Binomial}(n, p)\)</span>, where <span class="math inline">\(p\)</span> is the probability of a favorable rating. The likelihood is <span class="math inline">\(L(p) = p^y(1-p)^{n-y}\)</span>, with MLE <span class="math inline">\(\hat{p} = y/n\)</span>.</p>
-<p>Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.</p>
+<p>It is useful to consider that each user effectively has 5 discrete numbers which it gets to chose from with a certain underlying probability. This behaviour essentially mimicks a binomial process. If it is considered that individual user ratings are binomial outcomes then it implies that brand ratings are essentially a mixtue of binomials <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span></p>
+<p>A binomial model assumes <span class="math inline">\(y \sim \text{Binomial}(n, p)\)</span>, where <span class="math inline">\(p\)</span> is the probability of a favorable rating. The likelihood is <span class="math inline">\(L(p) = p^y(1-p)^{n-y}\)</span>, with MLE <span class="math inline">\(\hat{p} = y/n\)</span> <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span></p>
+<p>Extending this line of thinking it is cle r that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.</p>
 <p>So, effectively each user has a preference <em>p</em> and the observed ratings are realizations of a binomial process with this underlying probability.</p>
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
 <p>For e.g.&nbsp;if a user who has rated the product <em>4</em> star is considered, then the likelihood of their preference <em>p</em> would be higher for values around 0.8 (assuming 4 out of 5 ratings are favorable), but it may still be possible that their preference is some other value with a lower likelihood.</p>
 <p><em>For a refresher on likelihood theory refer <a href="https://prteek.github.io/regression_room/posts/likelihood_primer/">likelihood primer</a></em></p>
-<div id="75d8773b" class="cell" data-execution_count="5">
+<div id="e9dd58ee" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 <figure class="figure">
@@ -348,12 +368,12 @@ window.Quarto = {
 <h4 class="anchored" data-anchor-id="heirarchical-model">Heirarchical model</h4>
 <p>It is not unreasonable to assume that these preferences (p) for users are drawn from a distribution (say Beta). The marginal likelihood for a given user integrates over the uncertainty in <span class="math inline">\(p\)</span>:</p>
 <p><span class="math display">\[L(y) = \int_0^1 L(y \mid p) \, f(p) \, dp = \int_0^1 p^y(1-p)^{n-y} f(p) \, dp\]</span></p>
-<p>where <span class="math inline">\(f(p) = \text{Beta}(p \mid \alpha, \beta)\)</span>. This captures heterogeneity in user preferences while pooling information across observations.</p>
-<p>A numerical approach is favoured here so that <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> can be estimated from the data.</p>
+<p>where <span class="math inline">\(f(p) = \text{Beta}(p \mid \alpha, \beta)\)</span>. This captures heterogeneity in user preferences while pooling information across observations <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span>.</p>
+<p>A numerical approach is favoured here so that <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> can be estimated from the data <span class="citation" data-cites="2020SciPy-NMeth">(<a href="#ref-2020SciPy-NMeth" role="doc-biblioref">Virtanen et al. 2020</a>)</span>.</p>
 </section>
 <section id="maximum-likelihood-estimation" class="level4">
 <h4 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum Likelihood Estimation</h4>
-<div id="a9e6d6a8" class="cell" data-cache="true" data-execution_count="7">
+<div id="860cdcba" class="cell" data-cache="true" data-execution_count="8">
 <div class="cell-output cell-output-stdout">
 <pre><code>Beta-Binomial MLE:
   α = 1.540765
@@ -372,14 +392,14 @@ with standard deviation ±25.2%</code></pre>
 <section id="profile-likelihood-of-p" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-of-p">Profile likelihood of <em>p</em></h4>
 <p>For Beta-Binomial, we fix E[p] and optimize α.</p>
-<div id="211f8b3d" class="cell" data-cache="true" data-execution_count="8">
+<div id="218f7013" class="cell" data-cache="true" data-execution_count="9">
 <div class="cell-output cell-output-stdout">
 <pre><code>Profile likelihood MLE: p = 0.726316
 Joint optimization MLE: p = 0.730090
 Difference: 0.003774</code></pre>
 </div>
 </div>
-<div id="217badaa" class="cell" data-execution_count="9">
+<div id="a24a4b03" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -391,11 +411,22 @@ Difference: 0.003774</code></pre>
 <p>The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. This could also be used to derive confidence interval on <em>p</em> if required.</p>
 
 
+
 </section>
 </section>
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-statistical_inference" class="csl-entry" role="listitem">
+George Casella, Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
+</div>
+<div id="ref-in_all_likelihood" class="csl-entry" role="listitem">
+Pawitan, Yudi. 2013. <em>In All Likelihood: Statistical Modelling and Inference Using Likelihood</em>. Oxford University Press.
+</div>
+<div id="ref-2020SciPy-NMeth" class="csl-entry" role="listitem">
+Virtanen, Pauli, Ralf Gommers, Travis E. Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, et al. 2020. <span>“<span class="nocase"><span>SciPy</span> 1.0: Fundamental Algorithms for Scientific Computing in Python</span>.”</span> <em>Nature Methods</em> 17: 261–72. <a href="https://doi.org/10.1038/s41592-019-0686-2">https://doi.org/10.1038/s41592-019-0686-2</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
