@@ -11,6 +11,7 @@ abstract: |
 execute:
   echo: false
   warning: false
+  engine: jupyter
 ---
 
 ## Introduction
@@ -41,14 +42,14 @@ warnings.filterwarnings("ignore")
 ## Data
 
 Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4).
-For this article a subset of `Headphones` in the data, from brands *Philips, Jabra and Apple* is used. The study focuses on these 3 particular products from these brands to make a comparative assessment.
+For this article a subset of `Headphones` in the data, from brands *Philips and Apple* is used. The study focuses on 1 particular product from each of these brands to make a comparative assessment.
 
 ```{python}
 ratings = (
     pd.read_csv("ratings.csv")
     .drop(["split", "user_attr"], axis=1)
     .assign(rating=lambda x: x["rating"] - 1)
-    .query("item_id in (4501, 6699, 3700)")
+    .query("item_id in (4501, 3700)")
 )
 
 display(ratings.sample(n=5, random_state=42))
@@ -82,7 +83,7 @@ ax[1].tick_params(axis="x", rotation=45)
 fig.tight_layout()
 ```
 
-The distribution of ratings for these brands has distinct patterns, while users seem to have more polar views on *Jabra* (commonly rate 0 or 4), Philips has a more favourable set of ratings with fewest 0 Stars.
+The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on *Apple* (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.
 
 ```{python}
 
@@ -152,12 +153,19 @@ def beta_binom_pmf(k, n, alpha, beta):
     """
 
     def integrand(p):
-        binom_pmf = stats.binom.pmf(k, n, p)
-        beta_pdf = stats.beta.pdf(p, alpha, beta)
-        return binom_pmf * beta_pdf
+        log_pmf = stats.binom.logpmf(k, n, p) + stats.beta.logpdf(p, alpha, beta)
+        return np.exp(log_pmf)
 
     result, _ = quad(integrand, 0, 1)
-    return result
+    return np.clip(result, 1e-300, 1)
+
+
+def log_beta_binom_pmf(k, n, alpha, beta):
+    """
+    Compute log of Beta-Binomial PMF (for numerical stability).
+    """
+    pmf = beta_binom_pmf(k, n, alpha, beta)
+    return np.log(np.maximum(pmf, 1e-300))
 
 
 apple_ratings = ratings.query("brand=='Apple'")["rating"].to_list()
@@ -168,16 +176,20 @@ def ll_od_binom(params):
     alpha, beta = params
     # Adjust ratings to include 0
     pmf = np.array([beta_binom_pmf(k, 4, alpha, beta) for k in apple_ratings])
-    pmf = np.clip(pmf, 1e-300, 1)  # Avoid log(0)
     return -np.sum(np.log(pmf))
 ```
+
 #### Maximum Likelihood Estimation
 
 ```{python}
 #| cache: true
 
 res_od_binom = minimize(
-    ll_od_binom, x0=[1, 1], bounds=[(0.01, 10), (0.01, 10)], method="L-BFGS-B"
+    ll_od_binom,
+    x0=[0.5, 0.5],
+    bounds=[(0.01, 1), (0.01, 1)],
+    method="L-BFGS-B",
+    options={"ftol": 1e-2},
 )
 
 alpha, beta = res_od_binom.x
@@ -238,7 +250,6 @@ for p_fixed in p_vals_bb:
         beta = alpha * (1 - p_fixed) / p_fixed
         # Adjusting ratings to include 0
         pmf = np.array([beta_binom_pmf(k, 4, alpha, beta) for k in apple_ratings])
-        pmf = np.clip(pmf, 1e-300, 1)
         return -np.sum(np.log(pmf))
 
     res = minimize_scalar(profile_ll_bb, bounds=(0.01, 10), method="bounded")
@@ -272,3 +283,164 @@ plt.grid(True, alpha=0.3)
 
 
 The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. It could also be used to derive confidence interval on *p* using likelihod based intervals if required.
+
+### Comparing Apple and Philips
+
+The formulation earlier can be extended to compare the ratings distributions of Apple and Philips by fitting separate Beta-Binomial models for each brand and then comparing the estimated parameters and profile likelihoods. However, a reparameterisation of joint likelihood of both brands can enable estimation of difference in preferences between the two brands directly and efficiently.
+
+To illustrate this consider only 2 binomial datasets first and their joint likelihood.
+
+**Joint Likelihood of Two Binomial Datasets:**
+
+Let $y_1 \sim \text{Binomial}(n_1, p_1)$ and $y_2 \sim \text{Binomial}(n_2, p_2)$ be the observed counts (favorable ratings) from two brands. The joint likelihood is:
+
+$$L(p_1, p_2 \mid y_1, y_2) = p_1^{y_1}(1-p_1)^{n_1-y_1} \cdot p_2^{y_2}(1-p_2)^{n_2-y_2}$$
+
+**Pawitan's Reparameterisation for Comparing Proportions:**
+
+Pawitan advocates reparameterising in terms of the **log odds-ratio** $\theta$ (parameter of interest) and **log odds** $\eta$ (nuisance parameter). This reparameterisation is preferred because the likelihood of the log odds-ratio is more regular than alternatives (difference or relative risk), particularly in small samples.
+
+Define:
+- **Log odds-ratio:** $\theta = \log\left(\frac{p_1(1-p_2)}{p_2(1-p_1)}\right)$ (compares relative odds between brands)
+- **Log odds:** $\eta = \log\left(\frac{p_2}{1-p_2}\right)$ (nuisance parameter)
+
+The null hypothesis of equal proportions is expressed as $H_0: \theta = 0$ (equivalent to $p_1 = p_2$).
+
+By simple algebra, the probabilities can be expressed in terms of $(\theta, \eta)$ as:
+
+$$\eta = \log\frac{p_2}{1-p_2}$$
+
+$$p_2 = \frac{e^{\eta}}{1+e^{\eta}}, \quad p_1 = \frac{e^{\theta+\eta}}{1+e^{\theta+\eta}}$$
+
+The **joint likelihood** in terms of $(\theta, \eta)$ becomes:
+
+$$L(\theta, \eta) = \left(\frac{p_1/(1-p_1)}{p_2/(1-p_2)}\right)^{y_1} \left(\frac{p_2}{1-p_2}\right)^{y_1+y_2} (1-p_1)^{n_1-y_1}(1-p_2)^{n_2-y_2}$$
+
+$$= e^{\theta y_1} e^{\eta(y_1+y_2)}(1+e^{\theta+\eta})^{-(n_1-y_1)}(1+e^{\eta})^{-(n_2-y_2)}$$
+
+The **profile likelihood** of $\theta$ is obtained by maximizing the joint likelihood over the nuisance parameter $\eta$:
+
+$$L_p(\theta) = \max_{\eta} L(\theta, \eta \mid y_1, y_2)$$
+
+This orthogonal parameterisation allows efficient inference on $\theta$ independently of the nuisance parameter. Confidence intervals for $\theta$ are constructed using the likelihood ratio test: values satisfying $-2\log\Lambda(\theta) \leq \chi^2_{1,\alpha}$ form a likelihood-based confidence region [@in_all_likelihood].
+
+---
+
+#### Hierarchical Extension: Comparing Two Brands with Heterogeneity
+
+The reparameterisation can be extended to account for heterogeneity in user preferences within each brand. Assume that for each brand, the underlying probability varies according to a beta distribution:
+
+- Apple: $p_1 \sim \text{Beta}(\alpha_1, \beta_1)$
+- Philips: $p_2 \sim \text{Beta}(\alpha_2, \beta_2)$
+
+Using Pawitan's reparameterisation in terms of $(\theta, \eta)$, the **marginal likelihood** (integrating over the heterogeneity in both brands) is:
+
+$$L(\theta, \eta, \alpha_1, \beta_1, \alpha_2, \beta_2 \mid y_1, y_2) = \int_0^1 \int_0^1 L(\theta, \eta \mid p_1, p_2, y_1, y_2) \cdot f(p_1 \mid \alpha_1, \beta_1) \cdot f(p_2 \mid \alpha_2, \beta_2) \, dp_1 \, dp_2$$
+
+where $f(p_i \mid \alpha_i, \beta_i)$ denotes the beta probability density function for brand $i$. This integral captures how user preferences vary within each brand while simultaneously allowing comparison of the preference distributions between brands through the log odds-ratio parameter $\theta$.
+
+#### Profile Likelihood for Comparing Brands
+
+Following the same structure as the single-brand analysis, we compute the profile likelihood of $\theta$ by fixing it and optimizing over the nuisance parameters.
+
+```{python}
+# Get data for both brands
+apple_ratings = ratings.query("brand=='Apple'")["rating"].to_list()
+philips_ratings = ratings.query("brand=='Philips'")["rating"].to_list()
+
+n_apple = len(apple_ratings)
+n_philips = len(philips_ratings)
+
+
+def profile_ll_theta_two_brands(theta_val, apple_ratings, philips_ratings):
+    """
+    Profile likelihood: fix θ, optimize (p2_mean, disp1, disp2).
+
+    p1_mean is determined by theta and p2_mean via the log-odds-ratio constraint:
+    θ = log[(p1(1-p2)) / (p2(1-p1))]
+
+    Then: alpha_i = p_mean_i × disp_i, beta_i = (1-p_mean_i) × disp_i
+    """
+
+    def objective(params):
+        p2_mean, disp1, disp2 = params
+
+        # Recover p1_mean from theta and p2_mean via log-odds constraint
+        odds_ratio = np.exp(theta_val)
+        p1_odds = odds_ratio * (p2_mean / (1 - p2_mean))
+        p1_mean = p1_odds / (1 + p1_odds)
+
+        # Clip to avoid numerical issues
+        p1_mean = np.clip(p1_mean, 0.001, 0.999)
+        p2_mean_clipped = np.clip(p2_mean, 0.001, 0.999)
+
+        # Convert means + dispersion → alpha, beta
+        alpha1 = p1_mean * disp1
+        beta1 = (1 - p1_mean) * disp1
+        alpha2 = p2_mean_clipped * disp2
+        beta2 = (1 - p2_mean_clipped) * disp2
+
+        # Compute joint log-likelihood
+        apple_ll = sum(np.log(beta_binom_pmf(k, 4, alpha1, beta1)) for k in apple_ratings)
+        philips_ll = sum(
+            np.log(beta_binom_pmf(k, 4, alpha2, beta2)) for k in philips_ratings
+        )
+        return -(apple_ll + philips_ll)
+
+    # Optimize over (p2_mean, disp1, disp2) with theta fixed
+    res = minimize(
+        objective,
+        x0=[0.7, 2.0, 2.0],  # p2_mean, disp1, disp2
+        bounds=[(0.01, 0.99), (0.1, 50), (0.1, 50)],
+        method="L-BFGS-B",
+        options={"ftol": 1e-2},
+    )
+
+    if res.success:
+        return -res.fun
+    else:
+        return -np.inf
+```
+
+```{python}
+# Profile likelihood: Fix θ and optimize over dispersion parameters (alpha, beta)
+theta_vals_compare = np.linspace(-2, 2, 20)  # Reduced grid for speed
+ll_res_compare = []
+
+print("Computing profile likelihood...")
+for i, theta_val in enumerate(theta_vals_compare):
+    ll = profile_ll_theta_two_brands(theta_val, apple_ratings, philips_ratings)
+    ll_res_compare.append(ll)
+    if (i + 1) % 5 == 0:
+        print(f"  {i + 1}/{len(theta_vals_compare)} complete")
+
+ll_res_compare = np.array(ll_res_compare)
+
+# Debug: show first few values
+print(f"First 5 theta values: {theta_vals_compare[:5]}")
+print(f"First 5 ll values: {ll_res_compare[:5]}")
+print(f"Min/Max ll: {np.nanmin(ll_res_compare):.4f} / {np.nanmax(ll_res_compare):.4f}")
+
+```
+
+```{python}
+# Plot profile likelihood
+plt.figure(figsize=(10, 6))
+plt.plot(theta_vals_compare, np.array(ll_res_compare), "o-", linewidth=2, markersize=6)
+plt.axvline(
+    theta_mle_compare,
+    color="r",
+    linestyle="--",
+    label=f"MLE: θ = {theta_mle_compare:.3f}",
+)
+plt.xlabel("Log odds-ratio (θ)", fontsize=12)
+plt.ylabel("Log-likelihood", fontsize=12)
+plt.title(
+    "Profile Likelihood: Comparing Apple and Philips Brand Preferences", fontsize=13
+)
+plt.legend(fontsize=10)
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+```
+
+The profile likelihood shows the log odds-ratio between Apple and Philips preferences. A value of $\theta = 0$ indicates equal preference distributions, while positive $\theta$ favors Apple and negative $\theta$ favors Philips. The reparameterization naturally handles the within-brand heterogeneity captured by the beta distribution parameters while directly addressing the comparison question.
