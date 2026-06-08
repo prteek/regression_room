@@ -151,7 +151,8 @@ print(f"\nProbability Ratio:")
 print(f"  Mean rating ratio (Philips/Apple): {prob_ratio_data:.4f}")
 ```
 
-It is clear that due to the variability in ratings data, the means do tend to be statistically similar. There isn't a strong evidence supporting Philips being different from Apple.
+It is clear that due to the variability in ratings data, the means do tend to be statistically similar. There isn't a strong evidence supporting Philips being different from Apple. <br/>
+The bootstrap results are also indicative of what would be observed if a *ratings ~ brands* regression was performed. The p-values should also be practically same.
 
 ### Modelling a single brand
 
