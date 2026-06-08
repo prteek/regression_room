@@ -18,7 +18,7 @@ execute:
 
 Product ratings are commonly used to assess brand preference, but summarizing and comparing ratings is challenging because user ratings reflect variability and randomness in individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity which can lead to misleading conclusions. <br/>
 Using electronics product rating dataset, this article first explores a simple bootstrap based rating comparison. The limitation of such a model are highlighted. <br/>
-As an introduction to the proposed heirarchical model a beta-binomial model [@in_all_likelihood] for a single brand is presented, that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. <br/>
+As an introduction to the proposed hierarchical model a beta-binomial model [@in_all_likelihood] for a single brand is presented, that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. <br/>
 Building on it, a richer model that capture variability in preferences for 2 brands simultaneously is developed. A reparameterisation using the log of odds-ratio enables direct modeling of the parameter of interest which is a comparative measure of favourability between the 2 brands. Throughout the study, the parameter choices are governed by considering likelihood profile and the values that maximise it.
 
 
@@ -93,7 +93,7 @@ The distribution of ratings for these brands has distinct patterns, while users 
 sns.countplot(ratings, x="rating", hue="brand", alpha=0.7)
 ```
 
-There is visible overlap of standard errors and so at this point it is hard to say which brand is more favourably rated given the variability.
+There is visible overlap of standard errors and so at this point it is hard to say which brand is more favorably rated given the variability.
 
 
 ## Analysis
@@ -157,11 +157,11 @@ It is clear that due to the variability in ratings data, the means do tend to be
 
 To build intuition about the underlying distribution of ratings, it can be useful to start by modeling the ratings for a single brand.
 
-Each user rating x∈{0,…,4} is treated as if it were a binomial count for convenience and user-level probabilities ${p_i}$ are modelled with a Beta prior. This is a working approximation that gives useful shrinkage and interpretable parameters, not a claim that ratings are literally counts of 5 binary trials. This assumption implies that brand ratings are essentially a mixtue of binomials [@in_all_likelihood]
+Each user rating x∈{0,…,4} is treated as if it were a binomial count for convenience and user-level probabilities ${p_i}$ are modelled with a Beta prior. This is a working approximation that gives useful shrinkage and interpretable parameters, not a claim that ratings are literally counts of 5 binary trials. This assumption implies that brand ratings are essentially a mixture of binomials [@in_all_likelihood]
 
-A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favorable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$ [@statistical_inference]
+A binomial model assumes $y \sim \text{Binomial}(n, p)$, where $p$ is the probability of a favourable rating. The likelihood is $L(p) = p^y(1-p)^{n-y}$, with MLE $\hat{p} = y/n$ [@statistical_inference]
 
-Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expectedly it should have higher ratings.
+Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expected it should have higher ratings.
 
 So, effectively each user has a preference *p* and the observed ratings are realizations of a binomial process with this underlying probability.
 
@@ -368,7 +368,7 @@ plt.grid(True, alpha=0.3)
 ```
 
 
-The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. It could also be used to derive confidence interval on *p* using likelihod based intervals if required.
+The curve shows a well defined (regular) likelihood profile which peaks at around MLE value. It could also be used to derive confidence interval on *p* using likelihood based intervals if required.
 
 ### Comparing Apple and Philips
 
@@ -378,7 +378,7 @@ To illustrate this consider only 2 binomial datasets first and their joint likel
 
 **Joint Likelihood of Two Binomial Datasets:**
 
-Let $y_1 \sim \text{Binomial}(n_1, p_1)$ and $y_2 \sim \text{Binomial}(n_2, p_2)$ be the observed counts (favorable ratings) from two brands. The joint likelihood is:
+Let $y_1 \sim \text{Binomial}(n_1, p_1)$ and $y_2 \sim \text{Binomial}(n_2, p_2)$ be the observed counts (favourable ratings) from two brands. The joint likelihood is:
 
 $$L(p_1, p_2 \mid y_1, y_2) = p_1^{y_1}(1-p_1)^{n_1-y_1} \cdot p_2^{y_2}(1-p_2)^{n_2-y_2}$$
 
@@ -442,7 +442,7 @@ def profile_ll_theta_two_brands(theta_val, apple_ratings, philips_ratings):
     p_philips is determined by theta and p_apple via the log-odds-ratio constraint:
     θ = log[(p_philips(1-p_apple)) / (p_apple(1-p_philips))]
 
-    Positive θ indicates Philips is favored over Apple.
+    Positive θ indicates Philips is favoured over Apple.
     Then: alpha_i = p_mean_i × disp_i, beta_i = (1-p_mean_i) × disp_i
     """
 
