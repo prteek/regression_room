@@ -233,12 +233,12 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Product ratings are commonly used to assess brand preference, but summarizing and comparing ratings is challenging because user ratings reflect variability and randomness in individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity which can lead to misleading conclusions. <br> This article develops a hierarchical model <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span> that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. Building on it, a richer model that capture variability in preferences for 2 brands simultaneously is formulated. A reparameterisation using the log of odds-ratio enables direct modeling of the parameter of interest which is a comparative measure of favourability between the 2 brands. Throughout the study, the parameter choices are governed by considering likelihood profile and the values that maximise it.</p>
+<p>Product ratings are commonly used to assess brand preference, but summarizing and comparing ratings is challenging because user ratings reflect variability and randomness in individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity which can lead to misleading conclusions. <br> Using electronics product rating dataset, this article first explores a simple bootstrap based rating comparison. The limitation of such a model are highlighted. <br> As an introduction to the proposed heirarchical model a beta-binomial model <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span> for a single brand is presented, that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. <br> Building on it, a richer model that capture variability in preferences for 2 brands simultaneously is developed. A reparameterisation using the log of odds-ratio enables direct modeling of the parameter of interest which is a comparative measure of favourability between the 2 brands. Throughout the study, the parameter choices are governed by considering likelihood profile and the values that maximise it.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4). For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips and Apple</em> is used. The study focuses on 1 particular product from each of these brands to make a comparative assessment.</p>
-<div id="b01ccb9c" class="cell" data-execution_count="2">
+<div id="32e4564d" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -323,7 +323,7 @@ window.Quarto = {
 <section id="eda" class="level3">
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.</p>
-<div id="f8a0c1e4" class="cell" data-execution_count="3">
+<div id="874abd0e" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -333,7 +333,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on <em>Apple</em> (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.</p>
-<div id="bc73c791" class="cell" data-execution_count="4">
+<div id="84ad3ec7" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -357,7 +357,7 @@ window.Quarto = {
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
 <p>For e.g.&nbsp;if a user who has rated the product <em>3</em> star is considered, then the likelihood of their preference <em>p</em> would be greater (around 0.65 value), but it may still be possible that their preference is some other value with a lower likelihood.</p>
 <p><em>For a refresher on likelihood theory refer <a href="https://prteek.github.io/regression_room/posts/likelihood_primer/">likelihood primer</a></em></p>
-<div id="97c7f2b2" class="cell" data-execution_count="5">
+<div id="b361ddd3" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display" data-execution_count="5">
 <div>
 <figure class="figure">
@@ -388,7 +388,7 @@ window.Quarto = {
 </section>
 <section id="maximum-likelihood-estimation" class="level4">
 <h4 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum Likelihood Estimation</h4>
-<div id="b94ebb0a" class="cell" data-cache="true" data-execution_count="8">
+<div id="3e1f9472" class="cell" data-cache="true" data-execution_count="8">
 <div class="cell-output cell-output-stdout">
 <pre><code>Beta-Binomial MLE:
   α = 0.668897
@@ -407,7 +407,7 @@ with standard deviation ±33.5%</code></pre>
 <section id="goodness-of-fit" class="level4">
 <h4 class="anchored" data-anchor-id="goodness-of-fit">Goodness of fit</h4>
 <p>Goodness of fit can be assessed by comparing counts from the Beta-binomial model using MLE estimates, to actual counts at different rating values. The counts are close and model is satisfactory for this data.</p>
-<div id="31f40c30" class="cell" data-execution_count="9">
+<div id="ba266041" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Model check:
@@ -423,14 +423,14 @@ Model check:
 <section id="profile-likelihood-of-p" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-of-p">Profile likelihood of <em>p</em></h4>
 <p>For Beta-Binomial, we fix E[p] and optimize α.</p>
-<div id="474a7770" class="cell" data-cache="true" data-execution_count="10">
+<div id="1010575f" class="cell" data-cache="true" data-execution_count="10">
 <div class="cell-output cell-output-stdout">
 <pre><code>Profile likelihood MLE: p = 0.657895
 Joint optimization MLE: p = 0.653064
 Difference: 0.004831</code></pre>
 </div>
 </div>
-<div id="8e8fc947" class="cell" data-execution_count="11">
+<div id="ac1be95e" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -477,7 +477,7 @@ Difference: 0.004831</code></pre>
 <section id="profile-likelihood-for-comparing-brands" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-for-comparing-brands">Profile Likelihood for Comparing Brands</h4>
 <p>Following the same structure as the single-brand analysis, we compute the profile likelihood of <span class="math inline">\(\theta\)</span> by fixing it and optimizing over the nuisance parameters.</p>
-<div id="92615cbe" class="cell" data-execution_count="13">
+<div id="e60b38fd" class="cell" data-execution_count="13">
 <div class="cell-output cell-output-stdout">
 <pre><code>Computing profile likelihood...
   5/20 complete
@@ -487,7 +487,7 @@ Difference: 0.004831</code></pre>
 MLE: θ = -0.315789</code></pre>
 </div>
 </div>
-<div id="fb32c8e3" class="cell" data-execution_count="14">
+<div id="d117bba0" class="cell" data-execution_count="14">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 95% Likelihood-based Confidence Interval for θ:
@@ -495,7 +495,7 @@ MLE: θ = -0.315789</code></pre>
   Excludes zero: False</code></pre>
 </div>
 </div>
-<div id="4d0e3287" class="cell" data-execution_count="15">
+<div id="1c7712df" class="cell" data-execution_count="15">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -504,7 +504,7 @@ MLE: θ = -0.315789</code></pre>
 </div>
 </div>
 </div>
-<div id="d685d14b" class="cell" data-execution_count="16">
+<div id="be061255" class="cell" data-execution_count="16">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 ### Interpretation

@@ -17,7 +17,9 @@ execute:
 ## Introduction
 
 Product ratings are commonly used to assess brand preference, but summarizing and comparing ratings is challenging because user ratings reflect variability and randomness in individual user preferences. Some users are naturally generous raters while others are harsh. Traditional summary statistics like mean ratings ignore this heterogeneity which can lead to misleading conclusions. <br/>
-This article develops a hierarchical model [@in_all_likelihood] that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. Building on it, a richer model that capture variability in preferences for 2 brands simultaneously is formulated. A reparameterisation using the log of odds-ratio enables direct modeling of the parameter of interest which is a comparative measure of favourability between the 2 brands. Throughout the study, the parameter choices are governed by considering likelihood profile and the values that maximise it.
+Using electronics product rating dataset, this article first explores a simple bootstrap based rating comparison. The limitation of such a model are highlighted. <br/>
+As an introduction to the proposed heirarchical model a beta-binomial model [@in_all_likelihood] for a single brand is presented, that explicitly captures how individual user preferences vary, enabling estimation of the underlying distribution of rating propensity for a given brand. <br/>
+Building on it, a richer model that capture variability in preferences for 2 brands simultaneously is developed. A reparameterisation using the log of odds-ratio enables direct modeling of the parameter of interest which is a comparative measure of favourability between the 2 brands. Throughout the study, the parameter choices are governed by considering likelihood profile and the values that maximise it.
 
 
 ```{python}

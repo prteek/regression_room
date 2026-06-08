@@ -195,6 +195,11 @@ div.csl-indent {
 
 
 
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>- The project is out-of-sync -- use `renv::status()` for details.</code></pre>
+</div>
+</div>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>Teenage gambling can take many forms—scratch cards, sports bets, online games—and even small amounts can add up over a year. Understanding who spends and why can help families, schools, and policymakers support young people.</p>
@@ -216,8 +221,85 @@ div.csl-indent {
 <li>verbal : Verbal score (number of words defined correctly, out of 12)</li>
 <li>gamble : Annual expenditure on gambling in pounds</li>
 </ul>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">sex</th>
+<th style="text-align: right;">status</th>
+<th style="text-align: right;">income</th>
+<th style="text-align: right;">verbal</th>
+<th style="text-align: right;">gamble</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">2.50</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">0.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">28</td>
+<td style="text-align: right;">7.00</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">7.3</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2.00</td>
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">19.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">female</td>
+<td style="text-align: right;">61</td>
+<td style="text-align: right;">3.47</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <p>A cursory look at the data suggests that females likely spend less on gambling compared to males. Additionally, most females do not spend more than approximately £20 per year on gambling.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-3-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <p>There also seems positive association between income and amount spent on gambling (at least for males). This is not very surprising as one would expect that individuals with higher income would be able to spend more on gambling. <br> From what this plot indicates, it may be worth evaluating if there is a differential effect of income based on gender.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 </section>
 <section id="analysis" class="level2">
 <h2 class="anchored" data-anchor-id="analysis">Analysis</h2>
@@ -226,17 +308,149 @@ div.csl-indent {
 <section id="effect-of-gender" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-gender">Effect of Gender</h3>
 <p>It seems plausible that males are spending more on gambling compared to females. This is also indicated by the boxplot below. We will evaluate this hypothesis using a simple linear model with <em>log(gamble + 1)</em> as response and <em>sex</em> as explanatory variable.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: log_gamble
+          Df Sum Sq Mean Sq F value   Pr(&gt;F)   
+sex        1 20.365  20.365  12.261 0.001074 **
+Residuals 44 73.085   1.661                    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
 <p><strong>Gender seems to have statistically significant association with gambling expenditure</strong>. <br> Anova procedure is equivalent to a t-test with constant variance assumption <span class="citation" data-cites="lm_with_R_book">(<a href="#ref-lm_with_R_book" role="doc-biblioref">Faraway 2025</a>)</span>, which seems fair from the Boxplot above. They test for the same effect and result in identical p-values. <br></p>
 <p>Before moving to analysing joint effect of Income and Gender, it is imperative to check if the effect of gender is not due to confounding by income. It could well be the case that individuals with higher income spend more on gambling. But then if high income itself is associated with gender, then the above effect of gender may be spurious. We will explore this next.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: income
+          Df Sum Sq Mean Sq F value Pr(&gt;F)
+sex        1   4.58  4.5754  0.3685 0.5469
+Residuals 44 546.25 12.4149               </code></pre>
+</div>
+</div>
 <p>The above plot and the test indicates that income is not significantly associated with gender and hence does not mask its effect on gambling expenditure. <br></p>
 <p>For the analysis that follows, we shall print the summary of gender only model to show the Estimate value and Std. Error of gender.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.4630 -1.0616  0.1547  1.0979  2.0478 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)   1.1117     0.2957   3.760 0.000498 ***
+sexmale       1.3513     0.3859   3.502 0.001074 ** 
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.289 on 44 degrees of freedom
+Multiple R-squared:  0.2179,    Adjusted R-squared:  0.2002 
+F-statistic: 12.26 on 1 and 44 DF,  p-value: 0.001074</code></pre>
+</div>
+</div>
 </section>
 <section id="effect-of-gender-and-income" class="level3">
 <h3 class="anchored" data-anchor-id="effect-of-gender-and-income">Effect of Gender and Income</h3>
 <p>With <em>income</em> variable included alongside <em>sex</em>, the effect of <em>sex</em> remains significant (although is reduced from 1.35 to 1.24 with lower Std. Error). <br> Income itself is significantly associated with gambling expenditure. <br> The intercept is non-significant indicating that for reference class (female), gambling expenditure is likely 0£ if they have close to 0 income and it makes intuitive sense (although for adults and addicts this may not necessarily be true). <br> This model does not include an interaction between <em>sex</em> and <em>income</em> for simplicity, yet it fits the data well. Model diagnostics appear acceptable. <br></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex + income, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.2327 -0.7944  0.1318  0.8419  2.2973 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  0.37092    0.33009   1.124 0.267373    
+sexmale      1.23699    0.34216   3.615 0.000782 ***
+income       0.17852    0.04869   3.667 0.000671 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.138 on 43 degrees of freedom
+Multiple R-squared:  0.4042,    Adjusted R-squared:  0.3765 
+F-statistic: 14.59 on 2 and 43 DF,  p-value: 1.46e-05</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <p>Additionally, the residuals do not indicate any obvious pattern with respect to gender.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
 <p>From earlier plots we suspected a possible differential effect of income by gender. Fitting an interaction did not improve fit and the interaction term is not significant, so the simpler additive model is preferred.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Model 1: log_gamble ~ sex * income
+Model 2: log_gamble ~ sex + income
+  Res.Df    RSS Df Sum of Sq      F Pr(&gt;F)
+1     42 53.517                           
+2     43 55.676 -1   -2.1582 1.6938 0.2002</code></pre>
+</div>
+</div>
 <p>Additionally, interaction term is not significant and so it is best to remove it and keep the model simple. <br></p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = log_gamble ~ sex * income, data = teengamb)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-2.1894 -0.9791  0.0763  0.8456  2.0447 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)     0.85855    0.49761   1.725   0.0918 .
+sexmale         0.58832    0.60303   0.976   0.3348  
+income          0.06101    0.10240   0.596   0.5545  
+sexmale:income  0.15114    0.11613   1.301   0.2002  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 1.129 on 42 degrees of freedom
+Multiple R-squared:  0.4273,    Adjusted R-squared:  0.3864 
+F-statistic: 10.45 on 3 and 42 DF,  p-value: 2.921e-05</code></pre>
+</div>
+</div>
 </section>
 </section>
 <section id="conclusion" class="level2">
