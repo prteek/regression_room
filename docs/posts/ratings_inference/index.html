@@ -241,7 +241,7 @@ window.Quarto = {
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
 <p>Electronics product rating dataset is used in the study. The dataset contains user ratings for various electronic products, with each rating on a scale from 1-5 (converted to 0-4). For this article a subset of <code>Headphones</code> in the data, from brands <em>Philips and Apple</em> is used. The study focuses on 1 particular product from each of these brands to make a comparative assessment.</p>
-<div id="b38947f9" class="cell" data-execution_count="2">
+<div id="82480e23" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -327,7 +327,7 @@ window.Quarto = {
 <h3 class="anchored" data-anchor-id="eda">EDA</h3>
 <p>Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.</p>
 <p>There is visible overlap of standard errors and so at this point it is hard to say which brand is more favorably rated given the variability.</p>
-<div id="925827c7" class="cell" data-execution_count="3">
+<div id="cd79539a" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -337,8 +337,8 @@ window.Quarto = {
 </div>
 </div>
 <p>The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on <em>Apple</em> (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.</p>
-<div id="2a4e4935" class="cell" data-execution_count="4">
-<div class="cell-output cell-output-display" data-execution_count="168">
+<div id="de4325a4" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display" data-execution_count="4">
 <div>
 <figure class="figure">
 <p><img src="index_files/figure-html/cell-5-output-1.png" width="707" height="445" class="figure-img"></p>
@@ -353,7 +353,7 @@ window.Quarto = {
 <section id="baseline-approach" class="level3">
 <h3 class="anchored" data-anchor-id="baseline-approach">Baseline approach</h3>
 <p>To establish a sensible baseline for comparing ratings, a simulation can be set up such that sampling ratings for each brand and then comparing differences in their mean gives us an intuitive and meaningful picture about what to expect in data. <br></p>
-<div id="7046da5e" class="cell" data-execution_count="5">
+<div id="03303f2f" class="cell" data-execution_count="5">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -365,7 +365,7 @@ window.Quarto = {
 <pre><code>
 Bootstrap Test Results:
   Observed difference (Philips - Apple): 0.2632
-  Two-tailed p-value: 0.5345
+  Two-tailed p-value: 0.5419
   Significant at α=0.05: No
 
 Probability Ratio:
@@ -384,8 +384,8 @@ Probability Ratio:
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
 <p>For e.g.&nbsp;if a user who has rated the product <em>3</em> star is considered, then the likelihood of their preference <em>p</em> would be greater (around 0.65 value), but it may still be possible that their preference is some other value with a lower likelihood.</p>
 <p><em>For a refresher on likelihood theory refer <a href="https://prteek.github.io/regression_room/posts/likelihood_primer/">likelihood primer</a></em></p>
-<div id="7661caa2" class="cell" data-execution_count="6">
-<div class="cell-output cell-output-display" data-execution_count="170">
+<div id="25cf3c23" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div>
 <figure class="figure">
 <p><img src="index_files/figure-html/cell-7-output-1.png" width="599" height="445" class="figure-img"></p>
@@ -415,7 +415,7 @@ Probability Ratio:
 </section>
 <section id="maximum-likelihood-estimation" class="level4">
 <h4 class="anchored" data-anchor-id="maximum-likelihood-estimation">Maximum Likelihood Estimation</h4>
-<div id="a146b0a6" class="cell" data-cache="true" data-execution_count="9">
+<div id="ab05f815" class="cell" data-cache="true" data-execution_count="9">
 <div class="cell-output cell-output-stdout">
 <pre><code>Beta-Binomial MLE:
   α = 0.668900
@@ -434,7 +434,7 @@ with standard deviation ±33.5%</code></pre>
 <section id="goodness-of-fit" class="level4">
 <h4 class="anchored" data-anchor-id="goodness-of-fit">Goodness of fit</h4>
 <p>Goodness of fit can be assessed by comparing counts from the Beta-binomial model using MLE estimates, to actual counts at different rating values. The counts are close and model is satisfactory for this data.</p>
-<div id="15cfd614" class="cell" data-execution_count="10">
+<div id="2c0cf4f3" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Model check:
@@ -450,14 +450,14 @@ Model check:
 <section id="profile-likelihood-of-p" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-of-p">Profile likelihood of <em>p</em></h4>
 <p>For Beta-Binomial, we fix E[p] and optimize α.</p>
-<div id="7b13b6ac" class="cell" data-cache="true" data-execution_count="11">
+<div id="6569bd21" class="cell" data-cache="true" data-execution_count="11">
 <div class="cell-output cell-output-stdout">
 <pre><code>Profile likelihood MLE: p = 0.657895
 Joint optimization MLE: p = 0.653064
 Difference: 0.004831</code></pre>
 </div>
 </div>
-<div id="67d67929" class="cell" data-execution_count="12">
+<div id="cf39e159" class="cell" data-execution_count="12">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -504,7 +504,7 @@ Difference: 0.004831</code></pre>
 <section id="profile-likelihood-for-comparing-brands" class="level4">
 <h4 class="anchored" data-anchor-id="profile-likelihood-for-comparing-brands">Profile Likelihood for Comparing Brands</h4>
 <p>Following the same structure as the single-brand analysis, we compute the profile likelihood of <span class="math inline">\(\theta\)</span> by fixing it and optimizing over the nuisance parameters.</p>
-<div id="ee60cb3a" class="cell" data-execution_count="14">
+<div id="cc6ca4a3" class="cell" data-execution_count="14">
 <div class="cell-output cell-output-stdout">
 <pre><code>Computing profile likelihood...
   5/20 complete
@@ -514,7 +514,7 @@ Difference: 0.004831</code></pre>
 MLE: θ = 0.315789</code></pre>
 </div>
 </div>
-<div id="b0e8aa21" class="cell" data-execution_count="15">
+<div id="ff4db75c" class="cell" data-execution_count="15">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 95% Likelihood-based Confidence Interval for θ:
@@ -522,7 +522,7 @@ MLE: θ = 0.315789</code></pre>
   Excludes zero: False</code></pre>
 </div>
 </div>
-<div id="9ebb6b4f" class="cell" data-execution_count="16">
+<div id="1784b17e" class="cell" data-execution_count="16">
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -531,7 +531,7 @@ MLE: θ = 0.315789</code></pre>
 </div>
 </div>
 </div>
-<div id="27742aba" class="cell" data-execution_count="17">
+<div id="4ccbe012" class="cell" data-execution_count="17">
 <div class="cell-output cell-output-stdout">
 <pre><code>
 Profile Likelihood Summary:
@@ -551,7 +551,7 @@ Profile Likelihood Summary:
 </section>
 <section id="cross-method-consistency" class="level3">
 <h3 class="anchored" data-anchor-id="cross-method-consistency">Cross-method Consistency</h3>
-<div id="3897b5ff" class="cell" data-execution_count="18">
+<div id="c4375266" class="cell" data-execution_count="18">
 <div class="cell-output cell-output-stdout">
 <pre><code>Consistency Check: Data vs. Profile Likelihood
 

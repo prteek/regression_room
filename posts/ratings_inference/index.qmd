@@ -93,9 +93,13 @@ The distribution of ratings for these brands has distinct patterns, while users 
 
 ```{python}
 
-so.Plot(ratings, x="rating", color="brand").add(
-    so.Bar(alpha=0.6), so.Hist(), so.Dodge()
-).label(y="count").theme(theme_dict)
+so.Plot(ratings.astype({"rating": "category"}), x="rating", color="brand").add(
+    so.Bar(
+        alpha=0.6,
+    ),
+    so.Hist(),
+    so.Dodge(),
+).label(y="count").theme(theme_dict).limit(x=(-0.5, 4.5))
 ```
 
 ## Analysis
