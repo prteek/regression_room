@@ -64,37 +64,37 @@ display(ratings.sample(n=5, random_state=42))
 
 Average ratings for brands is close and it appears that there is some degree of variability in the ratings. This variability can hide true differences between brands.
 
+There is visible overlap of standard errors and so at this point it is hard to say which brand is more favorably rated given the variability.
+
 ```{python}
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
-sns.barplot(
-    data=ratings.sort_values(["brand"]),
-    x="rating",
-    y="brand",
-    estimator=np.mean,
-    errorbar="se",
-    alpha=0.6,
-    ax=ax[0],
-    orient="h",
+(
+    so.Plot(x="rating", y="brand", data=ratings)
+    .add(so.Bar(alpha=0.6), so.Agg())
+    .add(so.Range(), so.Est(errorbar="se"))
+    .label(title="Mean rating by brand")
+    .on(ax[0])
+    .plot()
 )
-ax[0].set_title("Mean rating by brand")
-ax[0].set_xlim([0, 4])
-sns.countplot(data=ratings, x="brand", alpha=0.7, ax=ax[1])
-ax[1].set_title("Rating counts by brand")
-ax[1].tick_params(axis="x", rotation=45)
 
-fig.tight_layout()
+(
+    so.Plot(ratings, x="brand")
+    .add(so.Bar(alpha=0.6), so.Hist())
+    .label(y="count", title="Ratings count by brand")
+    .on(ax[1])
+    .plot()
+)
 ```
 
 The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on *Apple* (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.
 
 ```{python}
 
-sns.countplot(ratings, x="rating", hue="brand", alpha=0.7)
+so.Plot(ratings, x="rating", color="brand").add(
+    so.Bar(alpha=0.6), so.Hist(), so.Dodge()
+).label(y="count").theme(theme_dict)
 ```
-
-There is visible overlap of standard errors and so at this point it is hard to say which brand is more favorably rated given the variability.
-
 
 ## Analysis
 
