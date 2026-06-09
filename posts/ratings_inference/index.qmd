@@ -69,7 +69,7 @@ There is visible overlap of standard errors and so at this point it is hard to s
 ```{python}
 fig, ax = plt.subplots(1, 2, figsize=(8, 4))
 
-(
+_ = (
     so.Plot(x="rating", y="brand", data=ratings)
     .add(so.Bar(alpha=0.6), so.Agg())
     .add(so.Range(), so.Est(errorbar="se"))
@@ -78,13 +78,15 @@ fig, ax = plt.subplots(1, 2, figsize=(8, 4))
     .plot()
 )
 
-(
+_ = (
     so.Plot(ratings, x="brand")
     .add(so.Bar(alpha=0.6), so.Hist())
     .label(y="count", title="Ratings count by brand")
     .on(ax[1])
     .plot()
 )
+
+fig.show()
 ```
 
 The distribution of ratings for these brands has distinct patterns, while users seem to have more even views on *Apple* (commonly rate 0 to 3), Philips has a more favourable set of ratings with fewer 0 Stars proportionally.
