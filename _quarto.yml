@@ -1,6 +1,8 @@
 project:
   type: website
   output-dir: docs
+  render:
+    - "*.qmd"  # only .qmd files are pages; post folders keep plain .md notes
 
 website:
   title: "Blog"
