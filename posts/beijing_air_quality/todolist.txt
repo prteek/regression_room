@@ -7,6 +7,7 @@ Post:
   ☐ Add a shared day-level effect and re-run the post (simple same-day averages beat the network on dense days and the dropped series)
 
 Archive:
+  ✔ Tried station hold-out CV (one station per area hidden, 24 folds): picks no penalty, tracks 2–3 week episodes; reverted to every-station-hidden CV and explained the choice in the post @done(26-10-09)
   ✔ Switch tuning to sequential 15-day look-ahead time-series CV (12 folds); rerun evaluate/plots; rewrite post around single-target ≥ joint except for a dropped series @done(26-10-09)
   ✔ Write and render index.qmd: problem, model, tuning, experiment with a dropped series (Dingling PM10) and a very sparse station (Huairou 15%); torch + pyarrow added to repo pyproject; _quarto.yml renders only .qmd @done(26-10-08)
   ✔ Final evaluation and plots vs ground truth (gap blocks: joint 0.166/0.168 vs single 0.209/0.193 vs ±15-day 0.384/0.401) @done(26-10-08 19:00)

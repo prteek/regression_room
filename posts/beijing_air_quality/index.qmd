@@ -166,8 +166,22 @@ Three estimators are fitted to the same data:
 2. **single-target** — the same network trained on one pollutant at a time (two separate models);
 3. **±15-day mean** — for each station and pollutant, the hour-weighted mean of the sparse readings within 15 days; where a station has no readings at all, the same within its area.
 
+### Choosing the settings
+
 ```{python}
 cfg, steps = best_config()
+```
+
+The penalty weight $\lambda$, bump spacing $w$ and number of training steps are chosen by look-ahead cross-validation (`cv.py`). There are 12 sequential folds, 30 days apart over the last year. Each trains on everything up to its cutoff and is scored on the next 15 days of sparse readings, with **every station hidden at once**. The chosen settings are $\lambda$ = `{python} f"{cfg['rough']:g}"`, $w$ = `{python} cfg['spacing']` days and `{python} steps` training steps.
+
+We also tried hiding one station per area while its neighbours kept reporting. The two schemes ask different questions:
+
+- **Every station hidden:** the best guess for the next 15 days is whatever persists, the slow seasonal part of the series. Episodes of two to three weeks don't carry past the cutoff, so a curve that follows them is punished. This defines the level as *the part of the series that persists into the near future*.
+- **One station hidden:** asks what this station is doing right now, given its neighbours right now. That rewards following shared short episodes, and picks a much rougher curve.
+
+Neither is wrong, but a *prevailing* level is the first: the overall level, not the episodes.
+
+```{python}
 DROPPED, VERY_SPARSE, KEEP = ("Dingling", "PM10"), "Huairou", 0.15
 rng = np.random.default_rng(1)
 train = sparse[~((sparse["station"] == DROPPED[0]) & (sparse["pollutant"] == DROPPED[1]))]
@@ -343,3 +357,5 @@ The network curves sit consistently below the 31-day MA, by `{python} f"{-bias:.
 - **Make smoothness explicit.** Smooth time bumps plus a curvature penalty over every period, observed or not, keep the level stable through gaps and at the edges.
 - **Share across locations with offsets.** A thin station falls back to its area instead of to nothing.
 - **Know what the network cannot see.** With time entering only as a smooth curve, it misses shared day-to-day shocks that a simple same day average catches; where data is dense, simple smoothing is hard to beat.
+- **Bumps alone don't make a curve smooth where there is no data.** Without the curvature penalty, filling gaps inside the data improves slightly (0.13 vs 0.15 on the test gaps), but looking 15 days past the end the error jumps from 0.25 to 0.5–2.9: the last bumps have no data to pin them down. Training length then becomes the only brake, and running 1,000 steps instead of 100 nearly doubles the error.
+- **Decide the smoothness, don't tune it.** Validated on noisy readings, a weaker penalty always looks slightly better because it follows real short episodes. How smooth the level should be is a choice about what the level means; fix it, and let cross-validation pick the rest.

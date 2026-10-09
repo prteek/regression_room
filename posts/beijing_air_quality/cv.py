@@ -1,4 +1,4 @@
-"""Tune with expanding-window time series CV on the sparse data.
+"""Tune with expanding-window, look-ahead time series CV on the sparse data: every station goes dark at once.
 
 Folds are sequential, not random: N_FOLDS cutoffs every STEP_DAYS days, the last one HORIZON_DAYS before the end of the
 data. Each fold trains on everything up to its cutoff and validates on the next HORIZON_DAYS days (look-ahead only).

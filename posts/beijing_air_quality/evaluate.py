@@ -1,4 +1,4 @@
-"""Final fit on all sparse data with the best time-series CV settings (15-day look-ahead); compare joint vs single-target models vs a
+"""Final fit on all sparse data with the best look-ahead time series CV settings (cv.py); compare joint vs single-target models vs a
 simple smoothing baseline against the ground truth.
 
 Day types (per station x pollutant):
@@ -97,7 +97,7 @@ def main():
     tab = res.pivot_table(index=["truth", "day_type", "pollutant"], columns="model", values="error").round(3)
     tab["days"] = res.groupby(["truth", "day_type", "pollutant"])["days"].first()
     lines = [f"# Final evaluation ({pd.Timestamp.now():%Y-%m-%d %H:%M})", "",
-             f"Settings from time-series CV (15-day look-ahead): rough {cfg['rough']:g}, spacing {cfg['spacing']} days, {steps} steps. "
+             f"Settings from look-ahead time series CV (15 days): rough {cfg['rough']:g}, spacing {cfg['spacing']} days, {steps} steps. "
              "Error = mean absolute log error against the truth (0.10 ≈ 10%).", "",
              tab.reset_index().to_markdown(index=False, floatfmt="g"), "",
              f"Raw sparse readings as an estimate of the level on observed days: "

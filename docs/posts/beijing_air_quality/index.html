@@ -206,6 +206,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a>
   <ul class="collapse">
+  <li><a href="#choosing-the-settings" id="toc-choosing-the-settings" class="nav-link" data-scroll-target="#choosing-the-settings">Choosing the settings</a></li>
   <li><a href="#results-against-the-31-day-ma" id="toc-results-against-the-31-day-ma" class="nav-link" data-scroll-target="#results-against-the-31-day-ma">Results against the 31-day MA</a></li>
   <li><a href="#what-the-fits-look-like" id="toc-what-the-fits-look-like" class="nav-link" data-scroll-target="#what-the-fits-look-like">What the fits look like</a></li>
   <li><a href="#a-bias-to-fix" id="toc-a-bias-to-fix" class="nav-link" data-scroll-target="#a-bias-to-fix">A bias to fix</a></li>
@@ -253,7 +254,7 @@ Note
 <li>each station and pollutant also loses two blocks of 20–60 consecutive days.</li>
 </ul>
 <p>The <strong>ground truth</strong> is the full data. Estimates are scored against its <strong>31-day MA</strong>: the 31-day centred moving average of the full daily means (on the log scale). The full daily means themselves are also kept for reference.</p>
-<div id="ec8a4084" class="cell" data-execution_count="2">
+<div id="af57ed1d" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -297,7 +298,7 @@ Note
 </div>
 </div>
 <p>In the sparse data both pollutants are observed on 44% of station-days and exactly one on 45%, with fewer than two readings behind each observed value. The figure shows what that does to one station over a year.</p>
-<div id="051dd2e2" class="cell" data-execution_count="3">
+<div id="eff3aec0" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -370,6 +371,16 @@ Note
 <li><strong>single-target</strong> — the same network trained on one pollutant at a time (two separate models);</li>
 <li><strong>±15-day mean</strong> — for each station and pollutant, the hour-weighted mean of the sparse readings within 15 days; where a station has no readings at all, the same within its area.</li>
 </ol>
+<section id="choosing-the-settings" class="level3">
+<h3 class="anchored" data-anchor-id="choosing-the-settings">Choosing the settings</h3>
+<p>The penalty weight <span class="math inline">\(\lambda\)</span>, bump spacing <span class="math inline">\(w\)</span> and number of training steps are chosen by look-ahead cross-validation (<code>cv.py</code>). There are 12 sequential folds, 30 days apart over the last year. Each trains on everything up to its cutoff and is scored on the next 15 days of sparse readings, with <strong>every station hidden at once</strong>. The chosen settings are <span class="math inline">\(\lambda\)</span> = 100000, <span class="math inline">\(w\)</span> = 30 days and 100 training steps.</p>
+<p>We also tried hiding one station per area while its neighbours kept reporting. The two schemes ask different questions:</p>
+<ul>
+<li><strong>Every station hidden:</strong> the best guess for the next 15 days is whatever persists, the slow seasonal part of the series. Episodes of two to three weeks don’t carry past the cutoff, so a curve that follows them is punished. This defines the level as <em>the part of the series that persists into the near future</em>.</li>
+<li><strong>One station hidden:</strong> asks what this station is doing right now, given its neighbours right now. That rewards following shared short episodes, and picks a much rougher curve.</li>
+</ul>
+<p>Neither is wrong, but a <em>prevailing</em> level is the first: the overall level, not the episodes.</p>
+</section>
 <section id="results-against-the-31-day-ma" class="level3">
 <h3 class="anchored" data-anchor-id="results-against-the-31-day-ma">Results against the 31-day MA</h3>
 <p>Every station-day and pollutant is assigned to one group:</p>
@@ -378,7 +389,7 @@ Note
 <li><strong>very sparse station</strong> — Huairou, both pollutants;</li>
 <li>for every other station: <strong>observed</strong> (the sparse data has readings that day), <strong>unobserved</strong> (no readings, outside the gap blocks), <strong>long gap</strong> (inside a 20–60 day gap block), and among unobserved days those where <strong>the other pollutant was observed</strong>.</li>
 </ul>
-<div id="fb587313" class="cell" data-execution_count="5">
+<div id="05526eed" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -458,11 +469,11 @@ Note
 <li><strong>Densely observed days:</strong> the simple ±15-day mean is level with the networks (0.153). Its 31-day window is the same as the benchmark’s, which flatters it.</li>
 </ul>
 <p>Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same-day readings, while the network’s only notion of time is a smooth curve. A shared day-level effect in the network is the obvious next step.</p>
-<div id="96b3dc00" class="cell" data-execution_count="6">
+<div id="625051d8" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-7-output-1.png" width="816" height="322" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-8-output-1.png" width="816" height="322" class="figure-img"></p>
 <figcaption>Error against the 31-day MA by group and estimator.</figcaption>
 </figure>
 </div>
@@ -472,44 +483,44 @@ Note
 <section id="what-the-fits-look-like" class="level3">
 <h3 class="anchored" data-anchor-id="what-the-fits-look-like">What the fits look like</h3>
 <p><strong>A well-observed station.</strong> Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother: they follow the seasons but flatten shorter episodes, such as the December 2015 peak.</p>
-<div id="7833af60" class="cell" data-execution_count="8">
+<div id="2501420f" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-9-output-1.png" width="1090" height="324" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-10-output-1.png" width="1090" height="324" class="figure-img"></p>
 <figcaption>Dongsi, both pollutants, one year (regular sparse data).</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p><strong>A very sparse station.</strong> With only 15% of its days left, Huairou’s own data is too thin for the moving average, which jumps around. Both networks lean on the suburban area and the shared time pattern and stay close to the level; the joint and single-target curves are almost indistinguishable.</p>
-<div id="d5f97a39" class="cell" data-execution_count="9">
+<div id="df619f56" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-10-output-1.png" width="1090" height="531" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-11-output-1.png" width="1090" height="531" class="figure-img"></p>
 <figcaption>Huairou with 15% of its sparse days kept.</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p><strong>A dropped series.</strong> Dingling’s PM10 was never seen. The joint model reconstructs it from Dingling’s PM2.5 (top); the single-target PM10 model has nothing station-specific to go on and returns the suburban area’s level, which sits too high. The joint curve follows the shape but runs a little low and misses some peaks. The orange line here is the area moving average, which tracks day-to-day movements from the other suburban stations.</p>
-<div id="f74b5421" class="cell" data-execution_count="10">
+<div id="c3a0e603" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-11-output-1.png" width="1115" height="531" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-12-output-1.png" width="1115" height="531" class="figure-img"></p>
 <figcaption>Dingling: PM2.5 observed (top), PM10 completely dropped (bottom).</figcaption>
 </figure>
 </div>
 </div>
 </div>
 <p><strong>Long gaps.</strong> The four longest gap blocks at regular stations. Once its window empties, the moving average either stops or swings on the few readings at its edges; the networks carry on smoothly. The joint and single-target curves overlap, and both sit slightly below the level (see the bias below).</p>
-<div id="42db0b89" class="cell" data-execution_count="11">
+<div id="7418d6c4" class="cell" data-execution_count="12">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-12-output-1.png" width="1328" height="657" class="figure-img"></p>
+<p><img src="index_files/figure-html/cell-13-output-1.png" width="1328" height="657" class="figure-img"></p>
 <figcaption>The four longest gap blocks (shaded) at regular stations, with 60 days either side.</figcaption>
 </figure>
 </div>
@@ -529,6 +540,8 @@ Note
 <li><strong>Make smoothness explicit.</strong> Smooth time bumps plus a curvature penalty over every period, observed or not, keep the level stable through gaps and at the edges.</li>
 <li><strong>Share across locations with offsets.</strong> A thin station falls back to its area instead of to nothing.</li>
 <li><strong>Know what the network cannot see.</strong> With time entering only as a smooth curve, it misses shared day-to-day shocks that a simple same day average catches; where data is dense, simple smoothing is hard to beat.</li>
+<li><strong>Bumps alone don’t make a curve smooth where there is no data.</strong> Without the curvature penalty, filling gaps inside the data improves slightly (0.13 vs 0.15 on the test gaps), but looking 15 days past the end the error jumps from 0.25 to 0.5–2.9: the last bumps have no data to pin them down. Training length then becomes the only brake, and running 1,000 steps instead of 100 nearly doubles the error.</li>
+<li><strong>Decide the smoothness, don’t tune it.</strong> Validated on noisy readings, a weaker penalty always looks slightly better because it follows real short episodes. How smooth the level should be is a choice about what the level means; fix it, and let cross-validation pick the rest.</li>
 </ul>
 
 
