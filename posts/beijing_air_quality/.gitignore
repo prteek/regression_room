@@ -2,3 +2,4 @@ data/
 *.parquet
 .venv/
 __pycache__/
+outputs/
