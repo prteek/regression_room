@@ -338,7 +338,6 @@ for ax, r in zip(axes.flat, blocks.itertuples(index=False)):
     panel(ax, r.station, r.pollutant, r.min - pad, r.max + pad, f"{r.station} · {r.pollutant} · {r.count}-day gap")
 axes[0, 0].legend(fontsize=7, loc="upper right", ncol=2)
 fig.tight_layout()
-fig.savefig("thumbnail.png", dpi=90)
 plt.show()
 ```
 

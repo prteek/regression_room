@@ -2,7 +2,7 @@
 
 Tests the "one network, two related targets, smooth level, missing target masked" approach on public data with a known ground truth: hourly readings from 12 Beijing monitoring stations (UCI Beijing Multi-Site Air Quality, 2013-03 to 2017-02), thinned to be as sparse and noisy as a typical small-area panel.
 
-- `index.qmd` — the blog post; runs the experiment (dropped series, very sparse station, three estimators) and plots. Render from the repo root with the repo `.venv` active (or `QUARTO_PYTHON=.venv/bin/python`). Writes `thumbnail.png`.
+- `index.qmd` — the blog post; runs the experiment (dropped series, very sparse station, three estimators) and plots. Render from the repo root with the repo `.venv` active (or `QUARTO_PYTHON=.venv/bin/python`). `thumbnail.png` is a hand-picked image, not generated.
 - `README.md`, `summary.md`, `decisions.md`, `todolist.txt` — project docs (not rendered: `_quarto.yml` renders only `.qmd`).
 - `prep.py` — builds `data/daily_full.parquet` (ground truth), `data/daily_sparse.parquet` (thinned) and `data/gaps.parquet`.
 - `model.py` — encoding, network, loss, roughness penalty, training loop.
