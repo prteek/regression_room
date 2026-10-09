@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/beijing_air_quality/index.html",
       "/posts/ratings_inference/index.html",
       "/posts/occupation_impact_on_rentals/index.html",
       "/posts/miles_per_gallon/index.html",

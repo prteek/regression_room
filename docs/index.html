@@ -2,17 +2,23 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
 <title>Regression Room – Blog</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -34,15 +40,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="site_libs/quarto-html/anchor.min.js"></script>
 <link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-445b8638c3d06994fee0907d791121c4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -101,7 +106,7 @@ ul.task-list li input[type="checkbox"] {
   </script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
 <script type="text/javascript">
 const typesetMath = (el) => {
@@ -140,8 +145,6 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="./index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="./index.html">
     <span class="navbar-title">Blog</span>
     </a>
@@ -190,7 +193,7 @@ window.Quarto = {
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-cloud"><div class="category" data-category="QU5PVkE="><span class="quarto-category-count category-cloud-2">ANOVA</span></div><div class="category" data-category="Ymlub21pYWw="><span class="quarto-category-count category-cloud-2">binomial</span></div><div class="category" data-category="Ym9vdHN0cmFw"><span class="quarto-category-count category-cloud-2">bootstrap</span></div><div class="category" data-category="ZGlzcGVyc2lvbg=="><span class="quarto-category-count category-cloud-2">dispersion</span></div><div class="category" data-category="ZmlzaGVyJTIwaW5mb3JtYXRpb24="><span class="quarto-category-count category-cloud-2">fisher information</span></div><div class="category" data-category="Z2xt"><span class="quarto-category-count category-cloud-2">glm</span></div><div class="category" data-category="aGllcmFyY2hpY2FsJTIwbW9kZWxz"><span class="quarto-category-count category-cloud-3">hierarchical models</span></div><div class="category" data-category="aHlwb3RoZXNpcyUyMHRlc3Rpbmc="><span class="quarto-category-count category-cloud-2">hypothesis testing</span></div><div class="category" data-category="aW5mZXJlbmNl"><span class="quarto-category-count category-cloud-2">inference</span></div><div class="category" data-category="bGlrZWxpaG9vZA=="><span class="quarto-category-count category-cloud-3">likelihood</span></div><div class="category" data-category="bWFya292JTIwY2hhaW4="><span class="quarto-category-count category-cloud-2">markov chain</span></div><div class="category" data-category="bmV3dG9uJTIwcmFwaHNvbg=="><span class="quarto-category-count category-cloud-2">newton raphson</span></div><div class="category" data-category="cmFuZG9tJTIwZWZmZWN0cw=="><span class="quarto-category-count category-cloud-3">random effects</span></div><div class="category" data-category="cmVncmVzc2lvbg=="><span class="quarto-category-count category-cloud-3">regression</span></div><div class="category" data-category="dGltZXNlcmllcw=="><span class="quarto-category-count category-cloud-2">timeseries</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-cloud"><div class="category" data-category="QU5PVkE="><span class="quarto-category-count category-cloud-2">ANOVA</span></div><div class="category" data-category="Ymlub21pYWw="><span class="quarto-category-count category-cloud-2">binomial</span></div><div class="category" data-category="Ym9vdHN0cmFw"><span class="quarto-category-count category-cloud-2">bootstrap</span></div><div class="category" data-category="ZGlzcGVyc2lvbg=="><span class="quarto-category-count category-cloud-2">dispersion</span></div><div class="category" data-category="ZmlzaGVyJTIwaW5mb3JtYXRpb24="><span class="quarto-category-count category-cloud-2">fisher information</span></div><div class="category" data-category="Z2xt"><span class="quarto-category-count category-cloud-2">glm</span></div><div class="category" data-category="aGllcmFyY2hpY2FsJTIwbW9kZWxz"><span class="quarto-category-count category-cloud-3">hierarchical models</span></div><div class="category" data-category="aHlwb3RoZXNpcyUyMHRlc3Rpbmc="><span class="quarto-category-count category-cloud-2">hypothesis testing</span></div><div class="category" data-category="aW5mZXJlbmNl"><span class="quarto-category-count category-cloud-2">inference</span></div><div class="category" data-category="bGlrZWxpaG9vZA=="><span class="quarto-category-count category-cloud-3">likelihood</span></div><div class="category" data-category="bWFya292JTIwY2hhaW4="><span class="quarto-category-count category-cloud-2">markov chain</span></div><div class="category" data-category="bWlzc2luZyUyMGRhdGE="><span class="quarto-category-count category-cloud-2">missing data</span></div><div class="category" data-category="bmV1cmFsJTIwbmV0d29ya3M="><span class="quarto-category-count category-cloud-2">neural networks</span></div><div class="category" data-category="bmV3dG9uJTIwcmFwaHNvbg=="><span class="quarto-category-count category-cloud-2">newton raphson</span></div><div class="category" data-category="cHl0b3JjaA=="><span class="quarto-category-count category-cloud-2">pytorch</span></div><div class="category" data-category="cmFuZG9tJTIwZWZmZWN0cw=="><span class="quarto-category-count category-cloud-3">random effects</span></div><div class="category" data-category="cmVncmVzc2lvbg=="><span class="quarto-category-count category-cloud-3">regression</span></div><div class="category" data-category="dGltZSUyMHNlcmllcw=="><span class="quarto-category-count category-cloud-2">time series</span></div><div class="category" data-category="dGltZXNlcmllcw=="><span class="quarto-category-count category-cloud-2">timeseries</span></div></div></div>
 <!-- main -->
 <main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
 
@@ -210,7 +213,41 @@ window.Quarto = {
     </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="aW5mZXJlbmNlJTJDbGlrZWxpaG9vZCUyQ2Rpc3BlcnNpb24=" data-listing-date-sort="1776207600000" data-listing-file-modified-sort="1781030804778" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3530">
+<div class="quarto-post image-right" data-index="0" data-categories="bmV1cmFsJTIwbmV0d29ya3MlMkN0aW1lJTIwc2VyaWVzJTJDbWlzc2luZyUyMGRhdGElMkNweXRvcmNo" data-listing-date-sort="1788822000000" data-listing-file-modified-sort="1791504585017" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2785">
+<div class="thumbnail"><a href="./posts/beijing_air_quality/index.html" class="no-external">
+
+<img loading="lazy" src="./posts/beijing_air_quality/thumbnail.png" class="thumbnail-image">
+
+</a></div>
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./posts/beijing_air_quality/index.html" class="no-external">PM2.5, PM10 ~ station + time, analysis</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('bmV1cmFsJTIwbmV0d29ya3M='); return false;">neural networks</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('dGltZSUyMHNlcmllcw=='); return false;">time series</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('bWlzc2luZyUyMGRhdGE='); return false;">missing data</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('cHl0b3JjaA=='); return false;">pytorch</div>
+
+</div>
+</div>
+<div class="metadata">
+<a href="./posts/beijing_air_quality/index.html" class="no-external">
+<div class="listing-date">
+Sep 8, 2026
+</div>
+<div class="listing-author">
+Prateek
+</div>
+<div class="listing-reading-time">14 min</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="aW5mZXJlbmNlJTJDbGlrZWxpaG9vZCUyQ2Rpc3BlcnNpb24=" data-listing-date-sort="1776207600000" data-listing-file-modified-sort="1782386870563" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3530">
 <div class="thumbnail"><a href="./posts/ratings_inference/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/ratings_inference/ratings.png" class="thumbnail-image">
@@ -242,7 +279,7 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="cmFuZG9tJTIwZWZmZWN0cyUyQ2hpZXJhcmNoaWNhbCUyMG1vZGVscyUyQ2dsbSUyQ2Jpbm9taWFs" data-listing-date-sort="1764460800000" data-listing-file-modified-sort="1780590168533" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="22" data-listing-word-count-sort="4252">
+<div class="quarto-post image-right" data-index="2" data-categories="cmFuZG9tJTIwZWZmZWN0cyUyQ2hpZXJhcmNoaWNhbCUyMG1vZGVscyUyQ2dsbSUyQ2Jpbm9taWFs" data-listing-date-sort="1764460800000" data-listing-file-modified-sort="1780590168533" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="22" data-listing-word-count-sort="4252">
 <div class="thumbnail"><a href="./posts/occupation_impact_on_rentals/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/occupation_impact_on_rentals/rentals_2021.png" class="thumbnail-image">
@@ -276,7 +313,7 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="2" data-categories="cmFuZG9tJTIwZWZmZWN0cyUyQ2hpZXJhcmNoaWNhbCUyMG1vZGVscw==" data-listing-date-sort="1763856000000" data-listing-file-modified-sort="1773098100656" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1912">
+<div class="quarto-post image-right" data-index="3" data-categories="cmFuZG9tJTIwZWZmZWN0cyUyQ2hpZXJhcmNoaWNhbCUyMG1vZGVscw==" data-listing-date-sort="1763856000000" data-listing-file-modified-sort="1773098100656" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1912">
 <div class="thumbnail"><a href="./posts/miles_per_gallon/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/miles_per_gallon/mpg.jpg" class="thumbnail-image">
@@ -306,7 +343,7 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="3" data-categories="cmVncmVzc2lvbiUyQ0FOT1ZB" data-listing-date-sort="1760569200000" data-listing-file-modified-sort="1780586668640" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1199">
+<div class="quarto-post image-right" data-index="4" data-categories="cmVncmVzc2lvbiUyQ0FOT1ZB" data-listing-date-sort="1760569200000" data-listing-file-modified-sort="1780586668640" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="6" data-listing-word-count-sort="1199">
 <div class="thumbnail"><a href="./posts/teen_gamble/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/teen_gamble/gambling.jpeg" class="thumbnail-image">
@@ -336,7 +373,7 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="4" data-categories="bGlrZWxpaG9vZCUyQ2Zpc2hlciUyMGluZm9ybWF0aW9uJTJDbmV3dG9uJTIwcmFwaHNvbg==" data-listing-date-sort="1735344000000" data-listing-file-modified-sort="1767952419327" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1537">
+<div class="quarto-post image-right" data-index="5" data-categories="bGlrZWxpaG9vZCUyQ2Zpc2hlciUyMGluZm9ybWF0aW9uJTJDbmV3dG9uJTIwcmFwaHNvbg==" data-listing-date-sort="1735344000000" data-listing-file-modified-sort="1767952419327" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1537">
 <div class="thumbnail"><a href="./posts/likelihood_primer/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/likelihood_primer/likelihood.jpg" class="thumbnail-image">
@@ -368,10 +405,10 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="5" data-categories="bWFya292JTIwY2hhaW4lMkN0aW1lc2VyaWVz" data-listing-date-sort="1734480000000" data-listing-file-modified-sort="1767949490683" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3016">
+<div class="quarto-post image-right" data-index="6" data-categories="bWFya292JTIwY2hhaW4lMkN0aW1lc2VyaWVz" data-listing-date-sort="1734480000000" data-listing-file-modified-sort="1767949490683" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="16" data-listing-word-count-sort="3016">
 <div class="thumbnail"><a href="./posts/user_behaviour_analysis/index.html" class="no-external">
 
-<p class="card-img-top"><img src="posts/user_behaviour_analysis/states.png"  class="thumbnail-image card-img"/></p>
+<p class="card-img-top"><img loading='lazy' src="posts/user_behaviour_analysis/states.png"  class="thumbnail-image card-img"/></p>
 
 </a></div>
 <div class="body">
@@ -398,7 +435,7 @@ Prateek
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="6" data-categories="aHlwb3RoZXNpcyUyMHRlc3RpbmclMkNib290c3RyYXAlMkNyZWdyZXNzaW9u" data-listing-date-sort="1689894000000" data-listing-file-modified-sort="1767947651364" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1234">
+<div class="quarto-post image-right" data-index="7" data-categories="aHlwb3RoZXNpcyUyMHRlc3RpbmclMkNib290c3RyYXAlMkNyZWdyZXNzaW9u" data-listing-date-sort="1689894000000" data-listing-file-modified-sort="1767947651364" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1234">
 <div class="thumbnail"><a href="./posts/movies_getting_longer/index.html" class="no-external">
 
 <img loading="lazy" src="./posts/movies_getting_longer/movie_coupon.jpg" class="thumbnail-image">

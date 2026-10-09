@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,10 +11,16 @@
 
 <title>rentership ~ occupation, analysis – Blog</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -26,7 +32,6 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
-  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -54,15 +59,14 @@ div.csl-indent {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-445b8638c3d06994fee0907d791121c4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -112,8 +116,6 @@ div.csl-indent {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Blog</span>
     </a>
@@ -228,7 +230,7 @@ div.csl-indent {
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><span>“RM140: Tenure by Occupation - Household Reference Persons”</span> 2023</a>)</span>. <br> MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br> These are different from the counts of all workers (used in occupation‑by‑age data introduced later in the study), because a household can contain more than one person in full‑time work but only one HRP. <br></p>
+<p>We use 2021 ONS Census data (via the Nomis API) that cross‑tabulates housing tenure and occupation at the MSOA level <span class="citation" data-cites="ONS2021RM140">(<a href="#ref-ONS2021RM140" role="doc-biblioref"><em>RM140</em> 2023</a>)</span>. <br> MSOAs (Middle Layer Super Output Areas) are neighborhood‑sized geographies. Counts refer to the household reference person (HRP) the person who represents the household, so each household is linked to a single occupation. <br> These are different from the counts of all workers (used in occupation‑by‑age data introduced later in the study), because a household can contain more than one person in full‑time work but only one HRP. <br></p>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top table table-sm table-striped small">
@@ -355,7 +357,7 @@ div.csl-indent {
 <h3 class="anchored" data-anchor-id="additional-information">Additional information</h3>
 <p>Local authority for each MSOA in original dataset is added, to account for rental patterns that may be present at local area levels. Being in the same Local authority may affect neighbouring MSOAs introducing correlations in their data. <br></p>
 <p>It may be the case that age has a confounding effect on Rentership via Occupation. <em>Professional and Managers</em> may likely be older than for e.g.&nbsp;<em>Associates</em> and this may mean that they were able to purchase a house earlier in their careers/life and now represent a smaller proportion of rental cohort. <br> Adjusting for age gives an apples-to-apples comparison of rentership preference among people pursuing different occupations but are in boradly same phases of their life. <br> The adjustment can be made (ideally) by including the counts of full-time employed HRPs in an MSOA engaged in a particular profession.</p>
-<p>We have cross tabulated data <span class="citation" data-cites="ONS2021RM102">(<a href="#ref-ONS2021RM102" role="doc-biblioref"><span>“RM102: Occupation by Age - Residents in Employment”</span> 2023</a>)</span> for counts of <em>usual residents aged 16 years and over in employment the week before the census</em> per occupation, falling in one of the following age bands: <br></p>
+<p>We have cross tabulated data <span class="citation" data-cites="ONS2021RM102">(<a href="#ref-ONS2021RM102" role="doc-biblioref"><em>RM102</em> 2023</a>)</span> for counts of <em>usual residents aged 16 years and over in employment the week before the census</em> per occupation, falling in one of the following age bands: <br></p>
 <ul>
 <li>aged 15 years and under</li>
 <li>aged 16 to 24 years</li>
@@ -372,7 +374,7 @@ div.csl-indent {
 <p>Current data only includes measurements from household reference persons (HRP) in full time employment a week before census. <br> London is also filtered out as it is a very different rental market compared to the rest of UK and may skew results when mixed with other regions. <br></p>
 <p><strong>Note:</strong> <br></p>
 <ul>
-<li>ONS rental tenure data includes a large proportion (~34%) of people not under full time employment<span class="citation" data-cites="EHS_21-22_PRS_Ch_1_Annex_Tables">(<a href="#ref-EHS_21-22_PRS_Ch_1_Annex_Tables" role="doc-biblioref"><span>“Annex Table 1.5: Employment Status by Tenure,2021-22”</span> 2023</a>)</span> (filtered out in current analysis)
+<li>ONS rental tenure data includes a large proportion (~34%) of people not under full time employment<span class="citation" data-cites="EHS_21-22_PRS_Ch_1_Annex_Tables">(<a href="#ref-EHS_21-22_PRS_Ch_1_Annex_Tables" role="doc-biblioref"><em>Annex Table 1.5</em> 2023</a>)</span> (filtered out in current analysis)
 <ul>
 <li>part-time work (~11% includes furloughed)</li>
 <li>retired (~7%)</li>
@@ -380,7 +382,7 @@ div.csl-indent {
 <li>full-time education (~4%)</li>
 <li>other inactive (~8%)</li>
 </ul></li>
-<li>The private rented sector houses the highest proportion of non-UK nationals (74% of HRPs in the private rented sector are from the UK, compared to 92% of social renters and 96% of owner occupiers) <span class="citation" data-cites="english_housing_survey">(<a href="#ref-english_housing_survey" role="doc-biblioref"><span>“English Housing Survey 2021 to 2022: Private Rented Sector”</span> 2023</a>)</span></li>
+<li>The private rented sector houses the highest proportion of non-UK nationals (74% of HRPs in the private rented sector are from the UK, compared to 92% of social renters and 96% of owner occupiers) <span class="citation" data-cites="english_housing_survey">(<a href="#ref-english_housing_survey" role="doc-biblioref"><em>English Housing Survey 2021 to 2022</em> 2023</a>)</span></li>
 </ul>
 <div class="cell">
 <div class="cell-output-display">
@@ -1205,18 +1207,18 @@ Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
 <div id="ref-EHS_21-22_PRS_Ch_1_Annex_Tables" class="csl-entry" role="listitem">
-<span>“Annex Table 1.5: Employment Status by Tenure,2021-22.”</span> 2023. Department for Levelling Up, Housing; Communities. <a href="https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods">https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods</a>.
+<em>Annex Table 1.5: Employment Status by Tenure,2021-22</em>. 2023. Department for Levelling Up, Housing; Communities. <a href="https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods">https://assets.publishing.service.gov.uk/media/64ad65e48bc29f000d2cca7f/EHS_21-22_PRS_Ch_1_Annex_Tables.ods</a>.
 </div>
 <div id="ref-english_housing_survey" class="csl-entry" role="listitem">
-<span>“English Housing Survey 2021 to 2022: Private Rented Sector.”</span> 2023, July. <a href="https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector">https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector</a>.
+<em>English Housing Survey 2021 to 2022: Private Rented Sector</em>. 2023. July. <a href="https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector">https://www.gov.uk/government/statistics/english-housing-survey-2021-to-2022-private-rented-sector/english-housing-survey-2021-to-2022-private-rented-sector</a>.
 </div>
 <div id="ref-ONS2021RM102" class="csl-entry" role="listitem">
-<span>“RM102: Occupation by Age - Residents in Employment.”</span> 2023. Office for National Statistics. <a href="https://www.ons.gov.uk/datasets/RM102/editions/2021/versions/3">https://www.ons.gov.uk/datasets/RM102/editions/2021/versions/3</a>.
+<em>RM102: Occupation by Age - Residents in Employment</em>. 2023. Office for National Statistics. <a href="https://www.ons.gov.uk/datasets/RM102/editions/2021/versions/3">https://www.ons.gov.uk/datasets/RM102/editions/2021/versions/3</a>.
 </div>
 <div id="ref-ONS2021RM140" class="csl-entry" role="listitem">
-<span>“RM140: Tenure by Occupation - Household Reference Persons.”</span> 2023. Office for National Statistics. <a href="https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2">https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2</a>.
+<em>RM140: Tenure by Occupation - Household Reference Persons</em>. 2023. Office for National Statistics. <a href="https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2">https://www.ons.gov.uk/datasets/RM140/editions/2021/versions/2</a>.
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

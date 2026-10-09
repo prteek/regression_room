@@ -1,5 +1,5 @@
 ---
-title: "Two targets, one network: smooth levels from sparse, noisy panels"
+title: "PM2.5, PM10 ~ station + time, analysis"
 author: "Prateek"
 date: "2026-09-08"
 categories: [neural networks, time series, missing data, pytorch]

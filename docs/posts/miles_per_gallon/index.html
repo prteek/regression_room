@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.8.25">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -11,10 +11,16 @@
 
 <title>MPG ~ manufacturer, analysis – Blog</title>
 <style>
-code{white-space: pre-wrap;}
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -26,7 +32,6 @@ ul.task-list li input[type="checkbox"] {
 div.csl-bib-body { }
 div.csl-entry {
   clear: both;
-  margin-bottom: 0em;
 }
 .hanging-indent div.csl-entry {
   margin-left:2em;
@@ -54,15 +59,14 @@ div.csl-indent {
 <meta name="quarto:offset" content="../../">
 <script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-7b89279ff1a6dce999919e0e67d4d9ec.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../../site_libs/bootstrap/bootstrap-445b8638c3d06994fee0907d791121c4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -102,8 +106,6 @@ div.csl-indent {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a href="../../index.html" class="navbar-brand navbar-brand-logo">
-    </a>
     <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Blog</span>
     </a>
@@ -729,7 +731,7 @@ deviance = -231.0 </code></pre>
 </div>
 </div>
 <p>It can be seen that variance due to manufacturer and models nested inside manufacturer are comparable in magnitudes. The variation in mpg is due to both which is sesnible outcome. <br></p>
-<p>It can be tested if including model effects is meaningful using a likelihood ratio test. <span class="citation" data-cites="rlrsim">(<a href="#ref-rlrsim" role="doc-biblioref">Scheipl, Greven, and Kuechenhoff 2008</a>)</span></p>
+<p>It can be tested if including model effects is meaningful using a likelihood ratio test. <span class="citation" data-cites="rlrsim">(<a href="#ref-rlrsim" role="doc-biblioref">Scheipl et al. 2008</a>)</span></p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code>
@@ -830,12 +832,12 @@ RLRT = 13.167, p-value &lt; 2.2e-16</code></pre>
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
 <div id="ref-extending_lm_with_R_book" class="csl-entry" role="listitem">
 Faraway, Julian J. 2016. <em>Extending the Linear Model with r, Second Edition</em>. CRC Press.
 </div>
 <div id="ref-ggplot2" class="csl-entry" role="listitem">
-GGplot2 Development Team. n.d. <span>“The r Project for Statistical Computing.”</span> <a href="https://ggplot2.tidyverse.org/reference/mpg.html">https://ggplot2.tidyverse.org/reference/mpg.html</a>.
+GGplot2 Development Team. n.d. <em>The r Project for Statistical Computing</em>. <a href="https://ggplot2.tidyverse.org/reference/mpg.html">https://ggplot2.tidyverse.org/reference/mpg.html</a>.
 </div>
 <div id="ref-rlrsim" class="csl-entry" role="listitem">
 Scheipl, Fabian, Sonja Greven, and Helmut Kuechenhoff. 2008. <span>“Size and Power of Tests for a Zero Random Effect Variance or Polynomial Regression in Additive and Linear Mixed Models.”</span> <em>Computational Statistics &amp; Data Analysis</em> 52 (7): 3283–99.

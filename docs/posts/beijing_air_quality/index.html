@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Prateek">
+<meta name="dcterms.date" content="2026-09-08">
+
+<title>PM2.5, PM10 ~ station + time, analysis – Blog</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-445b8638c3d06994fee0907d791121c4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="../../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Prateek</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/prteek"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">PM2.5, PM10 ~ station + time, analysis</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">neural networks</div>
+                <div class="quarto-category">time series</div>
+                <div class="quarto-category">missing data</div>
+                <div class="quarto-category">pytorch</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Prateek </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">September 8, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  <div>
+    <div class="abstract">
+      <div class="block-title">Abstract</div>
+      <p>Panels of many related series, each observed with few and noisy readings and with gaps, are common: local price indices, sensor networks, small area statistics. A smooth underlying level for every series and every period, including where nothing was observed is generally desired. This post builds a small PyTorch network that models two related targets jointly, treats a missing target as masked rather than dropping the row, weights each observation by how many readings it averages, and keeps every series smooth with a curvature penalty. To measure how well it works we take a complete public dataset: hourly PM2.5 and PM10 from 12 Beijing monitoring stations. It is thinned to make it sparse and the model is scored against the full data. The network fills long gaps and very sparse stations far better than smoothing each series on its own. Modelling both pollutants together recovers a completely dropped series, but elsewhere it costs a little accuracy compared with modelling each pollutant alone.</p>
+    </div>
+  </div>
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
+  <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a>
+  <ul class="collapse">
+  <li><a href="#architecture" id="toc-architecture" class="nav-link" data-scroll-target="#architecture">Architecture</a></li>
+  <li><a href="#loss" id="toc-loss" class="nav-link" data-scroll-target="#loss">Loss</a></li>
+  </ul></li>
+  <li><a href="#experiment" id="toc-experiment" class="nav-link" data-scroll-target="#experiment">Experiment</a>
+  <ul class="collapse">
+  <li><a href="#results-against-the-31-day-ma" id="toc-results-against-the-31-day-ma" class="nav-link" data-scroll-target="#results-against-the-31-day-ma">Results against the 31-day MA</a></li>
+  <li><a href="#what-the-fits-look-like" id="toc-what-the-fits-look-like" class="nav-link" data-scroll-target="#what-the-fits-look-like">What the fits look like</a></li>
+  <li><a href="#a-bias-to-fix" id="toc-a-bias-to-fix" class="nav-link" data-scroll-target="#a-bias-to-fix">A bias to fix</a></li>
+  </ul></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This work was developed with AI assistance</p>
+</div>
+</div>
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Consider a panel of series indexed by location and time, with two related quantities measured in each cell. Each observation is a mean over a handful of raw readings, so it is noisy; many cells have only one of the two quantities, many have neither, and some series go quiet for months. What we want is the <em>prevailing level</em>: a smooth estimate for every location, period and quantity, that does not chase noise but does follow genuine movements, and that still exists where data is missing.</p>
+<p>Fitting each series on its own fails exactly where it matters: a series with a long gap has nothing to go on, and a series with one reading a month is mostly noise. Two kinds of sharing should help:</p>
+<ul>
+<li><strong>across locations</strong> — nearby or similar locations move together, so a thin series can borrow from its group</li>
+<li><strong>across targets</strong> — the two quantities are related, so a month where only one was observed still says something about the other</li>
+</ul>
+<p>The approach below does both in one network, and the experiment measures how much each matters.</p>
+</section>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Real sparse panels have no ground truth: we never get to see the level we are trying to estimate. So we start from a complete dataset, the UCI <em>Beijing Multi-Site Air Quality</em> data: hourly PM2.5 and PM10 at 12 stations from March 2013 to February 2017. The two pollutants are closely related (PM10 includes PM2.5) but not identical.</p>
+<p>The unit of analysis is a <strong>station-day</strong>: the mean of each pollutant over the day’s valid hours, with the number of hours <span class="math inline">\(n\)</span> kept as a measure of how reliable that mean is. The full data is almost complete (over 99% of station-days), so we thin it to resemble a typical small-area panel:</p>
+<ul>
+<li>each station-day keeps a random Poisson(<span class="math inline">\(\lambda=1.2\)</span>) number of its hours, drawn <strong>separately for each pollutant</strong>, so often only one is observed;</li>
+<li>each station and pollutant also loses two blocks of 20–60 consecutive days.</li>
+</ul>
+<p>The <strong>ground truth</strong> is the full data. Estimates are scored against its <strong>31-day MA</strong>: the 31-day centred moving average of the full daily means (on the log scale). The full daily means themselves are also kept for reference.</p>
+<div id="ec8a4084" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">full: days observed</th>
+<th data-quarto-table-cell-role="th">full: hours per day</th>
+<th data-quarto-table-cell-role="th">sparse: days observed</th>
+<th data-quarto-table-cell-role="th">sparse: hours per day</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">pollutant</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">PM2.5</th>
+<td>100%</td>
+<td>23.6</td>
+<td>66%</td>
+<td>1.7</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">PM10</th>
+<td>100%</td>
+<td>23.7</td>
+<td>67%</td>
+<td>1.7</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>In the sparse data both pollutants are observed on 44% of station-days and exactly one on 45%, with fewer than two readings behind each observed value. The figure shows what that does to one station over a year.</p>
+<div id="051dd2e2" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-4-output-1.png" width="818" height="312" class="figure-img"></p>
+<figcaption>Dongsi station, PM2.5, one year. Grey: full-data daily means. Dots: the sparse readings (size = hours). Black: the 31-day MA of the full data.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Daily pollution swings by a factor of two or more from day to day with the weather, and a reading of one or two hours adds more noise on top. The level we want is the slow black line.</p>
+</section>
+<section id="model" class="level2">
+<h2 class="anchored" data-anchor-id="model">Model</h2>
+<section id="architecture" class="level3">
+<h3 class="anchored" data-anchor-id="architecture">Architecture</h3>
+<p>Every row is one station-day with up to two targets: <span class="math inline">\(y_1 = \log \text{PM2.5}\)</span> and <span class="math inline">\(y_2 = \log \text{PM10}\)</span> (standardised). The network maps <em>(station, day)</em> to a predicted level for both:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart LR
+  A["area id&lt;br/&gt;(urban / suburban)"] --&gt; EA["area embedding (8)"]
+  S["station id"] --&gt; ES["station embedding (8)&lt;br/&gt;starts at 0: an offset"]
+  EA --&gt; P(("+"))
+  ES --&gt; P
+  T["day"] --&gt; TB["Gaussian bumps&lt;br/&gt;every w days (fixed)"]
+  P --&gt; C["concat"]
+  TB --&gt; C
+  C --&gt; L1["Linear → 64, SiLU"] --&gt; L2["Linear 64 → 64, SiLU"]
+  L2 --&gt; H1["PM2.5 head&lt;br/&gt;Linear 64 → 1"]
+  L2 --&gt; H2["PM10 head&lt;br/&gt;Linear 64 → 1"]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<ul>
+<li><strong>Location</strong> is the area’s embedding plus a station offset that starts at zero and is penalised, so a station with little data falls back to its area.</li>
+<li><strong>Time</strong> enters only through fixed Gaussian bumps, <span class="math inline">\(b_k(t) = \exp\{-\tfrac12 ((t - c_k)/w)^2\}\)</span> with centres <span class="math inline">\(c_k\)</span> every <span class="math inline">\(w\)</span> days. A day becomes a vector of bump values; neighbouring days get nearly identical vectors, so the level cannot jump from one day to the next.</li>
+<li><strong>A shared trunk</strong> of two layers with a smooth activation (SiLU) turns location and time into a 64-number summary; <strong>two linear heads</strong> read the same summary. Everything before the heads is shared, so a day that observed only PM2.5 still trains everything PM10 depends on.</li>
+</ul>
+</section>
+<section id="loss" class="level3">
+<h3 class="anchored" data-anchor-id="loss">Loss</h3>
+<p>An observed daily value is a mean of <span class="math inline">\(n\)</span> hourly readings, so its variance around the level is the reading-level variance divided by <span class="math inline">\(n\)</span>, plus a floor <span class="math inline">\(\tau^2\)</span> for genuine day-to-day movement the level should not chase. For target <span class="math inline">\(j\)</span>:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{fit}} = \frac{1}{\sum m_{ij}} \sum_{i,j} m_{ij} \left[ \tfrac12 \log v_{ij} + \frac{(y_{ij} - \mu_{ij})^2}{2 v_{ij}} \right],
+\qquad v_{ij} = \frac{\sigma_j^2}{n_{ij}} + \tau_j^2 ,
+\]</span></p>
+<p>where <span class="math inline">\(m_{ij}\)</span> is 1 if target <span class="math inline">\(j\)</span> was observed on row <span class="math inline">\(i\)</span> and 0 otherwise — a missing target is <strong>masked</strong>, not dropped. <span class="math inline">\(\sigma_j\)</span> and <span class="math inline">\(\tau_j\)</span> are learned, one per target. A day of 24 readings counts far more than a day of one.</p>
+<p>Smoothness comes from a penalty on the curvature of every station’s predicted series over the <strong>whole</strong> day grid, observed or not:</p>
+<p><span class="math display">\[
+\mathcal{L} = \mathcal{L}_{\text{fit}} + \lambda \, \overline{\left(\mu_{t+1} - 2\mu_t + \mu_{t-1}\right)^2} + \gamma \, \overline{\lVert e_{\text{station}} \rVert^2} .
+\]</span></p>
+<p>A straight trend costs nothing; bends cost more. Because the penalty covers days without data, it controls the curve inside gaps and at the edges.</p>
+</section>
+</section>
+<section id="experiment" class="level2">
+<h2 class="anchored" data-anchor-id="experiment">Experiment</h2>
+<p>To see how the model behaves on the hard cases, two stations are degraded further before fitting:</p>
+<ul>
+<li><strong>a dropped series</strong> — every PM10 reading at <em>Dingling</em> is removed; only its PM2.5 remains;</li>
+<li><strong>a very sparse station</strong> — <em>Huairou</em> keeps only 15% of its (already sparse) days.</li>
+</ul>
+<p>Three estimators are fitted to the same data:</p>
+<ol type="1">
+<li><strong>joint</strong> — the network above, both targets;</li>
+<li><strong>single-target</strong> — the same network trained on one pollutant at a time (two separate models);</li>
+<li><strong>±15-day mean</strong> — for each station and pollutant, the hour-weighted mean of the sparse readings within 15 days; where a station has no readings at all, the same within its area.</li>
+</ol>
+<section id="results-against-the-31-day-ma" class="level3">
+<h3 class="anchored" data-anchor-id="results-against-the-31-day-ma">Results against the 31-day MA</h3>
+<p>Every station-day and pollutant is assigned to one group:</p>
+<ul>
+<li><strong>dropped series</strong> — Dingling PM10 (no data at all);</li>
+<li><strong>very sparse station</strong> — Huairou, both pollutants;</li>
+<li>for every other station: <strong>observed</strong> (the sparse data has readings that day), <strong>unobserved</strong> (no readings, outside the gap blocks), <strong>long gap</strong> (inside a 20–60 day gap block), and among unobserved days those where <strong>the other pollutant was observed</strong>.</li>
+</ul>
+<div id="fb587313" class="cell" data-execution_count="5">
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th">model</th>
+<th data-quarto-table-cell-role="th">station-days</th>
+<th data-quarto-table-cell-role="th">joint</th>
+<th data-quarto-table-cell-role="th">single-target</th>
+<th data-quarto-table-cell-role="th">±15-day mean</th>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">group</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">observed</th>
+<td>20320</td>
+<td>0.154</td>
+<td>0.147</td>
+<td>0.153</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">unobserved</th>
+<td>8608</td>
+<td>0.153</td>
+<td>0.146</td>
+<td>0.158</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">other pollutant observed</th>
+<td>6544</td>
+<td>0.152</td>
+<td>0.145</td>
+<td>0.178</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">long gap</th>
+<td>1753</td>
+<td>0.156</td>
+<td>0.144</td>
+<td>0.292</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">very sparse station</th>
+<td>2922</td>
+<td>0.152</td>
+<td>0.141</td>
+<td>0.496</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">dropped series</th>
+<td>1461</td>
+<td>0.144</td>
+<td>0.182</td>
+<td>0.156</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Errors are mean absolute log errors against the 31-day MA (0.15 ≈ 15%). On an observed day the raw sparse reading itself misses it by about 0.7–0.8, so all three estimators remove most of the noise. The differences are in the hard cases:</p>
+<ul>
+<li><strong>Long gaps:</strong> the networks carry the level through (joint 0.156, single-target 0.144), while the ±15-day mean runs out of data (0.292).</li>
+<li><strong>Very sparse station:</strong> with only 15% of its days, Huairou’s own data is too thin for a moving average (0.496). Both networks do as well as on regular stations (joint 0.152, single-target 0.141), because the strong smoothing and the shared area pattern fill in what the station lacks.</li>
+<li><strong>Dropped series:</strong> this is where modelling both pollutants together pays off. With no PM10 at Dingling at all, the joint model infers it from Dingling’s PM2.5 (0.144), while a single-target model can only fall back to the area (0.182). The joint model also beats the area moving average (0.156).</li>
+<li><strong>Everywhere else, sharing costs a little.</strong> On observed, unobserved and long-gap days the single-target models are slightly more accurate than the joint model (for example 0.147 vs 0.154 on observed days). When a station has its own data for a pollutant, borrowing from the other pollutant adds little and forces one shared trunk to serve both.</li>
+<li><strong>Densely observed days:</strong> the simple ±15-day mean is level with the networks (0.153). Its 31-day window is the same as the benchmark’s, which flatters it.</li>
+</ul>
+<p>Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same-day readings, while the network’s only notion of time is a smooth curve. A shared day-level effect in the network is the obvious next step.</p>
+<div id="96b3dc00" class="cell" data-execution_count="6">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-7-output-1.png" width="816" height="322" class="figure-img"></p>
+<figcaption>Error against the 31-day MA by group and estimator.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="what-the-fits-look-like" class="level3">
+<h3 class="anchored" data-anchor-id="what-the-fits-look-like">What the fits look like</h3>
+<p><strong>A well-observed station.</strong> Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother: they follow the seasons but flatten shorter episodes, such as the December 2015 peak.</p>
+<div id="7833af60" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-9-output-1.png" width="1090" height="324" class="figure-img"></p>
+<figcaption>Dongsi, both pollutants, one year (regular sparse data).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>A very sparse station.</strong> With only 15% of its days left, Huairou’s own data is too thin for the moving average, which jumps around. Both networks lean on the suburban area and the shared time pattern and stay close to the level; the joint and single-target curves are almost indistinguishable.</p>
+<div id="d5f97a39" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-10-output-1.png" width="1090" height="531" class="figure-img"></p>
+<figcaption>Huairou with 15% of its sparse days kept.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>A dropped series.</strong> Dingling’s PM10 was never seen. The joint model reconstructs it from Dingling’s PM2.5 (top); the single-target PM10 model has nothing station-specific to go on and returns the suburban area’s level, which sits too high. The joint curve follows the shape but runs a little low and misses some peaks. The orange line here is the area moving average, which tracks day-to-day movements from the other suburban stations.</p>
+<div id="f74b5421" class="cell" data-execution_count="10">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-11-output-1.png" width="1115" height="531" class="figure-img"></p>
+<figcaption>Dingling: PM2.5 observed (top), PM10 completely dropped (bottom).</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p><strong>Long gaps.</strong> The four longest gap blocks at regular stations. Once its window empties, the moving average either stops or swings on the few readings at its edges; the networks carry on smoothly. The joint and single-target curves overlap, and both sit slightly below the level (see the bias below).</p>
+<div id="42db0b89" class="cell" data-execution_count="11">
+<div class="cell-output cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-12-output-1.png" width="1328" height="657" class="figure-img"></p>
+<figcaption>The four longest gap blocks (shaded) at regular stations, with 60 days either side.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="a-bias-to-fix" class="level3">
+<h3 class="anchored" data-anchor-id="a-bias-to-fix">A bias to fix</h3>
+<p>The network curves sit consistently below the 31-day MA, by 0.11 on the log scale on average (about 11%). The model is fitted to the log of means over one or two hours, and the log of a mean over few readings is lower on average than the log of a mean over 24 (Jensen’s inequality). The textbook lognormal correction (<span class="math inline">\(+\tfrac12\sigma^2\)</span>) overshoots by about as much in the other direction, because the reading level spread mixes within-day and between-day variation. Modelling the hourly readings directly, or estimating the correction as a function of <span class="math inline">\(n\)</span>, would fix it; it is left for a followup.</p>
+</section>
+</section>
+<section id="takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<ul>
+<li><strong>Mask, don’t drop.</strong> Treating a missing target as missing in the loss, rather than discarding the row, is what lets one target fill in for the other. Here it paid off for an entirely missing series; where a pollutant had its own data.</li>
+<li><strong>Weight by information.</strong> Variance <span class="math inline">\(\sigma^2/n + \tau^2\)</span> lets a 24-hour mean outweigh a single reading, and stops the model from chasing day-to-day movement.</li>
+<li><strong>Make smoothness explicit.</strong> Smooth time bumps plus a curvature penalty over every period, observed or not, keep the level stable through gaps and at the edges.</li>
+<li><strong>Share across locations with offsets.</strong> A thin station falls back to its area instead of to nothing.</li>
+<li><strong>Know what the network cannot see.</strong> With time entering only as a smooth curve, it misses shared day-to-day shocks that a simple same day average catches; where data is dense, simple smoothing is hard to beat.</li>
+</ul>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
