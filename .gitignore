@@ -1,6 +1,7 @@
 /.quarto/
 _freeze/
 *credentials
+*.env
 *.DS_Store
 posts/user_behaviour_analysis/states.csv
 *_targets/
