@@ -87,8 +87,15 @@ wide = sparse.pivot_table(index=KEY, columns="pollutant", values="n").notna()
 rows = []
 for t in TARGETS:
     f, s = full[full["pollutant"] == t], sparse[sparse["pollutant"] == t]
-    rows.append({"pollutant": t, "full: days observed": f"{len(f) / n_cells:.0%}", "full: hours per day": f"{f['n'].mean():.1f}",
-                 "sparse: days observed": f"{len(s) / n_cells:.0%}", "sparse: hours per day": f"{s['n'].mean():.1f}"})
+    rows.append(
+        {
+            "pollutant": t,
+            "full: days observed": f"{len(f) / n_cells:.0%}",
+            "full: hours per day": f"{f['n'].mean():.1f}",
+            "sparse: days observed": f"{len(s) / n_cells:.0%}",
+            "sparse: hours per day": f"{s['n'].mean():.1f}",
+        }
+    )
 display(pd.DataFrame(rows).set_index("pollutant"))
 both, one = wide.all(axis=1).sum() / n_cells, (wide.sum(axis=1) == 1).sum() / n_cells
 ```
@@ -98,13 +105,30 @@ In the sparse data both pollutants are observed on `{python} f"{both:.0%}"` of s
 ```{python}
 #| fig-cap: "Dongsi station, PM2.5, one year. Grey: full-data daily means. Dots: the sparse readings (size = hours). Black: the 31-day MA of the full data."
 st, pol, a, b = "Dongsi", "PM2.5", "2015-03-01", "2016-02-29"
-sel = lambda d: d[(d["station"] == st) & (d["pollutant"] == pol) & d["date"].between(a, b)]
+sel = lambda d: d[
+    (d["station"] == st) & (d["pollutant"] == pol) & d["date"].between(a, b)
+]
 fig, ax = plt.subplots(figsize=(10, 3.6))
-ax.plot(sel(full)["date"], sel(full)["value"], color="0.8", lw=0.8, label="full-data daily mean")
+ax.plot(
+    sel(full)["date"],
+    sel(full)["value"],
+    color="0.8",
+    lw=0.8,
+    label="full-data daily mean",
+)
 s = sel(sparse)
-ax.scatter(s["date"], s["value"], s=6 + 6 * s["n"], color="0.3", alpha=0.6, label="sparse readings")
+ax.scatter(
+    s["date"],
+    s["value"],
+    s=6 + 6 * s["n"],
+    color="0.3",
+    alpha=0.6,
+    label="sparse readings",
+)
 ax.plot(sel(level)["date"], sel(level)["value"], color="black", lw=1.8, label=MA)
-ax.set_yscale("log"); ax.set_ylabel("µg/m³ (log scale)"); ax.legend(fontsize=8, loc="upper left")
+ax.set_yscale("log")
+ax.set_ylabel("µg/m³ (log scale)")
+ax.legend(fontsize=8, loc="upper left")
 plt.show()
 ```
 
@@ -184,9 +208,13 @@ Neither is wrong, but a *prevailing* level is the first: the overall level, not 
 ```{python}
 DROPPED, VERY_SPARSE, KEEP = ("Dingling", "PM10"), "Huairou", 0.15
 rng = np.random.default_rng(1)
-train = sparse[~((sparse["station"] == DROPPED[0]) & (sparse["pollutant"] == DROPPED[1]))]
+train = sparse[
+    ~((sparse["station"] == DROPPED[0]) & (sparse["pollutant"] == DROPPED[1]))
+]
 vs = train["station"] == VERY_SPARSE
-train = pd.concat([train[~vs], train[vs][rng.random(vs.sum()) < KEEP]], ignore_index=True)
+train = pd.concat(
+    [train[~vs], train[vs][rng.random(vs.sum()) < KEEP]], ignore_index=True
+)
 
 enc = Encoding.fit(train, end=full["date"].max())
 w = enc.wide(train)
@@ -194,14 +222,26 @@ grid = enc.grid()
 cells = grid.merge(pd.DataFrame({"pollutant": TARGETS}), how="cross")
 
 preds = {"joint": predict(fit(enc, w, cfg, steps), enc, grid)}
-preds["single-target"] = pd.concat([predict(fit(enc, w, cfg, steps, use=[t]), enc, grid).query("pollutant == @t") for t in TARGETS])
+preds["single-target"] = pd.concat(
+    [
+        predict(fit(enc, w, cfg, steps, use=[t]), enc, grid).query("pollutant == @t")
+        for t in TARGETS
+    ]
+)
 station_mean = baseline(train, cells)
 area_of = train.drop_duplicates("station").set_index("station")["area"]
-area_daily = (train.assign(lw=np.log(train["value"]) * train["n"])
-              .groupby(["area", "date", "pollutant"]).agg(lw=("lw", "sum"), n=("n", "sum")).reset_index()
-              .assign(value=lambda d: np.exp(d["lw"] / d["n"])).rename(columns={"area": "station"}))
+area_daily = (
+    train.assign(lw=np.log(train["value"]) * train["n"])
+    .groupby(["area", "date", "pollutant"])
+    .agg(lw=("lw", "sum"), n=("n", "sum"))
+    .reset_index()
+    .assign(value=lambda d: np.exp(d["lw"] / d["n"]))
+    .rename(columns={"area": "station"})
+)
 area_mean = baseline(area_daily, cells.assign(station=cells["station"].map(area_of)))
-station_mean["pred"] = station_mean["pred"].fillna(pd.Series(area_mean["pred"].to_numpy(), index=station_mean.index))
+station_mean["pred"] = station_mean["pred"].fillna(
+    pd.Series(area_mean["pred"].to_numpy(), index=station_mean.index)
+)
 preds["±15-day mean"] = station_mean
 ```
 
@@ -216,9 +256,13 @@ Every station-day and pollutant is assigned to one group:
 ```{python}
 obs = train[KEY + ["pollutant"]].assign(observed=True)
 g = gaps.assign(gap=True)
-c = cells.merge(obs, on=KEY + ["pollutant"], how="left").merge(g, on=KEY + ["pollutant"], how="left")
+c = cells.merge(obs, on=KEY + ["pollutant"], how="left").merge(
+    g, on=KEY + ["pollutant"], how="left"
+)
 c[["observed", "gap"]] = c[["observed", "gap"]].fillna(False).astype(bool)
-other = obs.assign(pollutant=obs["pollutant"].map(dict(zip(TARGETS, TARGETS[::-1])))).rename(columns={"observed": "other_obs"})
+other = obs.assign(
+    pollutant=obs["pollutant"].map(dict(zip(TARGETS, TARGETS[::-1])))
+).rename(columns={"observed": "other_obs"})
 c = c.merge(other, on=KEY + ["pollutant"], how="left")
 c["other_obs"] = c["other_obs"].fillna(False).astype(bool)
 
@@ -240,9 +284,19 @@ for gname, sel in groups.items():
     for mname, p in preds.items():
         r = cc.merge(p, on=KEY + ["pollutant"]).dropna(subset=["pred"])
         e = np.log(r["pred"]) - np.log(r["value"])
-        rows.append({"group": gname, "model": mname, "days": len(r), "error": np.mean(np.abs(e)), "bias": np.mean(e)})
+        rows.append(
+            {
+                "group": gname,
+                "model": mname,
+                "days": len(r),
+                "error": np.mean(np.abs(e)),
+                "bias": np.mean(e),
+            }
+        )
 res = pd.DataFrame(rows)
-table = res.pivot_table(index="group", columns="model", values="error").loc[list(groups)][list(preds)]
+table = res.pivot_table(index="group", columns="model", values="error").loc[
+    list(groups)
+][list(preds)]
 table.insert(0, "station-days", res.groupby("group")["days"].max())
 display(table.round(3))
 E = res.set_index(["group", "model"])["error"]
@@ -262,26 +316,58 @@ Pollution at all stations also moves together from day to day (weather is citywi
 #| fig-cap: "Error against the 31-day MA by group and estimator."
 order = list(groups)
 fig, ax = plt.subplots(figsize=(10, 3.8))
-sns.barplot(data=res, x="group", y="error", hue="model", order=order, ax=ax, palette=["tab:blue", "tab:purple", "tab:orange"])
-ax.set_xlabel(""); ax.set_ylabel("mean absolute log error"); ax.tick_params(axis="x", labelsize=8); ax.legend(fontsize=8)
+sns.barplot(
+    data=res,
+    x="group",
+    y="error",
+    hue="model",
+    order=order,
+    ax=ax,
+    palette=["tab:blue", "tab:purple", "tab:orange"],
+)
+ax.set_xlabel("")
+ax.set_ylabel("mean absolute log error")
+ax.tick_params(axis="x", labelsize=8)
+ax.legend(fontsize=8)
 plt.show()
 ```
 
 ### What the fits look like
 
 ```{python}
-STYLE = {"joint": dict(color="tab:blue", lw=1.8), "single-target": dict(color="tab:purple", lw=1.2, ls="--"),
-         "±15-day mean": dict(color="tab:orange", lw=1.0, alpha=0.8)}
+STYLE = {
+    "joint": dict(color="tab:blue", lw=1.8),
+    "single-target": dict(color="tab:purple", lw=1.2, ls="--"),
+    "±15-day mean": dict(color="tab:orange", lw=1.0, alpha=0.8),
+}
 
 
 def panel(ax, st, pol, start=None, end=None, title=None):
-    start, end = pd.Timestamp(start or full["date"].min()), pd.Timestamp(end or full["date"].max())
-    sel = lambda d: d[(d["station"] == st) & (d["pollutant"] == pol) & d["date"].between(start, end)]
+    start, end = (
+        pd.Timestamp(start or full["date"].min()),
+        pd.Timestamp(end or full["date"].max()),
+    )
+    sel = lambda d: d[
+        (d["station"] == st) & (d["pollutant"] == pol) & d["date"].between(start, end)
+    ]
     gg = sel(gaps)
-    for i, (a, b) in enumerate(gg.groupby((gg["date"].diff().dt.days != 1).cumsum())["date"].agg(["min", "max"]).itertuples(index=False)):
-        ax.axvspan(a, b, color="gold", alpha=0.25, label="gap block" if i == 0 else None)
+    for i, (a, b) in enumerate(
+        gg.groupby((gg["date"].diff().dt.days != 1).cumsum())["date"]
+        .agg(["min", "max"])
+        .itertuples(index=False)
+    ):
+        ax.axvspan(
+            a, b, color="gold", alpha=0.25, label="gap block" if i == 0 else None
+        )
     s = sel(train)
-    ax.scatter(s["date"], s["value"], s=4 + 4 * s["n"], color="0.35", alpha=0.55, label="sparse readings (training)")
+    ax.scatter(
+        s["date"],
+        s["value"],
+        s=4 + 4 * s["n"],
+        color="0.35",
+        alpha=0.55,
+        label="sparse readings (training)",
+    )
     ax.plot(sel(level)["date"], sel(level)["value"], color="black", lw=1.6, label=MA)
     for name, p in preds.items():
         q = sel(p)
@@ -329,13 +415,29 @@ plt.show()
 ```{python}
 #| fig-cap: "The four longest gap blocks (shaded) at regular stations, with 60 days either side."
 gg = gaps[~gaps["station"].isin([VERY_SPARSE, DROPPED[0]])].sort_values("date")
-blocks = (gg.groupby(["station", "pollutant"])
-          .apply(lambda d: d.groupby((d["date"].diff().dt.days != 1).cumsum())["date"].agg(["min", "max", "count"]))
-          .reset_index().sort_values("count", ascending=False).drop_duplicates("station").head(4))
+blocks = (
+    gg.groupby(["station", "pollutant"])
+    .apply(
+        lambda d: d.groupby((d["date"].diff().dt.days != 1).cumsum())["date"].agg(
+            ["min", "max", "count"]
+        )
+    )
+    .reset_index()
+    .sort_values("count", ascending=False)
+    .drop_duplicates("station")
+    .head(4)
+)
 fig, axes = plt.subplots(2, 2, figsize=(14, 7))
 for ax, r in zip(axes.flat, blocks.itertuples(index=False)):
     pad = pd.Timedelta(days=60)
-    panel(ax, r.station, r.pollutant, r.min - pad, r.max + pad, f"{r.station} · {r.pollutant} · {r.count}-day gap")
+    panel(
+        ax,
+        r.station,
+        r.pollutant,
+        r.min - pad,
+        r.max + pad,
+        f"{r.station} · {r.pollutant} · {r.count}-day gap",
+    )
 axes[0, 0].legend(fontsize=7, loc="upper right", ncol=2)
 fig.tight_layout()
 plt.show()
@@ -344,7 +446,10 @@ plt.show()
 ### A bias to fix
 
 ```{python}
-bias = res[(res["model"] == "joint") & res["group"].isin(["observed", "unobserved", "long gap"])]["bias"].mean()
+bias = res[
+    (res["model"] == "joint")
+    & res["group"].isin(["observed", "unobserved", "long gap"])
+]["bias"].mean()
 ```
 
 The network curves sit consistently below the 31-day MA, by `{python} f"{-bias:.2f}"` on the log scale on average (about `{python} f"{100 * (1 - np.exp(bias)):.0f}"`%). The model is fitted to the log of means over one or two hours, and the log of a mean over few readings is lower on average than the log of a mean over 24 (Jensen's inequality). The textbook lognormal correction ($+\tfrac12\sigma^2$) overshoots by about as much in the other direction, because the reading level spread mixes within-day and between-day variation. Modelling the hourly readings directly, or estimating the correction as a function of $n$, would fix it; it is left for a followup.
@@ -358,3 +463,5 @@ The network curves sit consistently below the 31-day MA, by `{python} f"{-bias:.
 - **Know what the network cannot see.** With time entering only as a smooth curve, it misses shared day-to-day shocks that a simple same day average catches; where data is dense, simple smoothing is hard to beat.
 - **Bumps alone don't make a curve smooth where there is no data.** Without the curvature penalty, filling gaps inside the data improves slightly (0.13 vs 0.15 on the test gaps), but looking 15 days past the end the error jumps from 0.25 to 0.5–2.9: the last bumps have no data to pin them down. Training length then becomes the only brake, and running 1,000 steps instead of 100 nearly doubles the error.
 - **Decide the smoothness, don't tune it.** Validated on noisy readings, a weaker penalty always looks slightly better because it follows real short episodes. How smooth the level should be is a choice about what the level means; fix it, and let cross-validation pick the rest.
+- **A mixed-effects GAM does as well or better, when its smoothness is set manually.** Area curves with station deviations shrunk towards them, fitted jointly to both pollutants, beat the network in every group when the smoothness is set by hand. Left to REML it follows week-to-week swings and does much worse; the extra error is variance, not bias.
+- **The tuning target, not the model, sets the smoothness.** Tuned with the same look-ahead CV as the network, the GAM is pushed to a nearly flat curve and does worse than the network. The CV rewards what persists 15 days ahead, and drives both models towards oversmoothing.
