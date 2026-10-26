@@ -141,6 +141,7 @@ Daily pollution swings by a factor of two or more from day to day with the weath
 Every row is one station-day with up to two targets: $y_1 = \log \text{PM2.5}$ and $y_2 = \log \text{PM10}$ (standardised). The network maps *(station, day)* to a predicted level for both:
 
 ```{mermaid}
+%%| fig-width: 6.5
 flowchart LR
   A["area id<br/>(urban / suburban)"] --> EA["area embedding (8)"]
   S["station id"] --> ES["station embedding (8)<br/>starts at 0: an offset"]
