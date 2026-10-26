@@ -5,6 +5,8 @@ date: "2026-09-08"
 categories: [neural networks, time series, missing data, pytorch]
 image: "thumbnail.png"
 toc: true
+bibliography: references.bib
+nocite: '@*'
 abstract: |
   It is common to find panel data in real world setting where it can sometimes be very noisy and have gaps. Such a situation can be encountered when working with local price indices, sensor data and small area statistics. Oftentimes a smooth underlying level is desired for each series including periods where nothing was observed. This work builds a small PyTorch network and models two related targets jointly treating the missing of the two as masked instead of dropping the row. It weights each observation by number of readings used to deduce the average and ensures smoothness with a curvature penalty. To evaluate the approach, hourly PM2.5 and PM10 dataset from 12 Beijing monitoring stations is used. It is thinned systematically to introduce sparsity and the model is scored against full oberved data. The neural net (using a joint model) fills long gaps and very sparse station data better than if smoothing was applied to series independently. Jointly modelling PM2.5 and PM10 also recovers a completely dropped series, but can lose some accuracy compared to individual series model in data rich instances.
 
