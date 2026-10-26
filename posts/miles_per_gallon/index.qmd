@@ -7,7 +7,7 @@ image: "mpg.jpg"
 toc: true
 bibliography: references.bib
 abstract: |
-  How much does city fuel economy varies across car manufacturers? Using the *mpg* dataset, we examine gas, front‑wheel‑drive compact, midsize, and subcompact cars from 1999–2008. We compare manufacturers while adjusting for engine size and model year, and we also account for the fact that each manufacturer offers several models. The key findings are: bigger engines get worse city mileage (intuitive), and once engine size is considered, transmission type and vehicle class have negligible effect. Even after adjusting for engine size and year, typical city mpg still differs by manufacturer by about ±6%, indicating that manufacturers have inherent differences in city fuel economy.
+  How much does city fuel economy vary across car manufacturers? Using the *mpg* dataset, we examine gas, front‑wheel‑drive compact, midsize, and subcompact cars from 1999–2008. We compare manufacturers while adjusting for engine size and model year, and we also account for the fact that each manufacturer offers several models. The key findings are: bigger engines get worse city mileage (intuitive), and once engine size is considered, transmission type and vehicle class have negligible effect. Even after adjusting for engine size and year, typical city mpg still differs by manufacturer by about ±6%, indicating that manufacturers have inherent differences in city fuel economy.
 execute:
   echo: false
 ---
@@ -101,7 +101,7 @@ ggplot(df_plot) +
 
 ```
 
-It can be seen that several key manufacturers are missing from the final dataset, consequently we may only be able to answer question like *Is the mpg among manufacturers significantly different ?* as opposed to *What is the average mpg of manufactuers to be able to compare them more directly* <br/>
+It can be seen that several key manufacturers are missing from the final dataset, consequently we may only be able to answer questions like *Is the mpg among manufacturers significantly different?* as opposed to *What is the average mpg of manufacturers to be able to compare them more directly* <br/>
 Of course, the car models are random in the study design, so we will treat them as such. Although these are nested inside manufacturers. <br/>
 
 
@@ -176,7 +176,7 @@ ggplot(df_mpg) +
 
 ```
 
-There does seem to be quite a lot variability in the city mpg among manufacturers. <br/>
+There does seem to be quite a lot of variability in the city mpg among manufacturers. <br/>
 Although, it is definitely possible that this is driven by different models and their attributes more than manufacturers themselves. <br/>
 
 The plot below suggests (to intuition) that with larger *displacement* the *mpg* reduces. Although there is a hint of nonlinearity in the trend, we shall ignore this initially. <br/>
@@ -228,7 +228,7 @@ anova(mod)
 
 ```
 
-It can be seen that *manufacturer* and *displ* are highly significant predictors of log(mpg). As seen in the plot earlier, 1L increase in displacement can reduce MPG by ~15% () <br/>
+It can be seen that *manufacturer* and *displ* are highly significant predictors of log(mpg). As seen in the plot earlier, 1L increase in displacement can reduce MPG by ~15% (coefficient `r round(coef(mod)[['displ']], 3)` on the log scale, i.e. `r round(100 * (1 - exp(coef(mod)[['displ']])))`% lower mpg per litre) <br/>
 Transmission is not significant in the presence of other predictors as was the observation from plot earlier. <br/>
 Class is not significant either, although this may be due to confounding with displacement as suspected before.
 A formal test of displacement being positively related with class for any given model also validates this finding. <br/>
@@ -282,7 +282,7 @@ sumary(cmod)
 
 ```
 
-It can be seen that variance due to manufacturer and models nested inside manufacturer are comparable in magnitudes. The variation in mpg is due to both which is sesnible outcome. <br/>
+It can be seen that variance due to manufacturer and models nested inside manufacturer are comparable in magnitudes. The variation in mpg is due to both, which is a sensible outcome. <br/>
 
 It can be tested if including model effects is meaningful using a likelihood ratio test. [@rlrsim]
 
@@ -348,7 +348,7 @@ p1 + p2
 
 ```
 
-We can also check assumption of normality of random effects. Which holds up reasonably well (particularly for manufacturer:model).
+We can also check the assumption of normality of random effects, which holds up reasonably well (particularly for manufacturer:model).
 
 ```{r}
 #| echo: false
