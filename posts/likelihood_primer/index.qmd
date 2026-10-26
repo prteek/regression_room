@@ -101,7 +101,6 @@ Now, in the Fisher information, the expectation is w.r.t. data. Consider the fol
     \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = -\frac{n}{p} - \frac{n}{(1-p)} \\
     I(p) = - \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = \frac{n}{p} + \frac{n}{(1-p)} \\
     I(p) = \frac{n}{p(1-p)}
-
 \end{align}
 ```
 So, the larger the $n$ (sample size) the greater is Fisher information and lesser uncertainty about the maxima point of *score* function. Similarly, for same $n$ more extreme values of $p$ will enable estimation of parameter with greater degree of confidence due to higher Fisher Information. Intuitively, this is because extreme values in data will be observed (lots of 1s or lots or 0s).
@@ -177,9 +176,7 @@ We calculate the first and second derivatives of log-likelihood
 ```{=latex}
 \begin{align}
 l'(\mu) = \frac{\partial l(\mu)}{\partial \mu} = \frac{1}{\sigma^2} \sum_{i=1}^n (x_i - \mu) \\
-
 l''(\mu) = \frac{\partial^2 l(\mu)}{\partial \mu^2} = -\frac{n}{\sigma^2}
-
 \end{align}
 ```
 Then we perform the *Newton Raphson* update

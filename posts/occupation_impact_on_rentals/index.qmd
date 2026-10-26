@@ -53,7 +53,8 @@ data_dir <- file.path(
 
 con <- dbConnect(
   drv = duckdb(),
-  dbdir = file.path(data_dir, "lab.duckdb")
+  dbdir = file.path(data_dir, "lab.duckdb"),
+  read_only = TRUE
 )
 
 acon <- dbConnect(

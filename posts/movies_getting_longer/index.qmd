@@ -40,6 +40,7 @@ I fetched top grossing movies in each year from *boxoffice mojo* and movie detai
 
 ```{python}
 #| echo: false
+#| eval: false  # scraper only; data is read from movies_dataset.csv below
 import numpy as np
 import pandas as pd
 from scipy import stats
