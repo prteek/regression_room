@@ -75,9 +75,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="../../site_libs/quarto-diagram/mermaid.min.js"></script>
-<script src="../../site_libs/quarto-diagram/mermaid-init.js"></script>
-<link href="../../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
@@ -185,7 +182,7 @@ window.Quarto = {
   <div>
     <div class="abstract">
       <div class="block-title">Abstract</div>
-      <p>Panels of many related series, each observed with few and noisy readings and with gaps, are common: local price indices, sensor networks, small area statistics. A smooth underlying level for every series and every period, including where nothing was observed is generally desired. This post builds a small PyTorch network that models two related targets jointly, treats a missing target as masked rather than dropping the row, weights each observation by how many readings it averages, and keeps every series smooth with a curvature penalty. To measure how well it works we take a complete public dataset: hourly PM2.5 and PM10 from 12 Beijing monitoring stations. It is thinned to make it sparse and the model is scored against the full data. The network fills long gaps and very sparse stations far better than smoothing each series on its own. Modelling both pollutants together recovers a completely dropped series, but elsewhere it costs a little accuracy compared with modelling each pollutant alone.</p>
+      <p>It is common to find panel data in real world setting where it can sometimes be very noisy and have gaps. Such a situation can be encountered when working with local price indices, sensor data and small area statistics. Oftentimes a smooth underlying level is desired for each series including periods where nothing was observed. This work builds a small PyTorch network and models two related targets jointly treating the missing of the two as masked instead of dropping the row. It weights each observation by number of readings used to deduce the average and ensures smoothness with a curvature penalty. To evaluate the approach, hourly PM2.5 and PM10 dataset from 12 Beijing monitoring stations is used. It is thinned systematically to introduce sparsity and the model is scored against full oberved data. The neural net (using a joint model) fills long gaps and very sparse station data better than if smoothing was applied to series independently. Jointly modelling PM2.5 and PM10 also recovers a completely dropped series, but can lose some accuracy compared to individual series model in data rich instances.</p>
     </div>
   </div>
   
@@ -213,7 +210,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -237,24 +234,25 @@ Note
 </div>
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Consider a panel of series indexed by location and time, with two related quantities measured in each cell. Each observation is a mean over a handful of raw readings, so it is noisy; many cells have only one of the two quantities, many have neither, and some series go quiet for months. What we want is the <em>prevailing level</em>: a smooth estimate for every location, period and quantity, that does not chase noise but does follow genuine movements, and that still exists where data is missing.</p>
-<p>Fitting each series on its own fails exactly where it matters: a series with a long gap has nothing to go on, and a series with one reading a month is mostly noise. Two kinds of sharing should help:</p>
+<p>To begin with we’ll define a panel dataset where in each location has its own timeseries of two quantities of interest which are related (e.g.&nbsp;could be 2 sensors in vicinity or a location with rent and sale prices etc.). Each observation is a mean taken over raw readings which makes the data noisy. Some locations may have data on only one of the series while others may not have either. Some locations may be missing contiguous data points over several time periods. We are interested in a <em>prevailing level</em> which is a smooth estimate of both series at each location which is robust to noise and (partial/full) missing data.</p>
+<p>An approach that focuses on modelling series’ independently falls short when there are long gaps in series or the series is overwhelmingly noisy. Ironically, these are the situations where a good estimate is expected of a method.</p>
+<p>It is obvious that some kind of information sharing is required for robustness and there are 2 that are available in the kind of panel chosen for this study:</p>
 <ul>
-<li><strong>across locations</strong> — nearby or similar locations move together, so a thin series can borrow from its group</li>
-<li><strong>across targets</strong> — the two quantities are related, so a month where only one was observed still says something about the other</li>
+<li><strong>across locations</strong> — nearby or similar locations are more related, so a sparse/noisy series can borrow from its peer locations</li>
+<li><strong>across targets</strong> — the two quantities are related, so a month where only one was observed can inform about the other</li>
 </ul>
-<p>The approach below does both in one network, and the experiment measures how much each matters.</p>
+<p>The approach below does both in one network, and the experiment measures how each is influential in ensuring robustness of estimate.</p>
 </section>
 <section id="data" class="level2">
 <h2 class="anchored" data-anchor-id="data">Data</h2>
-<p>Real sparse panels have no ground truth: we never get to see the level we are trying to estimate. So we start from a complete dataset, the UCI <em>Beijing Multi-Site Air Quality</em> data: hourly PM2.5 and PM10 at 12 stations from March 2013 to February 2017. The two pollutants are closely related (PM10 includes PM2.5) but not identical.</p>
-<p>The unit of analysis is a <strong>station-day</strong>: the mean of each pollutant over the day’s valid hours, with the number of hours <span class="math inline">\(n\)</span> kept as a measure of how reliable that mean is. The full data is almost complete (over 99% of station-days), so we thin it to resemble a typical small-area panel:</p>
+<p>To be able to work with sparse data but still have some ground truth for evaluating our approach, we start from the full UCI <em>Beijing Multi-Site Air Quality</em> dataset which is an hourly PM2.5 and PM10 measurement data at 12 stations spanning March 2013 - February 2017. Both the pollutants are closely related and are a good fit for the panel data setting we hope to address with our work.</p>
+<p>The analysis focuses on daily data at each station by taking the mean value of hourly readings in the day. Number of hours where data is available in the day <span class="math inline">\(n\)</span> is retained as a measure of reliability of mean. The full dataset is very rich (&gt;99% station days coverage) so we thin it to make it noisy and introduce missingness using the following procedure:</p>
 <ul>
-<li>each station-day keeps a random Poisson(<span class="math inline">\(\lambda=1.2\)</span>) number of its hours, drawn <strong>separately for each pollutant</strong>, so often only one is observed;</li>
-<li>each station and pollutant also loses two blocks of 20–60 consecutive days.</li>
+<li><p>For each station a random Posson(<span class="math inline">\(\lambda=1.2\)</span>) number of hours are kept (draws separately for PM2.5 and PM10). This can often lead to situation where only either is observed on any given hour</p></li>
+<li><p>From each station and pollutant series we remove two blocks of 20–60 (random) consecutive days</p></li>
 </ul>
-<p>The <strong>ground truth</strong> is the full data. Estimates are scored against its <strong>31-day MA</strong>: the 31-day centred moving average of the full daily means (on the log scale). The full daily means themselves are also kept for reference.</p>
-<div id="64c564f1" class="cell" data-execution_count="2">
+<p>The <strong>ground truth</strong> is the full data which is then used in evaluation, by comparing estimates against a 31 day moving average of daily (log) means of ground truth.</p>
+<div id="c3d021c9" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -297,8 +295,8 @@ Note
 </div>
 </div>
 </div>
-<p>In the sparse data both pollutants are observed on 44% of station-days and exactly one on 45%, with fewer than two readings behind each observed value. The figure shows what that does to one station over a year.</p>
-<div id="51e44260" class="cell" data-execution_count="3">
+<p>In the thinned data both PM2.5 and PM10 are observed on 44% station days and exactly one of them is observed on 45%. The figure shows one station over a year as a result of thinning the data.</p>
+<div id="4606fcde" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -308,39 +306,27 @@ Note
 </div>
 </div>
 </div>
-<p>Daily pollution swings by a factor of two or more from day to day with the weather, and a reading of one or two hours adds more noise on top. The level we want is the slow black line.</p>
+<p>Daily pollution varies by a factor of two or more from day to day with the weather and a reading of only one or two hours adds large degree of noise. The <em>prevailing level</em> is the slow black line.</p>
 </section>
 <section id="model" class="level2">
 <h2 class="anchored" data-anchor-id="model">Model</h2>
 <section id="architecture" class="level3">
 <h3 class="anchored" data-anchor-id="architecture">Architecture</h3>
-<p>Every row is one station-day with up to two targets: <span class="math inline">\(y_1 = \log \text{PM2.5}\)</span> and <span class="math inline">\(y_2 = \log \text{PM10}\)</span> (standardised). The network maps <em>(station, day)</em> to a predicted level for both:</p>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p><figure class="figure"><p></p>
-<div>
-<pre class="mermaid mermaid-js">flowchart LR
-  A["area id&lt;br/&gt;(urban / suburban)"] --&gt; EA["area embedding (8)"]
-  S["station id"] --&gt; ES["station embedding (8)&lt;br/&gt;starts at 0: an offset"]
-  EA --&gt; P(("+"))
-  ES --&gt; P
-  T["day"] --&gt; TB["Gaussian bumps&lt;br/&gt;every w days (fixed)"]
-  P --&gt; C["concat"]
-  TB --&gt; C
-  C --&gt; L1["Linear → 64, SiLU"] --&gt; L2["Linear 64 → 64, SiLU"]
-  L2 --&gt; H1["PM2.5 head&lt;br/&gt;Linear 64 → 1"]
-  L2 --&gt; H2["PM10 head&lt;br/&gt;Linear 64 → 1"]
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
+<p>Every row is one station day with up to two targets: <span class="math inline">\(y_1 = \log \text{PM2.5}\)</span> and <span class="math inline">\(y_2 = \log \text{PM10}\)</span> (standardised). The network maps <em>(station, day)</em> to a predicted level for both:</p>
+<p><span class="math display">\[
+\begin{aligned}
+x &amp;= \big[\, e_{\text{area}} + e_{\text{station}},\ b(t) \,\big]
+  &amp;&amp; \text{8-dim location embedding, concatenated with the time bumps} \\
+h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
+  &amp;&amp; \text{shared trunk, two layers of 64} \\
+\mu_1 &amp;= w_1^\top h, \quad \mu_2 = w_2^\top h
+  &amp;&amp; \text{one linear head each for PM2.5 and PM10}
+\end{aligned}
+\]</span></p>
 <ul>
-<li><strong>Location</strong> is the area’s embedding plus a station offset that starts at zero and is penalised, so a station with little data falls back to its area.</li>
+<li><strong>Location</strong> is the area’s embedding plus a station offset that starts at zero and is penalised, so a station with less data falls back to its area</li>
 <li><strong>Time</strong> enters only through fixed Gaussian bumps, <span class="math inline">\(b_k(t) = \exp\{-\tfrac12 ((t - c_k)/w)^2\}\)</span> with centres <span class="math inline">\(c_k\)</span> every <span class="math inline">\(w\)</span> days. A day becomes a vector of bump values; neighbouring days get nearly identical vectors, so the level cannot jump from one day to the next.</li>
-<li><strong>A shared trunk</strong> of two layers with a smooth activation (SiLU) turns location and time into a 64-number summary; <strong>two linear heads</strong> read the same summary. Everything before the heads is shared, so a day that observed only PM2.5 still trains everything PM10 depends on.</li>
+<li><strong>A shared trunk</strong> of two layers with a smooth activation (SiLU) turns location and time into a 64 digit summary; <strong>two linear heads</strong> read the same summary. Everything before the heads is shared, so a day that observed only PM2.5 still trains everything PM10 depends on.</li>
 </ul>
 </section>
 <section id="loss" class="level3">
@@ -389,7 +375,7 @@ Note
 <li><strong>very sparse station</strong> — Huairou, both pollutants;</li>
 <li>for every other station: <strong>observed</strong> (the sparse data has readings that day), <strong>unobserved</strong> (no readings, outside the gap blocks), <strong>long gap</strong> (inside a 20–60 day gap block), and among unobserved days those where <strong>the other pollutant was observed</strong>.</li>
 </ul>
-<div id="429b829c" class="cell" data-execution_count="6">
+<div id="0964524d" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -469,7 +455,7 @@ Note
 <li><strong>Densely observed days:</strong> the simple ±15-day mean is level with the networks (0.153). Its 31-day window is the same as the benchmark’s, which flatters it.</li>
 </ul>
 <p>Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same-day readings, while the network’s only notion of time is a smooth curve. A shared day-level effect in the network is the obvious next step.</p>
-<div id="cb020931" class="cell" data-execution_count="7">
+<div id="3fb1f0e8" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -483,7 +469,7 @@ Note
 <section id="what-the-fits-look-like" class="level3">
 <h3 class="anchored" data-anchor-id="what-the-fits-look-like">What the fits look like</h3>
 <p><strong>A well-observed station.</strong> Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother: they follow the seasons but flatten shorter episodes, such as the December 2015 peak.</p>
-<div id="0e1638f7" class="cell" data-execution_count="9">
+<div id="21c69b0a" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -494,7 +480,7 @@ Note
 </div>
 </div>
 <p><strong>A very sparse station.</strong> With only 15% of its days left, Huairou’s own data is too thin for the moving average, which jumps around. Both networks lean on the suburban area and the shared time pattern and stay close to the level; the joint and single-target curves are almost indistinguishable.</p>
-<div id="96c01870" class="cell" data-execution_count="10">
+<div id="e783c886" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -505,7 +491,7 @@ Note
 </div>
 </div>
 <p><strong>A dropped series.</strong> Dingling’s PM10 was never seen. The joint model reconstructs it from Dingling’s PM2.5 (top); the single-target PM10 model has nothing station-specific to go on and returns the suburban area’s level, which sits too high. The joint curve follows the shape but runs a little low and misses some peaks. The orange line here is the area moving average, which tracks day-to-day movements from the other suburban stations.</p>
-<div id="51167595" class="cell" data-execution_count="11">
+<div id="67492eb5" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -516,7 +502,7 @@ Note
 </div>
 </div>
 <p><strong>Long gaps.</strong> The four longest gap blocks at regular stations. Once its window empties, the moving average either stops or swings on the few readings at its edges; the networks carry on smoothly. The joint and single-target curves overlap, and both sit slightly below the level (see the bias below).</p>
-<div id="8e9ab50c" class="cell" data-execution_count="12">
+<div id="630096fe" class="cell" data-execution_count="12">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">

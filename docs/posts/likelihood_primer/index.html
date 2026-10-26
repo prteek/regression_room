@@ -263,7 +263,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap up</a></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -274,7 +274,7 @@ window.Quarto = {
 
 <section id="introduction" class="level2">
 <h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br> In this post, we’ll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br> The concepts discussed are deeply inspired by <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span> and <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span>. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.</p>
+<p>Likelihood is a fundamental concept that plays a pivotal role in parameter estimation and model fitting. <br> Whether one is estimating the parameters of a simple distribution or building complex statistical models, likelihood functions provide a way to quantify how likely a set of observed data is, given specific model parameters. <br> In this post, we’ll break down the concept of likelihood, explore how it relates to probability, and demonstrate its application in parameter estimation using methods of Maximum Likelihood Estimation (MLE) and Newton Raphson. <br> This primer will help bring clarity to working with Likelihoods for parameter estimation. <br> The concepts discussed are deeply inspired by <span class="citation" data-cites="extending_lm_with_R_book">(<a href="#ref-extending_lm_with_R_book" role="doc-biblioref">Faraway 2016</a>)</span> and <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">Casella and Berger 2002</a>)</span>. For a more comprehensive understanding of the subject, I highly recommend reading the full texts.</p>
 </section>
 <section id="likelihood" class="level2">
 <h2 class="anchored" data-anchor-id="likelihood">Likelihood</h2>
@@ -338,7 +338,6 @@ I(\theta) = var(u(\theta)) = -\mathbb{E}[\frac{\partial^2}{\partial \theta \part
     \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = -\frac{n}{p} - \frac{n}{(1-p)} \\
     I(p) = - \mathbb{E}[\frac{d^2}{dp^2}l(p|y)l(p|y)] = \frac{n}{p} + \frac{n}{(1-p)} \\
     I(p) = \frac{n}{p(1-p)}
-
 \end{align}\]</span>
 <p>So, the larger the <span class="math inline">\(n\)</span> (sample size) the greater is Fisher information and lesser uncertainty about the maxima point of <em>score</em> function. Similarly, for same <span class="math inline">\(n\)</span> more extreme values of <span class="math inline">\(p\)</span> will enable estimation of parameter with greater degree of confidence due to higher Fisher Information. Intuitively, this is because extreme values in data will be observed (lots of 1s or lots or 0s).</p>
 <div class="cell">
@@ -397,9 +396,7 @@ l(\mu) = -\frac{n}{2} \log(2\pi\sigma^2) - \frac{1}{2\sigma^2} \sum_{i=1}^n (x_i
 <p>We calculate the first and second derivatives of log-likelihood</p>
 <span class="math display">\[\begin{align}
 l'(\mu) = \frac{\partial l(\mu)}{\partial \mu} = \frac{1}{\sigma^2} \sum_{i=1}^n (x_i - \mu) \\
-
 l''(\mu) = \frac{\partial^2 l(\mu)}{\partial \mu^2} = -\frac{n}{\sigma^2}
-
 \end{align}\]</span>
 <p>Then we perform the <em>Newton Raphson</em> update</p>
 <span class="math display">\[\begin{align}
@@ -466,11 +463,11 @@ I(\hat{\theta}) \approx -H(\hat{\theta})
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-statistical_inference" class="csl-entry" role="listitem">
+Casella, George, and Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
+</div>
 <div id="ref-extending_lm_with_R_book" class="csl-entry" role="listitem">
 Faraway, Julian J. 2016. <em>Extending the Linear Model with r, Second Edition</em>. CRC Press.
-</div>
-<div id="ref-statistical_inference" class="csl-entry" role="listitem">
-George Casella, Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
 </div>
 </div></section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

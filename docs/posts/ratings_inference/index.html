@@ -227,7 +227,7 @@ window.Quarto = {
   </ul></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
   </ul>
-</nav>
+<div class="quarto-alternate-formats"><h2>Other Formats</h2><ul><li><a href="index.pdf"><i class="bi bi-file-pdf"></i>PDF</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -380,7 +380,7 @@ Probability Ratio:
 <h3 class="anchored" data-anchor-id="modelling-a-single-brand">Modelling a single brand</h3>
 <p>To build intuition about the underlying distribution of ratings, it can be useful to start by modeling the ratings for a single brand.</p>
 <p>Each user rating x∈{0,…,4} is treated as if it were a binomial count for convenience and user-level probabilities <span class="math inline">\({p_i}\)</span> are modelled with a Beta prior. This is a working approximation that gives useful shrinkage and interpretable parameters, not a claim that ratings are literally counts of 5 binary trials. This assumption implies that brand ratings are essentially a mixture of binomials <span class="citation" data-cites="in_all_likelihood">(<a href="#ref-in_all_likelihood" role="doc-biblioref">Pawitan 2013</a>)</span></p>
-<p>A binomial model assumes <span class="math inline">\(y \sim \text{Binomial}(n, p)\)</span>, where <span class="math inline">\(p\)</span> is the probability of a favourable rating. The likelihood is <span class="math inline">\(L(p) = p^y(1-p)^{n-y}\)</span>, with MLE <span class="math inline">\(\hat{p} = y/n\)</span> <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">George Casella 2002</a>)</span></p>
+<p>A binomial model assumes <span class="math inline">\(y \sim \text{Binomial}(n, p)\)</span>, where <span class="math inline">\(p\)</span> is the probability of a favourable rating. The likelihood is <span class="math inline">\(L(p) = p^y(1-p)^{n-y}\)</span>, with MLE <span class="math inline">\(\hat{p} = y/n\)</span> <span class="citation" data-cites="statistical_inference">(<a href="#ref-statistical_inference" role="doc-biblioref">Casella and Berger 2002</a>)</span></p>
 <p>Extending this line of thinking it is clear that the underlying binomial parameter (p) is the favourability of the given brand for users. Higher the p, more favourable the brand and expected it should have higher ratings.</p>
 <p>So, effectively each user has a preference <em>p</em> and the observed ratings are realizations of a binomial process with this underlying probability.</p>
 <p>To model a single user’s preference needs a hierarchical approach, where individual user preferences are drawn from a common distribution, capturing the variability across users. The end result is not just a single value of <em>p</em> for a user but rather a range of possible values with different likelihood based on how the user has rated the product.</p>
@@ -586,7 +586,7 @@ Difference: 0.0700
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
 <div id="ref-statistical_inference" class="csl-entry" role="listitem">
-George Casella, Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
+Casella, George, and Roger L. Berger. 2002. <em>Statistical Inference, Second Edition</em>. Cengage.
 </div>
 <div id="ref-in_all_likelihood" class="csl-entry" role="listitem">
 Pawitan, Yudi. 2013. <em>In All Likelihood: Statistical Modelling and Inference Using Likelihood</em>. Oxford University Press.
