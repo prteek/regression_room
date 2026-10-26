@@ -28,8 +28,8 @@ An approach that focuses on modelling series' independently falls short when the
 
 It is obvious that some kind of information sharing is required for robustness and there are 2 that are available in the kind of panel chosen for this study:
 
-- **across locations** — nearby or similar locations are more related, so a sparse/noisy series can borrow from its peer locations
-- **across targets** — the two quantities are related, so a month where only one was observed can inform about the other
+- **across locations** nearby or similar locations are more related, so a sparse/noisy series can borrow from its peer locations
+- **across targets** the two quantities are related, so a month where only one was observed can inform about the other
 
 The approach below does both in one network, and the experiment measures how each is influential in ensuring robustness of estimate.
 
