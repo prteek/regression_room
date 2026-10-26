@@ -20,14 +20,16 @@ This work was developed with AI assistance
 
 ## Introduction
 
-Consider a panel of series indexed by location and time, with two related quantities measured in each cell. Each observation is a mean over a handful of raw readings, so it is noisy; many cells have only one of the two quantities, many have neither, and some series go quiet for months. What we want is the *prevailing level*: a smooth estimate for every location, period and quantity, that does not chase noise but does follow genuine movements, and that still exists where data is missing.
+To begin with we'll define a panel dataset where in each location has its own timeseries of two quantities of interest which are related (e.g. could be 2 sensors in vicinity or a location with rent and sale prices etc.). Each observation is a mean taken over raw readings which makes the data noisy. Some locations may have data on only one of the series while others may not have either. Some locations may be missing contiguous data points over several time periods. We are interested in a *prevailing level* which is a smooth estimate of both series at each location which is robust to noise and (partial/full) missing data.
 
-Fitting each series on its own fails exactly where it matters: a series with a long gap has nothing to go on, and a series with one reading a month is mostly noise. Two kinds of sharing should help:
+An approach that focuses on modelling series' independently falls short when there are long gaps in series or the series is overwhelmingly noisy. Ironically, these are the situations where a good estimate is expected of a method.
 
-- **across locations** — nearby or similar locations move together, so a thin series can borrow from its group
-- **across targets** — the two quantities are related, so a month where only one was observed still says something about the other
+It is obvious that some kind of information sharing is required for robustness and there are 2 that are available in the kind of panel chosen for this study:
 
-The approach below does both in one network, and the experiment measures how much each matters.
+- **across locations** — nearby or similar locations are more related, so a sparse/noisy series can borrow from its peer locations
+- **across targets** — the two quantities are related, so a month where only one was observed can inform about the other
+
+The approach below does both in one network, and the experiment measures how each is influential in ensuring robustness of estimate.
 
 ## Data
 
@@ -141,20 +143,16 @@ Daily pollution swings by a factor of two or more from day to day with the weath
 
 Every row is one station-day with up to two targets: $y_1 = \log \text{PM2.5}$ and $y_2 = \log \text{PM10}$ (standardised). The network maps *(station, day)* to a predicted level for both:
 
-```{mermaid}
-%%| fig-width: 6.5
-flowchart LR
-  A["area id<br/>(urban / suburban)"] --> EA["area embedding (8)"]
-  S["station id"] --> ES["station embedding (8)<br/>starts at 0: an offset"]
-  EA --> P(("+"))
-  ES --> P
-  T["day"] --> TB["Gaussian bumps<br/>every w days (fixed)"]
-  P --> C["concat"]
-  TB --> C
-  C --> L1["Linear → 64, SiLU"] --> L2["Linear 64 → 64, SiLU"]
-  L2 --> H1["PM2.5 head<br/>Linear 64 → 1"]
-  L2 --> H2["PM10 head<br/>Linear 64 → 1"]
-```
+$$
+\begin{aligned}
+x &= \big[\, e_{\text{area}} + e_{\text{station}},\ b(t) \,\big]
+  && \text{8-dim location embedding, concatenated with the time bumps} \\
+h &= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
+  && \text{shared trunk, two layers of 64} \\
+\mu_1 &= w_1^\top h, \quad \mu_2 = w_2^\top h
+  && \text{one linear head each for PM2.5 and PM10}
+\end{aligned}
+$$
 
 - **Location** is the area's embedding plus a station offset that starts at zero and is penalised, so a station with little data falls back to its area.
 - **Time** enters only through fixed Gaussian bumps, $b_k(t) = \exp\{-\tfrac12 ((t - c_k)/w)^2\}$ with centres $c_k$ every $w$ days. A day becomes a vector of bump values; neighbouring days get nearly identical vectors, so the level cannot jump from one day to the next.
