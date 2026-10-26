@@ -3,6 +3,7 @@ project:
   output-dir: docs
   render:
     - "*.qmd"  # only .qmd files are pages; post folders keep plain .md notes
+    - "!posts/occupation_impact_on_rentals/data_preparation.qmd"  # draft; queries Athena
 
 website:
   title: "Blog"

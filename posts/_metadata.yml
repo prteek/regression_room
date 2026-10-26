@@ -6,3 +6,35 @@ freeze: auto
 
 # Enable banner style title blocks
 title-block-banner: true
+
+# Every post renders to HTML (site theme from _quarto.yml) and to a paper-style PDF,
+# linked from the post under "Other Formats"
+format:
+  html: default
+  pdf:
+    papersize: a4
+    fontsize: 11pt
+    geometry:
+      - margin=2.5cm
+    number-sections: true
+    colorlinks: true
+    reference-section-title: References  # HTML adds this heading itself; PDF needs it named
+    fig-pos: "htbp"
+    fig-format: png  # vector PDFs of dense scatter plots and map tiles run to tens of MB
+    fig-dpi: 300
+    code-block-bg: "#f6f6f6"
+    monofont: Menlo  # covers Greek and symbols printed in code output
+    monofontoptions:
+      - Scale=0.82
+    filters:
+      - _wide-tables.lua
+    include-in-header:
+      text: |
+        \usepackage{adjustbox}
+        % wrap long lines in code and console output instead of running past the margin
+        \usepackage{fvextra}
+        \AtBeginDocument{%
+          \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,breakanywhere,commandchars=\\\{\}}%
+          \RecustomVerbatimEnvironment{verbatim}{Verbatim}{breaklines,breakanywhere}}
+        % fit wide tables to the page
+        \AtBeginEnvironment{longtable}{\footnotesize\setlength{\tabcolsep}{3pt}}
