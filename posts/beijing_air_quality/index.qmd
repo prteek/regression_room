@@ -197,14 +197,14 @@ Three estimators are fitted to the same data:
 cfg, steps = best_config()
 ```
 
-The penalty weight $\lambda$, bump spacing $w$ and number of training steps are chosen by look-ahead cross-validation (`cv.py`). There are 12 sequential folds, 30 days apart over the last year. Each trains on everything up to its cutoff and is scored on the next 15 days of sparse readings, with **every station hidden at once**. The chosen settings are $\lambda$ = `{python} f"{cfg['rough']:g}"`, $w$ = `{python} cfg['spacing']` days and `{python} steps` training steps.
+The penalty weight $\lambda$, bump spacing $w$ and number of training steps are chosen by look ahead cross validation (`cv.py`). There are 12 sequential folds, 30 days apart over the final year. Each trains on everything up to its cutoff and is scored on the next 15 days of sparse readings, with **every station hidden at once**. The chosen settings are $\lambda$ = `{python} f"{cfg['rough']:g}"`, $w$ = `{python} cfg['spacing']` days and `{python} steps` training steps.
 
 We also tried hiding one station per area while its neighbours kept reporting. The two schemes ask different questions:
 
 - **Every station hidden:** the best guess for the next 15 days is whatever persists, the slow seasonal part of the series. Episodes of two to three weeks don't carry past the cutoff, so a curve that follows them is punished. This defines the level as *the part of the series that persists into the near future*.
 - **One station hidden:** asks what this station is doing right now, given its neighbours right now. That rewards following shared short episodes, and picks a much rougher curve.
 
-Neither is wrong, but a *prevailing* level is the first: the overall level, not the episodes.
+Neither is wrong, but a *prevailing level* is the first, the overall level, not the episodes.
 
 ```{python}
 DROPPED, VERY_SPARSE, KEEP = ("Dingling", "PM10"), "Huairou", 0.15
@@ -246,13 +246,13 @@ station_mean["pred"] = station_mean["pred"].fillna(
 preds["±15-day mean"] = station_mean
 ```
 
-### Results against the 31-day MA
+### Results against the 31 day MA
 
-Every station-day and pollutant is assigned to one group:
+Every station day and pollutant is assigned to one group:
 
-- **dropped series** — Dingling PM10 (no data at all);
-- **very sparse station** — Huairou, both pollutants;
-- for every other station: **observed** (the sparse data has readings that day), **unobserved** (no readings, outside the gap blocks), **long gap** (inside a 20–60 day gap block), and among unobserved days those where **the other pollutant was observed**.
+- **dropped series** Dingling PM10 (no data at all)
+- **very sparse station** Huairou, both pollutants present
+- for every other station: **observed** (the sparse data has readings that day), **unobserved** (no readings, exlcuding the gap block), **long gap** (inside a 20–60 day gap block) and among unobserved days those where **the other pollutant was observed**.
 
 ```{python}
 obs = train[KEY + ["pollutant"]].assign(observed=True)
@@ -303,15 +303,15 @@ display(table.round(3))
 E = res.set_index(["group", "model"])["error"]
 ```
 
-Errors are mean absolute log errors against the 31-day MA (0.15 ≈ 15%). On an observed day the raw sparse reading itself misses it by about 0.7–0.8, so all three estimators remove most of the noise. The differences are in the hard cases:
+We measure Mean Absolute Error (on log data) from the 31 day MA (0.15 ≈ 15%). When the day is observed, the raw sparse reading itself has approx. MAE 0.7-0.8, so the three estimators remove most of the noise. They behave differently in hard cases as follows:
 
-- **Long gaps:** the networks carry the level through (joint `{python} f"{E['long gap', 'joint']:.3f}"`, single-target `{python} f"{E['long gap', 'single-target']:.3f}"`), while the ±15-day mean runs out of data (`{python} f"{E['long gap', '±15-day mean']:.3f}"`).
-- **Very sparse station:** with only 15% of its days, Huairou's own data is too thin for a moving average (`{python} f"{E['very sparse station', '±15-day mean']:.3f}"`). Both networks do as well as on regular stations (joint `{python} f"{E['very sparse station', 'joint']:.3f}"`, single-target `{python} f"{E['very sparse station', 'single-target']:.3f}"`), because the strong smoothing and the shared area pattern fill in what the station lacks.
-- **Dropped series:** this is where modelling both pollutants together pays off. With no PM10 at Dingling at all, the joint model infers it from Dingling's PM2.5 (`{python} f"{E['dropped series', 'joint']:.3f}"`), while a single-target model can only fall back to the area (`{python} f"{E['dropped series', 'single-target']:.3f}"`). The joint model also beats the area moving average (`{python} f"{E['dropped series', '±15-day mean']:.3f}"`).
-- **Everywhere else, sharing costs a little.** On observed, unobserved and long-gap days the single-target models are slightly more accurate than the joint model (for example `{python} f"{E['observed', 'single-target']:.3f}"` vs `{python} f"{E['observed', 'joint']:.3f}"` on observed days). When a station has its own data for a pollutant, borrowing from the other pollutant adds little and forces one shared trunk to serve both.
-- **Densely observed days:** the simple ±15-day mean is level with the networks (`{python} f"{E['observed', '±15-day mean']:.3f}"`). Its 31-day window is the same as the benchmark's, which flatters it.
+- **Long gaps:** the networks carry the level through (joint `{python} f"{E['long gap', 'joint']:.3f}"`, single target `{python} f"{E['long gap', 'single target']:.3f}"`), while ±15 day MA runs out of data (`{python} f"{E['long gap', '±15 day mean']:.3f}"`).
+- **Very sparse station:** with only 15% of its days, Huairou's data is too thin for a moving average (`{python} f"{E['very sparse station', '±15 day mean']:.3f}"`). Both networks do as well as on regular stations (joint `{python} f"{E['very sparse station', 'joint']:.3f}"`, single target `{python} f"{E['very sparse station', 'single target']:.3f}"`), because the strong smoothing and the shared area pattern fill in what the station lacks.
+- **Dropped series:** this is where modelling both pollutants together pays off. With no PM10 at Dingling at all, the joint model infers it from Dingling's PM2.5 (`{python} f"{E['dropped series', 'joint']:.3f}"`), while a single target model can only fall back to the area (`{python} f"{E['dropped series', 'single target']:.3f}"`). The joint model also beats the area moving average (`{python} f"{E['dropped series', '±15 day mean']:.3f}"`).
+- **Everywhere else, sharing costs a little.** On observed, unobserved and long gap days, the single target models are slightly more accurate than the joint model (for example `{python} f"{E['observed', 'single target']:.3f}"` vs `{python} f"{E['observed', 'joint']:.3f}"` on observed days). When a station has its own data for a pollutant, borrowing from the other pollutant adds little and forces one shared trunk to serve both.
+- **Densely observed days:** the simple ±15 day MA is comparable to the networks (`{python} f"{E['observed', '±15 day mean']:.3f}"`). Its 31 day window is the same as the benchmark's, which flatters it.
 
-Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same-day readings, while the network's only notion of time is a smooth curve. A shared day-level effect in the network is the obvious next step.
+Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same day readings, while the network's only notion of time is a smooth curve. A shared day level effect in the network is the obvious next step.
 
 ```{python}
 #| fig-cap: "Error against the 31-day MA by group and estimator."
@@ -378,7 +378,7 @@ def panel(ax, st, pol, start=None, end=None, title=None):
     ax.tick_params(labelsize=8)
 ```
 
-**A well-observed station.** Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother: they follow the seasons but flatten shorter episodes, such as the December 2015 peak.
+**A well observed station.** Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother and they follow the seasons but flatten shorter episodes, such as the December 2015 peak.
 
 ```{python}
 #| fig-cap: "Dongsi, both pollutants, one year (regular sparse data)."
