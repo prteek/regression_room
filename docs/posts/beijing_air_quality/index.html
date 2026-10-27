@@ -271,7 +271,7 @@ Note
 <li><p>From each station and pollutant series we remove two blocks of 20–60 (random) consecutive days</p></li>
 </ul>
 <p>The <strong>ground truth</strong> is the full data which is then used in evaluation, by comparing estimates against a 31 day moving average of daily (log) means of ground truth.</p>
-<div id="207616e5" class="cell" data-execution_count="2">
+<div id="fc648ed5" class="cell" data-execution_count="2">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -315,7 +315,7 @@ Note
 </div>
 </div>
 <p>In the thinned data both PM2.5 and PM10 are observed on 44% station days and exactly one of them is observed on 45%. The figure shows one station over a year as a result of thinning the data.</p>
-<div id="67bb0b50" class="cell" data-execution_count="3">
+<div id="eb0b0b8d" class="cell" data-execution_count="3">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -394,7 +394,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 <li><strong>very sparse station</strong> Huairou, both pollutants present</li>
 <li>for every other station: <strong>observed</strong> (the sparse data has readings that day), <strong>unobserved</strong> (no readings, exlcuding the gap block), <strong>long gap</strong> (inside a 20–60 day gap block) and among unobserved days those where <strong>the other pollutant was observed</strong>.</li>
 </ul>
-<div id="f9a6c332" class="cell" data-execution_count="6">
+<div id="8eb9e913" class="cell" data-execution_count="6">
 <div class="cell-output cell-output-display">
 <div>
 
@@ -474,7 +474,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 <li><strong>Densely observed days:</strong> the simple ±15 day MA is comparable to the networks (0.153). Its 31 day window is the same as the benchmark’s, which flatters it.</li>
 </ul>
 <p>Pollution at all stations also moves together from day to day (weather is citywide). The moving averages pick that up from same day readings, while the network’s only notion of time is a smooth curve. A shared day level effect in the network is the obvious next step.</p>
-<div id="c0f1e933" class="cell" data-execution_count="7">
+<div id="dfe1cc28" class="cell" data-execution_count="7">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -488,7 +488,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 <section id="what-the-fits-look-like" class="level3">
 <h3 class="anchored" data-anchor-id="what-the-fits-look-like">What the fits look like</h3>
 <p><strong>A well observed station.</strong> Over a year at Dongsi, all three estimators follow the level. With this much data the moving average tracks it closely. The network curves are much smoother and they follow the seasons but flatten shorter episodes, such as the December 2015 peak.</p>
-<div id="7a166bc3" class="cell" data-execution_count="9">
+<div id="5a3822d9" class="cell" data-execution_count="9">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -499,7 +499,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 </div>
 </div>
 <p><strong>A very sparse station.</strong> With only 15% of its days left, Huairou’s data is too thin for the moving average, which jumps around. Both networks lean on the suburban area and the shared time pattern and stay close to the level, the joint and single target curves are very similar.</p>
-<div id="397ae7ab" class="cell" data-execution_count="10">
+<div id="cac469e1" class="cell" data-execution_count="10">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -510,7 +510,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 </div>
 </div>
 <p><strong>A dropped series.</strong> Dingling’s PM10 was never observed. The joint model reconstructs it from Dingling’s PM2.5 (top). The single target PM10 model has nothing station specific to continue from and returns the suburban area’s level, which is too high. The joint curve follows the shape but runs a little low and misses some peaks. The orange line here is the area moving average, which tracks daily movements from the other suburban stations.</p>
-<div id="7614939e" class="cell" data-execution_count="11">
+<div id="c9e37904" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -521,7 +521,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 </div>
 </div>
 <p><strong>Long gaps.</strong> The four longest gap blocks at regular stations. Once its window empties, the moving average either stops or swings on the few readings at its edges; the networks carry on smoothly. The joint and single target curves overlap, and both sit slightly below the level (see the bias below).</p>
-<div id="f2fcd28e" class="cell" data-execution_count="12">
+<div id="1dc185c7" class="cell" data-execution_count="12">
 <div class="cell-output cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -548,7 +548,7 @@ h &amp;= \operatorname{SiLU}\!\big(W_2 \operatorname{SiLU}(W_1 x)\big)
 <li><strong>Bumps alone don’t make a curve smooth where there is no data.</strong> Without the curvature penalty, filling gaps inside the data improves slightly (0.13 vs 0.15 on the test gaps). But looking 15 days past the end, the error jumps from 0.25 to 0.5–2.9. The terminal bumps have no data to pin them down. Training length then becomes the only brake, and running 1,000 steps instead of 100 nearly doubles the error.</li>
 <li><strong>Decide the smoothness, don’t tune it.</strong> Validated on noisy readings, a weaker penalty always looks slightly better because it follows real short episodes. How smooth the level should be is a choice about what the level means. Freeze it, and let cross validation pick the rest.</li>
 <li><strong>A mixed effects GAM does as well or better, when its smoothness is set manually.</strong> Area curves with station deviations shrunk towards them, fitted jointly to both pollutants, beat the network in every group when the smoothness is set by hand. Left to REML it follows weekly swings and does much worse. The extra error is variance, not bias.</li>
-<li><strong>The tuning target, not the model, sets the smoothness.</strong> Tuned with the same lookahead CV as the network, the GAM is pushed to a nearly flat curve and does worse than the network. The CV only checks the 15 days just past the end of the data, where any flexible spline goes wrong, so it picks the stiffest one. I[]’t drives both models towards oversmoothing.</li>
+<li><strong>The tuning target, not the model, sets the smoothness.</strong> Tuned with the same lookahead CV as the network, the GAM is pushed to a nearly flat curve and does worse than the network. The CV only checks the 15 days just past the end of the data, where any flexible spline goes wrong, so it picks the stiffest one. It drives both models towards oversmoothing.</li>
 </ul>
 
 
